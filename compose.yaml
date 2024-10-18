@@ -1,0 +1,11 @@
+services:
+    fed-mdrs:
+        build: .
+        image: fed-mdrs
+        container_name: fed-mdrs
+        volumes:
+            - .:/workspace
+    dotfiles:
+        image: key5n/python3.13.0
+        volumes:
+            - .:/workspace
