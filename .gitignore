@@ -1,2 +1,9 @@
 .venv/
 *.egg-info/
+data/
+labeled_anomalies.csv
+build/
+ServerMachineDataset/
+result/
+140_UCR_Anomaly_InternalBleeding4_1000_4675_5033.txt
+*/__pycache__/
