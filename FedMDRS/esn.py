@@ -63,7 +63,6 @@ class Reservoir:
         param x_in: x before update
         return: x after update
         """
-        self.previous_x = self.x
         self.x = np.multiply(1.0 - self.alpha, self.x) + np.multiply(
             self.alpha, self.activation_func(np.dot(self.W, self.x) + x_in)
         )
@@ -71,9 +70,6 @@ class Reservoir:
 
     def reset_reservoir_state(self):
         self.x *= 0.0
-
-    def reset_to_previous_state(self):
-        self.x = self.previous_x
 
 class MDRS():
     def __init__(self,
@@ -137,6 +133,7 @@ class MDRS():
 
             x = self.Reservoir(x_in)
             mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
+            # print(f"{mahalanobis_distance = }")
             mahalanobis_distances.append(mahalanobis_distance)
 
             if mahalanobis_distance < self.threshold:
@@ -144,6 +141,7 @@ class MDRS():
                 label.append(0)
             else:
                 # mark the data as anomalous
+                print("hoge")
                 label.append(1)
 
         return np.array(label, dtype=np.int8), np.array(mahalanobis_distances, dtype=np.int64)
