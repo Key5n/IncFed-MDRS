@@ -102,7 +102,7 @@ class MDRS():
             np.random.seed(seed=0)
             self.noise = np.random.uniform(-noise_level, noise_level, (self.N_x, 1))
 
-    def train(self, U, optimizer):
+    def train(self, U, optimizer, global_optimizer):
         """
         U: input data
         """
@@ -115,7 +115,10 @@ class MDRS():
                 x_in += self.noise
 
             x = self.Reservoir(x_in)
+
             self.precision_matrix = optimizer(x)
+            global_optimizer(x)
+
             mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
             self.threshold = max(mahalanobis_distance, self.threshold) if self.threshold != None else mahalanobis_distance
 
