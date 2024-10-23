@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score
+from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc
 
 def generate_graph(test_label, threshold, mahalanobis_distances, filename):
     plt.clf()
@@ -22,3 +22,17 @@ def write_analysis(dirname, label_test, label_pred):
         print("recall score", recall_score(label_test, label_pred), file=o)
         print("f1 score", f1_score(label_test, label_pred),file=o)
         print(classification_report(label_test, label_pred), file=o)
+
+def write_roc_curse(false_positives, true_positives, filename):
+   # Plot ROC Curve
+    plt.plot(false_positives, true_positives, marker='o', label="ROC Curve")
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve")
+    plt.legend()
+    plt.savefig(filename)
+
+def calculate_auc(false_positives, true_positives):
+    roc_auc = auc(false_positives, true_positives)
+    print(roc_auc)
