@@ -23,7 +23,7 @@ def write_analysis(dirname, label_test, label_pred):
         print("f1 score", f1_score(label_test, label_pred),file=o)
         print(classification_report(label_test, label_pred), file=o)
 
-def write_roc_curse(false_positives, true_positives, filename):
+def write_roc_curve(false_positives, true_positives, filename):
    # Plot ROC Curve
     plt.plot(false_positives, true_positives, marker='o', label="ROC Curve")
     plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")

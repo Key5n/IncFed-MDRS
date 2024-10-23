@@ -71,8 +71,6 @@ class Reservoir:
         )
         return self.x
 
-    def reset_reservoir_state(self):
-        self.x *= 0.0
     def copy(self):
         return deepcopy(self)
 
@@ -148,7 +146,6 @@ class MDRS():
                 label.append(0)
             else:
                 # mark the data as anomalous
-                print("hoge")
                 label.append(1)
 
         return np.array(label, dtype=np.int8), np.array(mahalanobis_distances, dtype=np.int64)
@@ -161,8 +158,8 @@ class RLS:
         self,
         N_x: int,
         delta: float,
-        update: int,
-        lam:float=1.0,
+        update: int=1,
+        lam: float=1.0,
     ):
         """
         param N_x: リザバーのノード数
