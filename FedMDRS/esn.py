@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+from copy import deepcopy
 
 def identity(x):
     return x
@@ -23,6 +24,8 @@ class Input:
         """
         return np.dot(self.Win, u)
 
+    def copy(self):
+        return deepcopy(self)
 
 class Reservoir:
     def __init__(self, N_x, density, rho, activation_func, leaking_rate, seed=0):
@@ -70,6 +73,8 @@ class Reservoir:
 
     def reset_reservoir_state(self):
         self.x *= 0.0
+    def copy(self):
+        return deepcopy(self)
 
 class MDRS():
     def __init__(self,
@@ -148,6 +153,9 @@ class MDRS():
 
         return np.array(label, dtype=np.int8), np.array(mahalanobis_distances, dtype=np.int64)
 
+    def copy(self):
+        return deepcopy(self)
+
 class RLS:
     def __init__(
         self,
@@ -174,3 +182,6 @@ class RLS:
             gain = gain / (1 + 1 / self.lam * np.dot(np.dot(x.T, self.P), x))
             self.P = 1 / self.lam * (self.P - np.dot(np.dot(gain, x.T), self.P))
         return self.P
+
+    def copy(self):
+        return deepcopy(self)
