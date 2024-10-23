@@ -1,54 +1,59 @@
 import os
 import numpy as np
 from esn import MDRS, RLS
-from utils import generate_graph, write_analysis
-#
-# dataset_folder = "ServerMachineDataset"
-# files = os.listdir(os.path.join(dataset_folder, "train"))
-#
-# for file in files:
-#     print(file)
-#     data_train = np.genfromtxt(os.path.join(dataset_folder, "train", file), dtype=np.float64, delimiter=",")
-#     basename = file.split(".")[0]
-#
-#     N_u = data_train.shape[1]
-#     N_x = 500
-#     model = MDRS(N_u, N_x)
-#     optimizer = RLS(N_x, 1, 1)
-#     threshold = model.train(data_train, optimizer)
-#
-#     data_test = np.genfromtxt(os.path.join(dataset_folder, "test", file), dtype=np.float64, delimiter=",")
-#     label_pred, mahalanobis_distances = model.adapt(data_test, optimizer)
-#
-#     label_test = np.genfromtxt(os.path.join(dataset_folder, "label_test", file), dtype=np.int64, delimiter=",")
-#
-#     os.makedirs(f"result/{basename}", exist_ok=True)
-#     generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
-#     write_analysis(basename, label_test, label_pred)
+from utils import generate_graph, write_analysis, write_roc_curve
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import confusion_matrix, auc
 
-file = "141_UCR_Anomaly_InternalBleeding5_4000_6200_6370.txt"
+dataset_folder = "ServerMachineDataset"
+files = os.listdir(os.path.join(dataset_folder, "train"))
 
-# data_train = np.genfromtxt(os.path.join(dataset_folder, "train", file), dtype=np.float64, delimiter=",")
-data_train = np.genfromtxt(file, dtype=np.float64, delimiter=",")[:4000]
-basename = file.split(".")[0]
-data_train = np.reshape(data_train, (-1,1))
+for file in files:
+    print(file)
 
-N_u = data_train.shape[1]
-N_x = 500
-model = MDRS(N_u, N_x)
-optimizer = RLS(N_x, 1, 1)
-threshold = model.train(data_train, optimizer)
+    data_train = np.genfromtxt(os.path.join(dataset_folder, "train", file), dtype=np.float64, delimiter=",")
+    basename = file.split(".")[0]
 
-data_test = np.genfromtxt(file, dtype=np.float64, delimiter=",")[4001:]
-data_test = np.reshape(data_test, (-1,1))
-label_pred, mahalanobis_distances = model.adapt(data_test, optimizer)
+    N_u = data_train.shape[1]
+    N_x = 500
+    model = MDRS(N_u, N_x)
+    optimizer = RLS(N_x, 0.00001, 1)
+    threshold = model.train(data_train, optimizer)
 
-# label_test = np.genfromtxt(os.path.join(dataset_folder, "label_test", file), dtype=np.int64, delimiter=",")
-label_test = np.zeros(7415 - 4001)
-label_test[6200-4001:6370-4001] = 1
+    data_test = np.genfromtxt(os.path.join(dataset_folder, "test", file), dtype=np.float64, delimiter=",")
 
-os.makedirs(f"result/{basename}", exist_ok=True)
-generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
-write_analysis(basename, label_test, label_pred)
+    label_preds = []
+    mahalanobis_distances_list = []
 
+    false_positive_rates = [1]
+    true_positive_rates = [1]
+    threshold = 0
+    label_test = np.genfromtxt(os.path.join(dataset_folder, "test_label", file), dtype=np.int64, delimiter=",")
+    while false_positive_rates[-1] != 0 and true_positive_rates[-1] != 0:
+        print(f"*** {threshold = } ***")
+        model_copied = model.copy()
+        optimizer_copied = optimizer.copy()
+        label_pred, mahalanobis_distances = model_copied.adapt(data_test, optimizer_copied.copy(), threshold)
+        cm = confusion_matrix(label_test, label_pred)
+        print(f"{cm = }")
+        tn, fp, fn, tp = cm.flatten()
+        fpr = fp / (fp + tn)
+        tpr = tp / (tp + fn)
+        print(f"{tpr = }, {fpr = }")
+        false_positive_rates.append(fpr)
+        true_positive_rates.append(tpr)
+
+        if threshold <= 0.15:
+            threshold += 0.025
+        elif threshold <= 1.0:
+            threshold += 0.1
+        else:
+            threshold *= 2
+
+    os.makedirs(f"result/{basename}", exist_ok=True)
+    # generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
+    # write_analysis(basename, label_test, label_pred)
+    roc_auc = auc(false_positive_rates, true_positive_rates)
+    print(f"{roc_auc = }")
+    write_roc_curve(false_positive_rates, true_positive_rates, roc_auc, f"result/{basename}/roc.png")
 
