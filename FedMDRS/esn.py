@@ -120,13 +120,15 @@ class MDRS():
         # print("threshold", self.threshold)
         return self.threshold
 
-    def adapt(self, U, optimizer):
+    def adapt(self, U, optimizer, threshold=None):
         """
         U: input data
         """
         data_length = len(U)
         label = []
         mahalanobis_distances = []
+        if threshold != None:
+            self.threshold = threshold
 
         for n in range(data_length):
             x_in = self.Input(U[n])
