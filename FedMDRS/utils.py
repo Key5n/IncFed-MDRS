@@ -36,19 +36,10 @@ def write_roc_curve(false_positives, true_positives, roc_auc, filename):
     plt.legend()
     plt.savefig(filename)
 
-# Specify the files you want
-target_filenames = ["machine-1-5.txt", "machine-1-1.txt", "machine-1-2.txt"]
-
 def train_in_clients(global_optimizer, models, train_data_dir_path):
-    train_data_filenames = os.listdir(train_data_dir_path)[:15]
-   # Specify the files you want
-    # target_filenames = ["machine-1-5.txt", "machine-1-1.txt", "machine-1-2.txt"]
-
-    # Filter the original list
-    # filtered_filenames = [filename for filename in train_data_filenames if filename in target_filenames]
+    train_data_filenames = os.listdir(train_data_dir_path)
 
     for train_data_filename in train_data_filenames:
-    # for train_data_filename in filtered_filenames:
         train_data_file_path = os.path.join(train_data_dir_path, train_data_filename)
         train_in_client(global_optimizer, models, train_data_file_path)
 
@@ -69,13 +60,9 @@ def train_in_client(global_optimizer, models, train_data_file_path):
     print(models)
 
 def evaluate_in_clients(global_optimizer, models, test_data_dir_path, test_label_dir_path):
-    test_data_filenames = os.listdir(test_data_dir_path)[:15]
-
-    # Filter the original list
-    # filtered_filenames = [filename for filename in test_data_filenames if filename in target_filenames]
+    test_data_filenames = os.listdir(test_data_dir_path)
 
     for test_data_filename in test_data_filenames:
-    # for test_data_filename in filtered_filenames:
         basename = test_data_filename.split(".")[0]
         model = models[basename]
         test_data_file_path = os.path.join(test_data_dir_path, test_data_filename)
@@ -104,8 +91,8 @@ def evaluate(global_optimizer, model, test_data_file_path, test_label_file_path)
         false_positive_rates.append(fpr)
         true_positive_rates.append(tpr)
 
-        if threshold <= 0.15:
-            threshold += 0.025
+        if threshold <= 0.1:
+            threshold += 0.001
         elif threshold <= 1.0:
             threshold += 0.1
         else:
