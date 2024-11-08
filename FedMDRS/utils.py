@@ -72,9 +72,9 @@ def evaluate_in_clients(global_optimizer, models, test_data_dir_path, test_label
         test_data_file_path = os.path.join(test_data_dir_path, test_data_filename)
         test_label_file_path = os.path.join(test_label_dir_path, test_data_filename)
 
-        evaluate(global_optimizer, model, test_data_file_path, test_label_file_path)
+        evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_file_path)
 
-def evaluate(global_optimizer, model, test_data_file_path, test_label_file_path):
+def evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_file_path):
     print(f"test {test_label_file_path = }")
     data_test = np.genfromtxt(test_data_file_path, dtype=np.float64, delimiter=",")
     basename = test_data_file_path.split(".")[0].split("/")[-1]
