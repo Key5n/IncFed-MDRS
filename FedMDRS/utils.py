@@ -75,46 +75,54 @@ def evaluate_in_clients(global_optimizer, models, test_data_dir_path, test_label
         evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_file_path)
 
 def evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_file_path):
-    print(f"test {test_label_file_path = }")
-    data_test = np.genfromtxt(test_data_file_path, dtype=np.float64, delimiter=",")
     basename = test_data_file_path.split(".")[0].split("/")[-1]
+    data_test = np.genfromtxt(test_data_file_path, dtype=np.float64, delimiter=",")
+    with open(f"result/{basename}/log.txt", "w") as f:
+        print(f"test {test_label_file_path = }", file=f)
+        print(f"test {test_label_file_path = }")
 
-    false_positive_rates = [1]
-    true_positive_rates = [1]
-    precision_scores = [0]
+        false_positive_rates = [1]
+        true_positive_rates = [1]
+        precision_scores = [0]
 
-    threshold = 0
-    label_test = np.genfromtxt(test_label_file_path, dtype=np.int64, delimiter=",")
-    while false_positive_rates[-1] != 0 or true_positive_rates[-1] != 0 or precision_scores[-1] != 1:
-        print(f"*** {threshold = } ***")
-        label_pred, mahalanobis_distances = model.copy().adapt(data_test, global_optimizer.copy(), threshold)
-        cm = confusion_matrix(label_test, label_pred)
-        tn, fp, fn, tp = cm.flatten()
+        threshold = 0
+        label_test = np.genfromtxt(test_label_file_path, dtype=np.int64, delimiter=",")
+        while false_positive_rates[-1] != 0 or true_positive_rates[-1] != 0 or precision_scores[-1] != 1:
+            print(f"*** {threshold = } ***", file=f)
+            print(f"*** {threshold = } ***")
+            label_pred, mahalanobis_distances = model.copy().adapt(data_test, global_optimizer.copy(), threshold)
+            cm = confusion_matrix(label_test, label_pred)
+            tn, fp, fn, tp = cm.flatten()
 
-        # recall is the same as true positive rate
-        fpr = fp / (fp + tn)
-        tpr = tp / (tp + fn)
-        precision = tp / (tp + fp)
+            # recall is the same as true positive rate
+            fpr = fp / (fp + tn)
+            tpr = tp / (tp + fn)
+            precision = tp / (tp + fp)
 
-        print(f"{cm = }")
-        print(f"{tpr = }, {fpr = }, {precision = }")
+            print(f"{cm = }", file=f)
+            print(f"{cm = }")
+            print(f"{tpr = }, {fpr = }, {precision = }", file=f)
+            print(f"{tpr = }, {fpr = }, {precision = }")
 
-        false_positive_rates.append(fpr)
-        true_positive_rates.append(tpr)
-        precision_scores.append(precision)
+            false_positive_rates.append(fpr)
+            true_positive_rates.append(tpr)
+            precision_scores.append(precision)
 
-        if threshold <= 0.1:
-            threshold += 0.001
-        elif threshold <= 1.0:
-            threshold += 0.1
-        else:
-            threshold *= 2
+            if threshold <= 0.1:
+                threshold += 0.001
+            elif threshold <= 1.0:
+                threshold += 0.1
+            else:
+                threshold *= 2
 
-    os.makedirs(f"result/{basename}", exist_ok=True)
-    # generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
-    # write_analysis(basename, label_test, label_pred)
-    roc_auc = auc(false_positive_rates, true_positive_rates)
-    precision_recall_curve_auc = auc(true_positive_rates, precision_scores)
-    print(f"{roc_auc = }, {precision_recall_curve_auc = }")
-    write_curve(false_positive_rates, true_positive_rates, roc_auc, f"result/{basename}/roc.png", name="ROC")
-    write_curve(precision_scores, true_positive_rates, precision_recall_curve_auc, f"result/{basename}/precision_recall.png")
+        os.makedirs(f"result/{basename}", exist_ok=True)
+        # generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
+        # write_analysis(basename, label_test, label_pred)
+        roc_auc = auc(false_positive_rates, true_positive_rates)
+        precision_recall_curve_auc = auc(true_positive_rates, precision_scores)
+
+        print(f"{roc_auc = }, {precision_recall_curve_auc = }")
+        print(f"{roc_auc = }, {precision_recall_curve_auc = }", file=f)
+
+        write_curve(false_positive_rates, true_positive_rates, roc_auc, f"result/{basename}/roc.png", name="ROC")
+        write_curve(precision_scores, true_positive_rates, precision_recall_curve_auc, f"result/{basename}/precision_recall.png")
