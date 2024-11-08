@@ -66,11 +66,13 @@ def train_in_client(global_optimizer, models, train_data_file_path):
 def evaluate_in_clients(global_optimizer, models, test_data_dir_path, test_label_dir_path):
     test_data_filenames = os.listdir(test_data_dir_path)
 
-    for test_data_filename in test_data_filenames:
+    for i, test_data_filename in enumerate(test_data_filenames):
         basename = test_data_filename.split(".")[0]
         model = models[basename]
         test_data_file_path = os.path.join(test_data_dir_path, test_data_filename)
         test_label_file_path = os.path.join(test_label_dir_path, test_data_filename)
+
+        print(f"Progress Rate: {i / len(test_data_filenames) * 100}%")
 
         evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_file_path)
 
