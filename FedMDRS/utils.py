@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, roc_curve
+from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, roc_curve, precision_recall_curve
 from esn import MDRS, RLS
 
 def generate_graph(test_label, threshold, mahalanobis_distances, filename):
@@ -25,14 +25,19 @@ def write_analysis(dirname, label_test, label_pred):
         print("f1 score", f1_score(label_test, label_pred),file=o)
         print(classification_report(label_test, label_pred), file=o)
 
-def write_roc_curve(false_positives, true_positives, roc_auc, filename):
+def write_curve(y_array, x_array, auc, filename, name="Precision Recall"):
+    # name should be "ROC" or "Precision Recall"
     plt.clf()
-   # Plot ROC Curve
-    plt.plot(false_positives, true_positives, marker='o', label=f"ROC Curve (AUC = {roc_auc:.4f})")
-    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")
+
+    # Plot Curve
+    plt.plot(y_array, x_array, marker='o', label=f"{name} Curve (AUC = {auc:.4f})")
+
+    if name == "ROC":
+        plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")
+
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title("ROC Curve")
+    plt.title(f"{name} Curve")
     plt.legend()
     plt.savefig(filename)
 
@@ -57,7 +62,6 @@ def train_in_client(global_optimizer, models, train_data_file_path):
     basename = filename.split(".")[0]
 
     models[basename] = model
-    print(models)
 
 def evaluate_in_clients(global_optimizer, models, test_data_dir_path, test_label_dir_path):
     test_data_filenames = os.listdir(test_data_dir_path)
@@ -77,19 +81,27 @@ def evaluate(global_optimizer, model, test_data_file_path, test_label_file_path)
 
     false_positive_rates = [1]
     true_positive_rates = [1]
+    precision_scores = [0]
+
     threshold = 0
     label_test = np.genfromtxt(test_label_file_path, dtype=np.int64, delimiter=",")
-    while false_positive_rates[-1] != 0 or true_positive_rates[-1] != 0:
+    while false_positive_rates[-1] != 0 or true_positive_rates[-1] != 0 or precision_scores[-1] != 1:
         print(f"*** {threshold = } ***")
         label_pred, mahalanobis_distances = model.copy().adapt(data_test, global_optimizer.copy(), threshold)
         cm = confusion_matrix(label_test, label_pred)
-        print(f"{cm = }")
         tn, fp, fn, tp = cm.flatten()
+
+        # recall is the same as true positive rate
         fpr = fp / (fp + tn)
         tpr = tp / (tp + fn)
-        print(f"{tpr = }, {fpr = }")
+        precision = tp / (tp + fp)
+
+        print(f"{cm = }")
+        print(f"{tpr = }, {fpr = }, {precision = }")
+
         false_positive_rates.append(fpr)
         true_positive_rates.append(tpr)
+        precision_scores.append(precision)
 
         if threshold <= 0.1:
             threshold += 0.001
@@ -102,5 +114,7 @@ def evaluate(global_optimizer, model, test_data_file_path, test_label_file_path)
     # generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
     # write_analysis(basename, label_test, label_pred)
     roc_auc = auc(false_positive_rates, true_positive_rates)
-    print(f"{roc_auc = }")
-    write_roc_curve(false_positive_rates, true_positive_rates, roc_auc, f"result/{basename}/roc.png")
+    precision_recall_curve_auc = auc(true_positive_rates, precision_scores)
+    print(f"{roc_auc = }, {precision_recall_curve_auc = }")
+    write_curve(false_positive_rates, true_positive_rates, roc_auc, f"result/{basename}/roc.png", name="ROC")
+    write_curve(precision_scores, true_positive_rates, precision_recall_curve_auc, f"result/{basename}/precision_recall.png")
