@@ -85,6 +85,9 @@ class MDRS():
         activation_func=np.tanh,
         leaking_rate=1.0,
         noise_level=None,
+        delta=0.0001,
+        update=1,
+        lam=1,
         seed=0
     ):
         self.seed = seed
@@ -101,12 +104,17 @@ class MDRS():
         else:
             np.random.seed(seed=0)
             self.noise = np.random.uniform(-noise_level, noise_level, (self.N_x, 1))
+        self.delta = delta
+        self.lam = lam
+        self.update = update
+        self.precision_matrix = (1.0 / self.delta) * np.eye(N_x, N_x)
 
-    def train(self, U, optimizer, global_optimizer):
+    def train(self, U, global_precision_matrix):
         """
         U: input data
         """
         train_length = len(U)
+        next_global_precision_matrix = global_precision_matrix
 
         for n in range(train_length):
             x_in = self.Input(U[n])
@@ -116,24 +124,26 @@ class MDRS():
 
             x = self.Reservoir(x_in)
 
-            self.precision_matrix = optimizer(x)
-            global_optimizer(x)
+            self.precision_matrix = self.calc_next_precision_matrix(x, self.precision_matrix)
+            next_global_precision_matrix = self.calc_next_precision_matrix(x, next_global_precision_matrix)
 
             mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
-            self.threshold = max(mahalanobis_distance, self.threshold) if self.threshold != None else mahalanobis_distance
+            self.threshold = max(mahalanobis_distance, self.threshold) if self.threshold is not None else mahalanobis_distance
 
-        # print("train", self.precision_matrix)
-        # print("threshold", self.threshold)
-        return self.threshold
+        return next_global_precision_matrix
 
-    def adapt(self, U, optimizer, threshold=None):
+    def adapt(self, U, precision_matrix=None, threshold=None):
         """
         U: input data
         """
         data_length = len(U)
         label = []
         mahalanobis_distances = []
-        if threshold != None:
+
+        if precision_matrix is not None:
+            self.precision_matrix = precision_matrix
+
+        if threshold is not None:
             self.threshold = threshold
 
         for n in range(data_length):
@@ -145,7 +155,7 @@ class MDRS():
             mahalanobis_distances.append(mahalanobis_distance)
 
             if mahalanobis_distance < self.threshold:
-                self.precision_matrix = optimizer(x)
+                self.precision_matrix = self.calc_next_precision_matrix(x, self.precision_matrix)
                 label.append(0)
             else:
                 # mark the data as anomalous
@@ -153,35 +163,14 @@ class MDRS():
 
         return np.array(label, dtype=np.int8), np.array(mahalanobis_distances, dtype=np.int64)
 
-    def copy(self):
-        return deepcopy(self)
-
-class RLS:
-    def __init__(
-        self,
-        N_x: int,
-        delta: float,
-        update: int=1,
-        lam: float=1.0,
-    ):
-        """
-        param N_x: リザバーのノード数
-        param delta: 行列 P の初期条件の係数 (P=delta * I, 0 < delta < 1)
-        param update: 各時間での更新繰り返し回数
-        param lam: 忘却係数 (0 < lam < 1, 1 に近い値)
-        """
-        self.delta = delta
-        self.lam = lam
-        self.update = update
-        self.P = (1.0 / self.delta) * np.eye(N_x, N_x)
-
-    def __call__(self, x):
+    def calc_next_precision_matrix(self, x, precision_matrix):
         x = np.reshape(x, (-1, 1))
+        next_precision_matrix = precision_matrix
         for _ in np.arange(self.update):
-            gain = 1 / self.lam * np.dot(self.P, x)
-            gain = gain / (1 + 1 / self.lam * np.dot(np.dot(x.T, self.P), x))
-            self.P = 1 / self.lam * (self.P - np.dot(np.dot(gain, x.T), self.P))
-        return self.P
+            gain = 1 / self.lam * np.dot(next_precision_matrix, x)
+            gain = gain / (1 + 1 / self.lam * np.dot(np.dot(x.T, next_precision_matrix), x))
+            next_precision_matrix = 1 / self.lam * (next_precision_matrix - np.dot(np.dot(gain, x.T), next_precision_matrix))
+        return next_precision_matrix
 
     def copy(self):
         return deepcopy(self)

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, roc_curve, precision_recall_curve
-from esn import MDRS, RLS
+from esn import MDRS
 
 def generate_graph(test_label, threshold, mahalanobis_distances, filename):
     plt.clf()
@@ -41,29 +41,36 @@ def write_curve(y_array, x_array, auc, filename, name="Precision Recall"):
     plt.legend()
     plt.savefig(filename)
 
-def train_in_clients(global_optimizer, models, train_data_dir_path):
+def train_in_clients(models, train_data_dir_path):
     train_data_filenames = os.listdir(train_data_dir_path)
+    N_x = 500
+    delta = 0.0001
+    P_global = (1.0 / delta) * np.eye(N_x, N_x)
+    P_global_next = P_global
 
     for train_data_filename in train_data_filenames:
         train_data_file_path = os.path.join(train_data_dir_path, train_data_filename)
-        train_in_client(global_optimizer, models, train_data_file_path)
+        P_global_next = train_in_client(P_global_next, models, train_data_file_path)
 
-def train_in_client(global_optimizer, models, train_data_file_path):
+    return P_global_next
+
+def train_in_client(P_global, models, train_data_file_path):
     print(f"train {train_data_file_path = }")
     data_train = np.genfromtxt(train_data_file_path, dtype=np.float64, delimiter=",")
 
     N_u = data_train.shape[1]
     N_x = 500
     model = MDRS(N_u, N_x)
-    optimizer = RLS(N_x, 0.00001, 1)
-    model.train(data_train, optimizer, global_optimizer)
+    P_global_next = model.train(data_train, P_global)
 
     filename = train_data_file_path.split("/")[-1]
     basename = filename.split(".")[0]
 
     models[basename] = model
 
-def evaluate_in_clients(global_optimizer, models, test_data_dir_path, test_label_dir_path):
+    return P_global_next
+
+def evaluate_in_clients(P_global, models, test_data_dir_path, test_label_dir_path):
     test_data_filenames = os.listdir(test_data_dir_path)
 
     for i, test_data_filename in enumerate(test_data_filenames):
@@ -74,9 +81,9 @@ def evaluate_in_clients(global_optimizer, models, test_data_dir_path, test_label
 
         print(f"Progress Rate: {i / len(test_data_filenames) * 100}%")
 
-        evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_file_path)
+        evaluate_in_client(P_global, model, test_data_file_path, test_label_file_path)
 
-def evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_file_path):
+def evaluate_in_client(P_global, model, test_data_file_path, test_label_file_path):
     basename = test_data_file_path.split(".")[0].split("/")[-1]
     data_test = np.genfromtxt(test_data_file_path, dtype=np.float64, delimiter=",")
     with open(f"result/{basename}/log.txt", "w") as f:
@@ -89,10 +96,10 @@ def evaluate_in_client(global_optimizer, model, test_data_file_path, test_label_
 
         threshold = 0
         label_test = np.genfromtxt(test_label_file_path, dtype=np.int64, delimiter=",")
-        while false_positive_rates[-1] != 0 or true_positive_rates[-1] != 0 or precision_scores[-1] != 1:
+        while false_positive_rates[-1] != 0 or true_positive_rates[-1] != 0:
             print(f"*** {threshold = } ***", file=f)
             print(f"*** {threshold = } ***")
-            label_pred, mahalanobis_distances = model.copy().adapt(data_test, global_optimizer.copy(), threshold)
+            label_pred, mahalanobis_distances = model.copy().adapt(data_test, precision_matrix=P_global.copy(), threshold=threshold)
             cm = confusion_matrix(label_test, label_pred)
             tn, fp, fn, tp = cm.flatten()
 
