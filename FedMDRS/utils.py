@@ -124,6 +124,7 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         precision_scores = []
 
         threshold = 0
+        increment = 0.0001
         label_test = serverMachineData.test_label
         data_test = serverMachineData.data_test
         while len(true_positive_rates) == 0 or true_positive_rates[-1] != 0:
@@ -150,8 +151,6 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
 
             last_tpr = true_positive_rates[-1] if len(true_positive_rates) != 0 else 1
             diff = np.abs(tpr - last_tpr)
-
-            increment = 0.0001
 
             if diff >= 0.1:
                 increment /= 2
