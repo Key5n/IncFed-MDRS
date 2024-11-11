@@ -109,12 +109,12 @@ class MDRS():
         self.update = update
         self.precision_matrix = (1.0 / self.delta) * np.eye(N_x, N_x)
 
-    def train(self, U, global_precision_matrix, trans_len=0):
+    def train(self, U, P_global=None, trans_len=0):
         """
         U: input data
         """
         train_length = len(U)
-        next_global_precision_matrix = global_precision_matrix
+        next_global_precision_matrix = P_global
 
         for n in range(train_length):
             x_in = self.Input(U[n])
@@ -126,7 +126,9 @@ class MDRS():
 
             if n > trans_len:
                 self.precision_matrix = self.calc_next_precision_matrix(x, self.precision_matrix)
-                next_global_precision_matrix = self.calc_next_precision_matrix(x, next_global_precision_matrix)
+
+                if P_global is not None:
+                    next_global_precision_matrix = self.calc_next_precision_matrix(x, next_global_precision_matrix)
 
                 mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
                 self.threshold = max(mahalanobis_distance, self.threshold) if self.threshold is not None else mahalanobis_distance

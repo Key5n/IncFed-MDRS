@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from numpy.typing import NDArray
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, roc_curve, precision_recall_curve
@@ -9,9 +10,9 @@ from esn import MDRS
 class ServerMachineData:
     dataset_name: str
     data_name: str
-    data_train: np.ndarray
-    data_test: np.ndarray
-    test_label: np.ndarray
+    data_train: NDArray
+    data_test: NDArray
+    test_label: NDArray
 
 def create_dataset(
     dataset_name:str = "ServerMachineDataset",
@@ -74,42 +75,47 @@ def write_curve(y_array, x_array, auc, filename, name="Precision Recall"):
     plt.legend()
     plt.savefig(filename)
 
-def train_in_clients(models, serverMachineDataset: list[ServerMachineData]):
+def train_in_clients(serverMachineDataset: list[ServerMachineData]) -> tuple[dict[str,MDRS], NDArray]:
+    models: dict[str, MDRS] = {}
     N_x = 500
     delta = 0.0001
     P_global = (1.0 / delta) * np.eye(N_x, N_x)
     P_global_next = P_global
 
     for serverMachineData in serverMachineDataset:
-        P_global_next = train_in_client(P_global_next, models, serverMachineData)
+        model, P_global_next = train_in_client(serverMachineData, P=P_global_next)
+        models[serverMachineData.data_name] = model
 
-    return P_global_next
+    if P_global_next is None:
+        raise ValueError("The type of Precision Matrix is None")
 
-def train_in_client(P_global, models, serverMachineData: ServerMachineData):
+    return models, P_global_next
+
+def train_in_client(serverMachineData: ServerMachineData, P: NDArray | None = None) -> tuple[MDRS, NDArray | None]:
     print(f"[train] data name: {serverMachineData.data_name}")
     data_train = serverMachineData.data_train
-
     N_u = data_train.shape[1]
     N_x = 500
     model = MDRS(N_u, N_x)
-    P_global_next = model.train(data_train, P_global)
 
-    models[serverMachineData.data_name] = model
+    if P is None:
+        model.train(data_train)
+        return model, None
+    else:
+        P_global_next = model.train(data_train, P_global=P)
+        return model, P_global_next
 
-    return P_global_next
-
-def evaluate_in_clients(P_global, models, serverMachineDataset: list[ServerMachineData]):
-
+def evaluate_in_clients(P_global, models, serverMachineDataset: list[ServerMachineData]) -> None:
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset) * 100}%")
 
         model = models[serverMachineData.data_name]
-        evaluate_in_client(P_global, model, serverMachineData)
+        evaluate_in_client(model, serverMachineData, P=P_global)
 
-def evaluate_in_client(P_global, model, serverMachineData: ServerMachineData):
+def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | None=None, output_dir="result") -> None:
     name = serverMachineData.data_name
-    os.makedirs(f"result/{name}", exist_ok=True)
-    with open(f"result/{name}/log.txt", "w") as f:
+    os.makedirs(f"{output_dir}/{name}", exist_ok=True)
+    with open(f"{output_dir}/{name}/log.txt", "w") as f:
         print(f"[test] dataset name: {name}", file=f)
         print(f"[test] dataset name: {name}")
 
@@ -123,7 +129,12 @@ def evaluate_in_client(P_global, model, serverMachineData: ServerMachineData):
         while len(true_positive_rates) == 0 or true_positive_rates[-1] != 0:
             print(f"*** {threshold = } ***", file=f)
             print(f"*** {threshold = } ***")
-            label_pred, mahalanobis_distances = model.copy().adapt(data_test, precision_matrix=P_global.copy(), threshold=threshold)
+
+            if P is not None:
+                label_pred, _ = model.copy().adapt(data_test, precision_matrix=P.copy(), threshold=threshold)
+            else:
+                label_pred, _ = model.copy().adapt(data_test,  threshold=threshold)
+
             cm = confusion_matrix(label_test, label_pred)
             tn, fp, fn, tp = cm.flatten()
 
@@ -161,7 +172,7 @@ def evaluate_in_client(P_global, model, serverMachineData: ServerMachineData):
                 print(f"{bcolors.OKGREEN}Added{bcolors.ENDC}")
                 print(f"{bcolors.OKGREEN}Added{bcolors.ENDC}", file=f)
 
-        # generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
+        # generate_graph(label_test, threshold, mahalanobis_distances, f"{output_dir}/{basename}/MD.png")
         # write_analysis(basename, label_test, label_pred)
         roc_auc = auc(false_positive_rates, true_positive_rates)
         precision_recall_curve_auc = auc(true_positive_rates, precision_scores)
@@ -169,8 +180,8 @@ def evaluate_in_client(P_global, model, serverMachineData: ServerMachineData):
         print(f"{roc_auc = }, {precision_recall_curve_auc = }")
         print(f"{roc_auc = }, {precision_recall_curve_auc = }", file=f)
 
-        write_curve(false_positive_rates, true_positive_rates, roc_auc, f"result/{name}/roc.png", name="ROC")
-        write_curve(precision_scores, true_positive_rates, precision_recall_curve_auc, f"result/{name}/precision_recall.png")
+        write_curve(false_positive_rates, true_positive_rates, roc_auc, f"{output_dir}/{name}/roc.png", name="ROC")
+        write_curve(precision_scores, true_positive_rates, precision_recall_curve_auc, f"{output_dir}/{name}/precision_recall.png")
 
 class bcolors:
     HEADER = '\033[95m'
