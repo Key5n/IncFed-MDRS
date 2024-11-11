@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 from numpy.typing import NDArray
 import matplotlib.pyplot as plt
@@ -128,8 +129,8 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         label_test = serverMachineData.test_label
         data_test = serverMachineData.data_test
         while len(true_positive_rates) == 0 or true_positive_rates[-1] != 0:
-            print(f"*** {threshold = } ***", file=f)
-            print(f"*** {threshold = } ***")
+            print(f"*** {threshold = }, {increment = } ***", file=f)
+            print(f"*** {threshold = }, {increment = } ***")
 
             if P is not None:
                 label_pred, _ = model.copy().adapt(data_test, precision_matrix=P.copy(), threshold=threshold)
@@ -152,7 +153,18 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
             last_tpr = true_positive_rates[-1] if len(true_positive_rates) != 0 else 1
             diff = np.abs(tpr - last_tpr)
 
-            if diff >= 0.1:
+            if increment <= sys.float_info.epsilon:
+                increment = 0.0001
+                threshold += increment
+
+                false_positive_rates.append(fpr)
+                true_positive_rates.append(tpr)
+                precision_scores.append(precision)
+
+                print(f"{bcolors.OKBLUE}increment too small{bcolors.ENDC}")
+                print(f"{bcolors.OKBLUE}increment too small{bcolors.ENDC}", file=f)
+
+            elif diff >= 0.1:
                 increment /= 2
                 threshold = threshold - increment
                 print(f"{bcolors.FAIL}Over{bcolors.ENDC}")
