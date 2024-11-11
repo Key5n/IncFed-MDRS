@@ -158,7 +158,7 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
                 threshold = threshold - increment
                 print(f"{bcolors.FAIL}Over{bcolors.ENDC}")
                 print(f"{bcolors.FAIL}Over{bcolors.ENDC}", file=f)
-            elif diff <= 0.005:
+            elif diff <= 0.01:
                 increment *= 2
                 threshold += increment
                 print(f"{bcolors.WARNING}Too Small{bcolors.ENDC}")
