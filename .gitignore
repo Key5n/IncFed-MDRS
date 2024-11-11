@@ -5,6 +5,7 @@ labeled_anomalies.csv
 build/
 ServerMachineDataset/
 result/
+individual/
 140_UCR_Anomaly_InternalBleeding4_1000_4675_5033.txt
 */__pycache__/
 P_global.txt
