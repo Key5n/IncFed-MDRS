@@ -90,13 +90,13 @@ def evaluate_in_client(P_global, model, test_data_file_path, test_label_file_pat
         print(f"test {test_label_file_path = }", file=f)
         print(f"test {test_label_file_path = }")
 
-        false_positive_rates = [1]
-        true_positive_rates = [1]
-        precision_scores = [0]
+        false_positive_rates = []
+        true_positive_rates = []
+        precision_scores = []
 
         threshold = 0
         label_test = np.genfromtxt(test_label_file_path, dtype=np.int64, delimiter=",")
-        while false_positive_rates[-1] != 0 or true_positive_rates[-1] != 0:
+        while len(true_positive_rates) == 0 or true_positive_rates[-1] != 0:
             print(f"*** {threshold = } ***", file=f)
             print(f"*** {threshold = } ***")
             label_pred, mahalanobis_distances = model.copy().adapt(data_test, precision_matrix=P_global.copy(), threshold=threshold)
@@ -113,16 +113,29 @@ def evaluate_in_client(P_global, model, test_data_file_path, test_label_file_pat
             print(f"{tpr = }, {fpr = }, {precision = }", file=f)
             print(f"{tpr = }, {fpr = }, {precision = }")
 
-            false_positive_rates.append(fpr)
-            true_positive_rates.append(tpr)
-            precision_scores.append(precision)
+            last_tpr = true_positive_rates[-1] if len(true_positive_rates) != 0 else 1
+            diff = np.abs(tpr - last_tpr)
 
-            if threshold <= 0.1:
-                threshold += 0.001
-            elif threshold <= 1.0:
-                threshold += 0.1
+            increment = 0.0001
+
+            if diff >= 0.1:
+                increment /= 2
+                threshold = threshold - increment
+                print(f"{bcolors.FAIL}Over{bcolors.ENDC}")
+                print(f"{bcolors.FAIL}Over{bcolors.ENDC}", file=f)
+            elif diff <= 0.005:
+                increment *= 2
+                threshold += increment
+                print(f"{bcolors.WARNING}Too Small{bcolors.ENDC}")
+                print(f"{bcolors.WARNING}Too Small{bcolors.ENDC}", file=f)
             else:
-                threshold *= 2
+                false_positive_rates.append(fpr)
+                true_positive_rates.append(tpr)
+                precision_scores.append(precision)
+
+                threshold += increment
+                print(f"{bcolors.OKGREEN}Added{bcolors.ENDC}")
+                print(f"{bcolors.OKGREEN}Added{bcolors.ENDC}", file=f)
 
         os.makedirs(f"result/{basename}", exist_ok=True)
         # generate_graph(label_test, threshold, mahalanobis_distances, f"result/{basename}/MD.png")
@@ -135,3 +148,14 @@ def evaluate_in_client(P_global, model, test_data_file_path, test_label_file_pat
 
         write_curve(false_positive_rates, true_positive_rates, roc_auc, f"result/{basename}/roc.png", name="ROC")
         write_curve(precision_scores, true_positive_rates, precision_recall_curve_auc, f"result/{basename}/precision_recall.png")
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
