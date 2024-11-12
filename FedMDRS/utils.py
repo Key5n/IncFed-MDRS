@@ -143,7 +143,10 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
             # recall is the same as true positive rate
             fpr = fp / (fp + tn)
             tpr = tp / (tp + fn)
-            precision = tp / (tp + fp)
+            if tp + fp == 0:
+                precision = 0
+            else:
+                precision = tp / (tp + fp)
 
             print(f"{cm = }", file=f)
             print(f"{cm = }")
@@ -170,6 +173,10 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
                 print(f"{bcolors.FAIL}Over{bcolors.ENDC}")
                 print(f"{bcolors.FAIL}Over{bcolors.ENDC}", file=f)
             elif diff <= 0.01:
+                false_positive_rates.append(fpr)
+                true_positive_rates.append(tpr)
+                precision_scores.append(precision)
+
                 increment *= 2
                 threshold += increment
                 print(f"{bcolors.WARNING}Too Small{bcolors.ENDC}")
