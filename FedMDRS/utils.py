@@ -1,5 +1,4 @@
 import os
-import sys
 import numpy as np
 from numpy.typing import NDArray
 import matplotlib.pyplot as plt
@@ -123,6 +122,7 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         false_positive_rates = []
         true_positive_rates = []
         precision_scores = []
+        thresholds = []
 
         threshold = 0
         increment = 0.0001
@@ -156,13 +156,15 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
             last_tpr = true_positive_rates[-1] if len(true_positive_rates) != 0 else 1
             diff = np.abs(tpr - last_tpr)
 
-            if increment <= sys.float_info.epsilon:
-                increment = 0.0001
-                threshold += increment
-
+            last_threshold = thresholds[-1]
+            if last_threshold == threshold:
                 false_positive_rates.append(fpr)
                 true_positive_rates.append(tpr)
                 precision_scores.append(precision)
+                thresholds.append(threshold)
+
+                increment = 0.0001
+                threshold += increment
 
                 print(f"{bcolors.OKBLUE}increment too small{bcolors.ENDC}")
                 print(f"{bcolors.OKBLUE}increment too small{bcolors.ENDC}", file=f)
@@ -176,6 +178,7 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
                 false_positive_rates.append(fpr)
                 true_positive_rates.append(tpr)
                 precision_scores.append(precision)
+                thresholds.append(threshold)
 
                 increment *= 2
                 threshold += increment
@@ -185,6 +188,7 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
                 false_positive_rates.append(fpr)
                 true_positive_rates.append(tpr)
                 precision_scores.append(precision)
+                thresholds.append(threshold)
 
                 threshold += increment
                 print(f"{bcolors.OKGREEN}Added{bcolors.ENDC}")
