@@ -138,6 +138,18 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }")
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }", file=f)
 
+        print(count_same_values(mahalanobis_distances))
+
+def count_same_values(array: NDArray):
+    dic = {}
+
+    for value in array:
+        if value not in dic:
+            dic[value] = 0
+        dic[value] = dic[value] + 1
+
+    return dic
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
