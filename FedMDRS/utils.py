@@ -3,7 +3,7 @@ import numpy as np
 from numpy.typing import NDArray
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, roc_curve, precision_recall_curve
+from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, precision_recall_curve, roc_curve
 from esn import MDRS
 
 @dataclass(frozen=True)
@@ -119,91 +119,24 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         print(f"[test] dataset name: {name}", file=f)
         print(f"[test] dataset name: {name}")
 
-        false_positive_rates = []
-        true_positive_rates = []
-        precision_scores = []
-        thresholds = []
-
-        threshold = 0
-        increment = 0.0001
         label_test = serverMachineData.test_label
         data_test = serverMachineData.data_test
-        while len(true_positive_rates) == 0 or true_positive_rates[-1] != 0:
-            print(f"*** {threshold = }, {increment = } ***", file=f)
-            print(f"*** {threshold = }, {increment = } ***")
 
-            if P is not None:
-                label_pred, _ = model.copy().adapt(data_test, precision_matrix=P.copy(), threshold=threshold)
-            else:
-                label_pred, _ = model.copy().adapt(data_test,  threshold=threshold)
+        if P is not None:
+            _, mahalanobis_distances = model.copy().adapt(data_test, precision_matrix=P.copy())
+        else:
+            _, mahalanobis_distances = model.copy().adapt(data_test)
 
-            cm = confusion_matrix(label_test, label_pred)
-            tn, fp, fn, tp = cm.flatten()
+        precision, recall, _ = precision_recall_curve(label_test, mahalanobis_distances)
+        fpr, tpr, _ = roc_curve(label_test, mahalanobis_distances)
 
-            # recall is the same as true positive rate
-            fpr = fp / (fp + tn)
-            tpr = tp / (tp + fn)
-            if tp + fp == 0:
-                precision = 0
-            else:
-                precision = tp / (tp + fp)
+        precision_recall_curve_auc = auc(recall, precision)
+        roc_curve_auc = auc(fpr, tpr)
+        write_curve(recall, precision, precision_recall_curve_auc,  f"{output_dir}/{name}/precision_recall.png")
+        write_curve(fpr, tpr, roc_curve_auc,  f"{output_dir}/{name}/roc_curve.png")
 
-            print(f"{cm = }", file=f)
-            print(f"{cm = }")
-            print(f"{tpr = }, {fpr = }, {precision = }", file=f)
-            print(f"{tpr = }, {fpr = }, {precision = }")
-
-            last_tpr = true_positive_rates[-1] if len(true_positive_rates) != 0 else 1
-            diff = np.abs(tpr - last_tpr)
-
-            last_threshold = thresholds[-1]
-            if last_threshold == threshold:
-                false_positive_rates.append(fpr)
-                true_positive_rates.append(tpr)
-                precision_scores.append(precision)
-                thresholds.append(threshold)
-
-                increment = 0.0001
-                threshold += increment
-
-                print(f"{bcolors.OKBLUE}increment too small{bcolors.ENDC}")
-                print(f"{bcolors.OKBLUE}increment too small{bcolors.ENDC}", file=f)
-
-            elif diff >= 0.1:
-                increment /= 2
-                threshold = threshold - increment
-                print(f"{bcolors.FAIL}Over{bcolors.ENDC}")
-                print(f"{bcolors.FAIL}Over{bcolors.ENDC}", file=f)
-            elif diff <= 0.01:
-                false_positive_rates.append(fpr)
-                true_positive_rates.append(tpr)
-                precision_scores.append(precision)
-                thresholds.append(threshold)
-
-                increment *= 2
-                threshold += increment
-                print(f"{bcolors.WARNING}Too Small{bcolors.ENDC}")
-                print(f"{bcolors.WARNING}Too Small{bcolors.ENDC}", file=f)
-            else:
-                false_positive_rates.append(fpr)
-                true_positive_rates.append(tpr)
-                precision_scores.append(precision)
-                thresholds.append(threshold)
-
-                threshold += increment
-                print(f"{bcolors.OKGREEN}Added{bcolors.ENDC}")
-                print(f"{bcolors.OKGREEN}Added{bcolors.ENDC}", file=f)
-
-        # generate_graph(label_test, threshold, mahalanobis_distances, f"{output_dir}/{basename}/MD.png")
-        # write_analysis(basename, label_test, label_pred)
-        roc_auc = auc(false_positive_rates, true_positive_rates)
-        precision_recall_curve_auc = auc(true_positive_rates, precision_scores)
-
-        print(f"{roc_auc = }, {precision_recall_curve_auc = }")
-        print(f"{roc_auc = }, {precision_recall_curve_auc = }", file=f)
-
-        write_curve(false_positive_rates, true_positive_rates, roc_auc, f"{output_dir}/{name}/roc.png", name="ROC")
-        write_curve(precision_scores, true_positive_rates, precision_recall_curve_auc, f"{output_dir}/{name}/precision_recall.png")
+        print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }")
+        print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }", file=f)
 
 class bcolors:
     HEADER = '\033[95m'
