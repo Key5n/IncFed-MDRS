@@ -150,6 +150,25 @@ def count_same_values(array: NDArray):
 
     return dic
 
+def create_anomaly_sequences(label_test: NDArray) -> list[list[int]]:
+    intervals: list[list[int]] = []
+    start: int | None = None
+
+    for i, value in enumerate(label_test):
+        if value == 1 and start is None:
+            # Start of a new interval
+            start = i
+        elif value == 0 and start is not None:
+            # End of the current interval
+            intervals.append([start, i])
+            start = None
+
+    # Handle the case where the array ends with 1
+    if start is not None:
+        intervals.append([start, len(label_test)])
+
+    return intervals
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
