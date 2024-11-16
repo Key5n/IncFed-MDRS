@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from numpy.typing import NDArray
+from collections import Counter
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, precision_recall_curve, roc_curve
@@ -138,17 +139,9 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }")
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }", file=f)
 
-        print(count_same_values(mahalanobis_distances))
-
-def count_same_values(array: NDArray):
-    dic = {}
-
-    for value in array:
-        if value not in dic:
-            dic[value] = 0
-        dic[value] = dic[value] + 1
-
-    return dic
+        value_counts = Counter(mahalanobis_distances)
+        for value, count in value_counts.items():
+            print(f"Value {value}: {count}")
 
 def create_anomaly_sequences(label_test: NDArray) -> list[list[int]]:
     intervals: list[list[int]] = []
