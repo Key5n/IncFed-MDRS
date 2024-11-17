@@ -164,7 +164,7 @@ class MDRS():
                 # mark the data as anomalous
                 label.append(1)
 
-        return np.array(label, dtype=np.int8), np.array(mahalanobis_distances, dtype=np.int64)
+        return np.array(label, dtype=np.int8), np.array(mahalanobis_distances, dtype=np.float64)
 
     def calc_next_precision_matrix(self, x, precision_matrix):
         x = np.reshape(x, (-1, 1))
