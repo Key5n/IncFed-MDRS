@@ -2,9 +2,10 @@ import os
 import numpy as np
 from numpy.typing import NDArray
 from collections import Counter
+import warnings
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, precision_recall_curve, roc_curve
+from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc
 from esn import MDRS
 
 @dataclass(frozen=True)
@@ -137,8 +138,11 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         else:
             _, mahalanobis_distances = model.copy().adapt(data_test)
 
-        precision, recall, _ = precision_recall_curve(label_test, mahalanobis_distances)
-        fpr, tpr, _ = roc_curve(label_test, mahalanobis_distances)
+        pred_label_for_each_threhold = get_pred_label_for_each_threshold(mahalanobis_distances)
+        adjusted_pred_label_for_each_threshold = np.array([modify_pred_label(label_test, pred_label) for pred_label in pred_label_for_each_threhold])
+
+        precision, recall = precision_recall_curve(label_test, adjusted_pred_label_for_each_threshold)
+        fpr, tpr = roc_curve(label_test, adjusted_pred_label_for_each_threshold)
 
         precision_recall_curve_auc = auc(recall, precision)
         roc_curve_auc = auc(fpr, tpr)
@@ -152,24 +156,119 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         for value, count in value_counts.items():
             print(f"Value {value}: {count}")
 
-def create_anomaly_sequences(label_test: NDArray) -> list[list[int]]:
-    intervals: list[list[int]] = []
-    start: int | None = None
+def get_pred_label_for_each_threshold(y_score: NDArray) -> NDArray:
+    desc_score_indices = np.argsort(y_score, kind="mergesort")[::-1]
+    y_score_sorted = y_score[desc_score_indices]
 
-    for i, value in enumerate(label_test):
+    distinct_value_indices = np.where(np.diff(y_score_sorted))[0]
+    threshold_idxs = np.r_[distinct_value_indices, y_score_sorted.size - 1]
+    thresholds = y_score_sorted[threshold_idxs]
+
+    pred = []
+    for threshold in thresholds:
+        pred_label = y_score >= threshold
+        pred.append(pred_label)
+
+    return np.array(pred)
+
+def modify_pred_label(answer_label: NDArray, pred_label: NDArray) -> NDArray:
+    # Find the anomaly intervals in the answer_label
+    intervals = []
+    start = None
+
+    for i, value in enumerate(answer_label):
         if value == 1 and start is None:
-            # Start of a new interval
             start = i
         elif value == 0 and start is not None:
-            # End of the current interval
-            intervals.append([start, i])
+            intervals.append((start, i))
             start = None
 
     # Handle the case where the array ends with 1
     if start is not None:
-        intervals.append([start, len(label_test)])
+        intervals.append((start, len(answer_label)))
 
-    return intervals
+    # Modify predicted_label based on the anomaly intervals
+    for start, end in intervals:
+        if np.any(pred_label[start:end] == 1):
+            pred_label[start:end] = 1
+
+    return np.array(pred_label)
+
+def precision_recall_curve(y_true: NDArray, y_pred_array: NDArray):
+    tps = []
+    ps = []
+    for y_pred in y_pred_array:
+        tp = np.sum(y_pred * y_true)
+        fp = np.sum((1 - y_true) * y_pred)
+        positives = fp + tp
+
+        tps.append(tp)
+        ps.append(positives)
+
+    tps = np.array(tps)
+    ps = np.array(ps)
+
+    # Initialize the result array with zeros to make sure that precision[ps == 0]
+    # does not contain uninitialized values.
+    precision = np.zeros_like(tps)
+    np.divide(tps, ps, out=precision, where=(ps != 0))
+
+    # When no positive label in y_true, recall is set to 1 for all thresholds
+    # tps[-1] == 0 <=> y_true == all negative labels
+    if tps[-1] == 0:
+        warnings.warn(
+            "No positive class found in y_true, "
+            "recall is set to one for all thresholds."
+        )
+        recall = np.ones_like(tps)
+    else:
+        recall = tps / tps[-1]
+
+    # reverse the outputs so recall is decreasing
+    sl = slice(None, None, -1)
+    precision = np.hstack((precision[sl], 1))
+    recall = np.hstack((recall[sl], 0))
+    return precision, recall
+
+def roc_curve(y_true: NDArray, y_pred_array: NDArray):
+    tps = []
+    fps = []
+    ps = []
+    for y_pred in y_pred_array:
+        # _, fp, _, tp = confusion_matrix(y_true, y_pred).ravel()
+        tp = np.sum(y_pred * y_true)
+        fp = np.sum((1 - y_true) * y_pred)
+        positives = tp + fp
+
+        tps.append(tp)
+        fps.append(fp)
+        ps.append(positives)
+
+    tps = np.array(tps)
+    ps = np.array(ps)
+
+    # Add an extra threshold position
+    # to make sure that the curve starts at (0, 0)
+    tps = np.r_[0, tps]
+    fps = np.r_[0, fps]
+
+    if fps[-1] <= 0:
+        warnings.warn(
+            "No negative samples in y_true, false positive value should be meaningless"
+        )
+        fpr = np.repeat(np.nan, fps.shape)
+    else:
+        fpr = fps / fps[-1]
+
+    if tps[-1] <= 0:
+        warnings.warn(
+            "No positive samples in y_true, true positive value should be meaningless"
+        )
+        tpr = np.repeat(np.nan, tps.shape)
+    else:
+        tpr = tps / tps[-1]
+
+    return fpr, tpr
 
 class bcolors:
     HEADER = '\033[95m'
