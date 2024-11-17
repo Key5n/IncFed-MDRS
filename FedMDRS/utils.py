@@ -60,19 +60,28 @@ def write_analysis(dirname, label_test, label_pred):
         print("f1 score", f1_score(label_test, label_pred),file=o)
         print(classification_report(label_test, label_pred), file=o)
 
-def write_curve(y_array, x_array, auc, filename, name="Precision Recall"):
-    # name should be "ROC" or "Precision Recall"
+def write_precision_recall_curve(recall, precision, auc, filename):
     plt.clf()
 
     # Plot Curve
-    plt.plot(y_array, x_array, marker='o', label=f"{name} Curve (AUC = {auc:.4f})")
+    plt.plot(recall, precision, marker='o', label=f"Precision Recall Curve (AUC = {auc:.4f})")
 
-    if name == "ROC":
-        plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title(f"Precision Recall Curve")
+    plt.legend()
+    plt.savefig(filename)
 
+def write_roc_curve(fprs, tprs, auc, filename):
+    plt.clf()
+
+    # Plot Curve
+    plt.plot(fprs, tprs, marker='o', label=f"ROC Curve (AUC = {auc:.4f})")
+
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title(f"{name} Curve")
+    plt.title(f"ROC Curve")
     plt.legend()
     plt.savefig(filename)
 
@@ -133,8 +142,8 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
 
         precision_recall_curve_auc = auc(recall, precision)
         roc_curve_auc = auc(fpr, tpr)
-        write_curve(recall, precision, precision_recall_curve_auc,  f"{output_dir}/{name}/precision_recall.png")
-        write_curve(fpr, tpr, roc_curve_auc,  f"{output_dir}/{name}/roc_curve.png")
+        write_precision_recall_curve(recall, precision, precision_recall_curve_auc, f"{output_dir}/{name}/precision_recall.png")
+        write_roc_curve(fpr, tpr, roc_curve_auc, f"{output_dir}/{name}/roc_curve.png")
 
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }")
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }", file=f)
