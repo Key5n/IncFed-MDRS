@@ -123,7 +123,7 @@ def evaluate_in_clients(P_global, models, serverMachineDataset: list[ServerMachi
         model = models[serverMachineData.data_name]
         evaluate_in_client(model, serverMachineData, P=P_global)
 
-def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | None=None, output_dir="result") -> None:
+def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | None=None, output_dir="result", print_common_scores:bool = False) -> None:
     name = serverMachineData.data_name
     os.makedirs(f"{output_dir}/{name}", exist_ok=True)
     with open(f"{output_dir}/{name}/log.txt", "w") as f:
@@ -152,9 +152,10 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }")
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }", file=f)
 
-        value_counts = Counter(mahalanobis_distances)
-        for value, count in value_counts.items():
-            print(f"Value {value}: {count}")
+        if print_common_scores:
+            value_counts = Counter(mahalanobis_distances)
+            n = 3
+            print(f"most common {n} scores: {value_counts.most_common(n)}")
 
 def get_pred_label_for_each_threshold(y_score: NDArray) -> NDArray:
     desc_score_indices = np.argsort(y_score, kind="mergesort")[::-1]
