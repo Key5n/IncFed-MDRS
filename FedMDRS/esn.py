@@ -109,12 +109,12 @@ class MDRS():
         self.update = update
         self.precision_matrix = (1.0 / self.delta) * np.eye(N_x, N_x)
 
-    def train(self, U, P_global=None, trans_len=0):
+    def train(self, U, trans_len=0):
         """
         U: input data
         """
+        local_updates = np.zeros((self.N_x, self.N_x), dtype=np.float64)
         train_length = len(U)
-        next_global_precision_matrix = P_global
 
         for n in range(train_length):
             x_in = self.Input(U[n])
@@ -126,25 +126,20 @@ class MDRS():
 
             if n > trans_len:
                 self.precision_matrix = self.calc_next_precision_matrix(x, self.precision_matrix)
-
-                if P_global is not None:
-                    next_global_precision_matrix = self.calc_next_precision_matrix(x, next_global_precision_matrix)
+                local_updates += np.dot(x, x.T)
 
                 mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
                 self.threshold = max(mahalanobis_distance, self.threshold) if self.threshold is not None else mahalanobis_distance
 
-        return next_global_precision_matrix
+        return local_updates
 
-    def adapt(self, U, precision_matrix=None, threshold=None):
+    def adapt(self, U, threshold=None):
         """
         U: input data
         """
         data_length = len(U)
         label = []
         mahalanobis_distances = []
-
-        if precision_matrix is not None:
-            self.precision_matrix = precision_matrix
 
         if threshold is not None:
             self.threshold = threshold
@@ -174,6 +169,9 @@ class MDRS():
             gain = gain / (1 + 1 / self.lam * np.dot(np.dot(x.T, next_precision_matrix), x))
             next_precision_matrix = 1 / self.lam * (next_precision_matrix - np.dot(np.dot(gain, x.T), next_precision_matrix))
         return next_precision_matrix
+
+    def set_P(self, P):
+        self.precision_matrix = P
 
     def copy(self):
         return deepcopy(self)

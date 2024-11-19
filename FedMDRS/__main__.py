@@ -25,8 +25,8 @@ if federated:
                 leaking_rate = trial.suggest_float("learking_rate", 0, 1)
                 delta = trial.suggest_float("delta", 0, 1)
                 rho = trial.suggest_float("rho", 0, 1)
-                model, P_global = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
-                pr_curve_auc_average = evaluate_in_clients(P_global, model, serverMachineDataset)
+                model = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
+                pr_curve_auc_average = evaluate_in_clients(model, serverMachineDataset)
 
                 return pr_curve_auc_average
 
@@ -50,19 +50,17 @@ if federated:
             delta = 0.0001
             rho = 0.95
 
-        models_dic, P_global = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
+        models_dic = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
 
         if save:
-            print("model and precision matrix are saved")
+            print("global model is saved")
             with open("models.pickle", "wb") as f:
                 pickle.dump(models_dic, f, pickle.HIGHEST_PROTOCOL)
-            np.savetxt("P_global.txt", P_global, delimiter=",")
     else:
-        P_global = np.genfromtxt("P_global.txt", dtype=np.float64, delimiter=",")
         with open("models.pickle", "rb") as f:
             models_dic = pickle.load(f)
 
-    evaluate_in_clients(P_global, models_dic, serverMachineDataset)
+    evaluate_in_clients(models_dic, serverMachineDataset)
 
 if individually:
     print("individually")

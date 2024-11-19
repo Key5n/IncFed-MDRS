@@ -87,47 +87,52 @@ def write_roc_curve(fprs, tprs, auc, filename):
     plt.legend()
     plt.savefig(filename)
 
-def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001) -> tuple[dict[str,MDRS], NDArray]:
+def update_global_P(P_global: NDArray, local_updates: NDArray):
+    top = np.dot(np.dot(P_global, local_updates), P_global)
+    bottom = np.trace(np.dot(local_updates, P_global))
+    P_global = P_global - top / bottom
+
+    return P_global
+
+def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001) -> dict[str,MDRS]:
     models: dict[str, MDRS] = {}
     N_x = 500
     P_global = (1.0 / delta) * np.eye(N_x, N_x)
-    P_global_next = P_global
 
     for serverMachineData in serverMachineDataset:
-        model, P_global_next = train_in_client(serverMachineData, P=P_global_next, leaking_rate=leaking_rate, rho=rho, delta=delta)
+        model, local_updates = train_in_client(serverMachineData, leaking_rate=leaking_rate, rho=rho, delta=delta)
         models[serverMachineData.data_name] = model
 
-    if P_global_next is None:
-        raise ValueError("The type of Precision Matrix is None")
+        P_global = update_global_P(P_global, local_updates)
 
-    return models, P_global_next
+    for key, model in models.items():
+        model.set_P(P_global)
+        models[key] = model
 
-def train_in_client(serverMachineData: ServerMachineData, P: NDArray | None = None, leaking_rate=1.0, rho=0.95, delta=0.0001) -> tuple[MDRS, NDArray | None]:
+    return models
+
+def train_in_client(serverMachineData: ServerMachineData, leaking_rate=1.0, rho=0.95, delta=0.0001) -> tuple[MDRS, NDArray]:
     print(f"[train] data name: {serverMachineData.data_name}")
     data_train = serverMachineData.data_train
     N_u = data_train.shape[1]
     N_x = 500
     model = MDRS(N_u, N_x, leaking_rate=leaking_rate, delta=delta, rho=rho)
+    local_updates = model.train(data_train)
 
-    if P is None:
-        model.train(data_train)
-        return model, None
-    else:
-        P_global_next = model.train(data_train, P_global=P)
-        return model, P_global_next
+    return model, local_updates
 
-def evaluate_in_clients(P_global, models, serverMachineDataset: list[ServerMachineData]) -> float:
+def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -> float:
     pr_curve_aucs = []
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset) * 100}%")
 
         model = models[serverMachineData.data_name]
-        pr_curve_auc = evaluate_in_client(model, serverMachineData, P=P_global)
+        pr_curve_auc = evaluate_in_client(model, serverMachineData)
         pr_curve_aucs.append(pr_curve_auc)
 
     return np.mean(pr_curve_aucs, dtype=float)
 
-def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | None=None, output_dir="result", print_common_scores:bool = True) -> float:
+def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result", print_common_scores:bool = True) -> float:
     name = serverMachineData.data_name
     os.makedirs(f"{output_dir}/{name}", exist_ok=True)
     with open(f"{output_dir}/{name}/log.txt", "w") as f:
@@ -137,10 +142,7 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
         label_test = serverMachineData.test_label
         data_test = serverMachineData.data_test
 
-        if P is not None:
-            _, mahalanobis_distances = model.copy().adapt(data_test, precision_matrix=P.copy())
-        else:
-            _, mahalanobis_distances = model.copy().adapt(data_test)
+        _, mahalanobis_distances = model.copy().adapt(data_test)
 
         pred_label_for_each_threhold = get_pred_label_for_each_threshold(mahalanobis_distances)
         adjusted_pred_label_for_each_threshold = np.array([modify_pred_label(label_test, pred_label) for pred_label in pred_label_for_each_threhold])
