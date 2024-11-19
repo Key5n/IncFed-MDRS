@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from numpy import floating
 from numpy.typing import NDArray
 from collections import Counter
 import warnings
@@ -86,15 +87,14 @@ def write_roc_curve(fprs, tprs, auc, filename):
     plt.legend()
     plt.savefig(filename)
 
-def train_in_clients(serverMachineDataset: list[ServerMachineData]) -> tuple[dict[str,MDRS], NDArray]:
+def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001) -> tuple[dict[str,MDRS], NDArray]:
     models: dict[str, MDRS] = {}
     N_x = 500
-    delta = 0.0001
     P_global = (1.0 / delta) * np.eye(N_x, N_x)
     P_global_next = P_global
 
     for serverMachineData in serverMachineDataset:
-        model, P_global_next = train_in_client(serverMachineData, P=P_global_next)
+        model, P_global_next = train_in_client(serverMachineData, P=P_global_next, leaking_rate=leaking_rate, rho=rho, delta=delta)
         models[serverMachineData.data_name] = model
 
     if P_global_next is None:
@@ -102,12 +102,12 @@ def train_in_clients(serverMachineDataset: list[ServerMachineData]) -> tuple[dic
 
     return models, P_global_next
 
-def train_in_client(serverMachineData: ServerMachineData, P: NDArray | None = None) -> tuple[MDRS, NDArray | None]:
+def train_in_client(serverMachineData: ServerMachineData, P: NDArray | None = None, leaking_rate=1.0, rho=0.95, delta=0.0001) -> tuple[MDRS, NDArray | None]:
     print(f"[train] data name: {serverMachineData.data_name}")
     data_train = serverMachineData.data_train
     N_u = data_train.shape[1]
     N_x = 500
-    model = MDRS(N_u, N_x)
+    model = MDRS(N_u, N_x, leaking_rate=leaking_rate, delta=delta, rho=rho)
 
     if P is None:
         model.train(data_train)
@@ -116,14 +116,18 @@ def train_in_client(serverMachineData: ServerMachineData, P: NDArray | None = No
         P_global_next = model.train(data_train, P_global=P)
         return model, P_global_next
 
-def evaluate_in_clients(P_global, models, serverMachineDataset: list[ServerMachineData]) -> None:
+def evaluate_in_clients(P_global, models, serverMachineDataset: list[ServerMachineData]) -> float:
+    pr_curve_aucs = []
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset) * 100}%")
 
         model = models[serverMachineData.data_name]
-        evaluate_in_client(model, serverMachineData, P=P_global)
+        pr_curve_auc = evaluate_in_client(model, serverMachineData, P=P_global)
+        pr_curve_aucs.append(pr_curve_auc)
 
-def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | None=None, output_dir="result", print_common_scores:bool = False) -> None:
+    return np.mean(pr_curve_aucs, dtype=float)
+
+def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | None=None, output_dir="result", print_common_scores:bool = True) -> float:
     name = serverMachineData.data_name
     os.makedirs(f"{output_dir}/{name}", exist_ok=True)
     with open(f"{output_dir}/{name}/log.txt", "w") as f:
@@ -156,6 +160,8 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, P:NDArray | 
             value_counts = Counter(mahalanobis_distances)
             n = 3
             print(f"most common {n} scores: {value_counts.most_common(n)}")
+
+        return precision_recall_curve_auc
 
 def get_pred_label_for_each_threshold(y_score: NDArray) -> NDArray:
     desc_score_indices = np.argsort(y_score, kind="mergesort")[::-1]
