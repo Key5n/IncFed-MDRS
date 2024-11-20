@@ -125,6 +125,7 @@ class MDRS():
             x = self.Reservoir(x_in)
 
             if n > trans_len:
+                x = x.reshape((-1, 1))
                 self.precision_matrix = self.calc_next_precision_matrix(x, self.precision_matrix)
                 local_updates += np.dot(x, x.T)
 

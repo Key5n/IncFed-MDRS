@@ -10,3 +10,4 @@ individual/
 */__pycache__/
 P_global.txt
 models.pickle
+.DS_Store
