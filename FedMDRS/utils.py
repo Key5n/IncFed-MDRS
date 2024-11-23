@@ -97,13 +97,15 @@ def update_global_P(P_global: NDArray, local_updates: NDArray):
 def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001) -> dict[str,MDRS]:
     models: dict[str, MDRS] = {}
     N_x = 500
-    P_global = (1.0 / delta) * np.eye(N_x, N_x)
 
+    covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
     for serverMachineData in serverMachineDataset:
         model, local_updates = train_in_client(serverMachineData, leaking_rate=leaking_rate, rho=rho, delta=delta)
         models[serverMachineData.data_name] = model
 
-        P_global = update_global_P(P_global, local_updates)
+        covariance_matrix += local_updates
+
+    P_global = np.linalg.inv(covariance_matrix + delta * np.identity(N_x))
 
     for key, model in models.items():
         model.set_P(P_global)
