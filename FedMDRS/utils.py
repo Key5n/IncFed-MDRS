@@ -134,7 +134,7 @@ def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -
 
     return np.mean(pr_curve_aucs, dtype=float)
 
-def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result", print_common_scores:bool = True) -> float:
+def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result") -> float:
     name = serverMachineData.data_name
     os.makedirs(f"{output_dir}/{name}", exist_ok=True)
     with open(f"{output_dir}/{name}/log.txt", "w") as f:
@@ -159,11 +159,6 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="
 
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }")
         print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }", file=f)
-
-        if print_common_scores:
-            value_counts = Counter(mahalanobis_distances)
-            n = 3
-            print(f"most common {n} scores: {value_counts.most_common(n)}")
 
         return precision_recall_curve_auc
 
