@@ -22,7 +22,7 @@ if federated:
     if train:
         if optimize:
             def federated_objective(trial):
-                leaking_rate = trial.suggest_float("learking_rate", 0, 1)
+                leaking_rate = trial.suggest_float("leaking_rate", 0, 1)
                 delta = trial.suggest_float("delta", 0, 1)
                 rho = trial.suggest_float("rho", 0, 1)
                 model = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
