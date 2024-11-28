@@ -29,7 +29,7 @@ if federated:
                 return pr_curve_auc_average
 
             study = optuna.create_study(direction="maximize")
-            study.optimize(federated_objective, n_trials=100)
+            study.optimize(federated_objective, n_trials=50)
 
             leaking_rate = study.best_params["leaking_rate"]
             delta = study.best_params["delta"]
@@ -79,7 +79,7 @@ if isolated:
                     return pr_curve_auc
 
                 study = optuna.create_study(direction="maximize")
-                study.optimize(isolated_objective, n_trials=100)
+                study.optimize(isolated_objective, n_trials=50)
 
                 leaking_rate = study.best_params["leaking_rate"]
                 delta = study.best_params["delta"]
