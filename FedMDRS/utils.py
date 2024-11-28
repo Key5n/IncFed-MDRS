@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from numpy.typing import NDArray
+from numpy import floating
 import warnings
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
@@ -117,13 +118,20 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="
 
         _, mahalanobis_distances = model.copy().adapt(data_test)
 
-        precision_modified_label, recall_modified_label, pr_curve_auc_modified_label, fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label = eval_with_modification(label_test, mahalanobis_distances)
+        precision_modified_label, recall_modified_label, pr_curve_auc_modified_label, \
+        fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label, \
+        best_f1_score_modified_label, mean_f1_score_modified_label, std_f1_score_modified_label = eval_with_modification(label_test, mahalanobis_distances)
         write_pr_curve(recall_modified_label, precision_modified_label, pr_curve_auc_modified_label, os.path.join(output_dir, name, "pr_curve_with_modification.png"))
         write_roc_curve(fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label, os.path.join(output_dir, name, "roc_curve_with_modification.png"))
 
-        precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc = eval_without_modification(label_test, mahalanobis_distances)
+        precision, recall, pr_curve_auc, \
+        fpr, tpr, roc_curve_auc, \
+        best_f1_score, mean_f1_score, std_f1_score = eval_without_modification(label_test, mahalanobis_distances)
         write_pr_curve(recall, precision, pr_curve_auc, os.path.join(output_dir, name, "pr_curve_without_modification.png"))
         write_roc_curve(fpr, tpr, roc_curve_auc, os.path.join(output_dir, name, "roc_curve_without_modification.png"))
+
+        print(f"{best_f1_score = }, {mean_f1_score} ± {std_f1_score}, {best_f1_score_modified_label = }, {mean_f1_score_modified_label} ± {std_f1_score_modified_label}")
+        print(f"{best_f1_score = }, {mean_f1_score} ± {std_f1_score}, {best_f1_score_modified_label = }, {mean_f1_score_modified_label} ± {std_f1_score_modified_label}", file=f)
 
         print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }")
         print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }", file=f)
@@ -244,16 +252,21 @@ def roc_curve_based_on_label(y_true: NDArray, y_pred_array: NDArray):
 
     return fpr, tpr
 
-def eval_without_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float]:
+def eval_without_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float, floating, floating, floating]:
     precision, recall, _ = precision_recall_curve(y_true, y_score)
     fpr, tpr, _ = roc_curve(y_true, y_score)
 
     pr_curve_auc = auc(recall, precision)
     roc_curve_auc = auc(fpr, tpr)
 
-    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc
+    f1_scores = 2 / (1 / recall + 1 / precision)
+    best_f1_score = np.max(f1_scores)
+    mean_f1_score = np.mean(f1_scores)
+    std_f1_score = np.std(f1_scores)
 
-def eval_with_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float]:
+    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc, best_f1_score, mean_f1_score, std_f1_score
+
+def eval_with_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float, floating, floating, floating]:
     pred_label_for_each_threhold = get_pred_label_for_each_threshold(y_score)
     adjusted_pred_label_for_each_threshold = np.array([modify_pred_label(y_true, pred_label) for pred_label in pred_label_for_each_threhold])
 
@@ -263,4 +276,9 @@ def eval_with_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, 
     pr_curve_auc = auc(recall, precision)
     roc_curve_auc = auc(fpr, tpr)
 
-    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc
+    f1_scores = 2 / (1 / recall + 1 / precision)
+    best_f1_score = np.max(f1_scores)
+    mean_f1_score = np.mean(f1_scores)
+    std_f1_score = np.std(f1_scores)
+
+    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc, best_f1_score, mean_f1_score, std_f1_score
