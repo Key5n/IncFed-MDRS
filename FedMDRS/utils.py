@@ -71,13 +71,13 @@ def update_global_P(P_global: NDArray, local_updates: NDArray):
 
     return P_global
 
-def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001) -> dict[str,MDRS]:
+def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001, input_scale: float = 1.0) -> dict[str,MDRS]:
     models: dict[str, MDRS] = {}
     N_x = 500
 
     covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
     for serverMachineData in serverMachineDataset:
-        model, local_updates = train_in_client(serverMachineData, leaking_rate=leaking_rate, rho=rho, delta=delta)
+        model, local_updates = train_in_client(serverMachineData, leaking_rate=leaking_rate, rho=rho, delta=delta, input_scale=input_scale)
         models[serverMachineData.data_name] = model
 
         covariance_matrix += local_updates
@@ -90,12 +90,12 @@ def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate
 
     return models
 
-def train_in_client(serverMachineData: ServerMachineData, leaking_rate=1.0, rho=0.95, delta=0.0001) -> tuple[MDRS, NDArray]:
+def train_in_client(serverMachineData: ServerMachineData, leaking_rate=1.0, rho=0.95, delta=0.0001, input_scale: float = 1.0) -> tuple[MDRS, NDArray]:
     print(f"[train] data name: {serverMachineData.data_name}")
     data_train = serverMachineData.data_train
     N_u = data_train.shape[1]
     N_x = 500
-    model = MDRS(N_u, N_x, leaking_rate=leaking_rate, delta=delta, rho=rho)
+    model = MDRS(N_u, N_x, leaking_rate=leaking_rate, delta=delta, rho=rho, input_scale=input_scale)
     local_updates = model.train(data_train)
 
     return model, local_updates
@@ -115,7 +115,6 @@ def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -
 
 def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result") -> tuple[float, float]:
     name = serverMachineData.data_name
-    os.makedirs(os.path.join(output_dir, name), exist_ok=True)
     with open(os.path.join(output_dir, name, "log.txt"), "w") as f:
         print(f"[test] dataset name: {name}", file=f)
         print(f"[test] dataset name: {name}")

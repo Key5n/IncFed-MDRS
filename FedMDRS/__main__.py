@@ -18,10 +18,11 @@ if federated:
     if train:
         if optimize:
             def federated_objective(trial):
-                leaking_rate = trial.suggest_float("leaking_rate", 0, 1)
-                delta = trial.suggest_float("delta", 0, 1)
-                rho = trial.suggest_float("rho", 0, 1)
-                model = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
+                leaking_rate = trial.suggest_float("leaking_rate", 0.000001, 1, log=True)
+                delta = trial.suggest_float("delta", 0.00001, 1, log=True)
+                rho = trial.suggest_float("rho", 0, 2)
+                input_scale = trial.suggest_float("input_scale", 0, 1)
+                model = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho, input_scale=input_scale)
                 pr_curve_auc_average, pr_curve_auc_average_modified_label = evaluate_in_clients(model, serverMachineDataset)
                 print(f"{pr_curve_auc_average = }, {pr_curve_auc_average_modified_label = }")
 
@@ -68,10 +69,11 @@ if isolated:
         if train:
             if optimize:
                 def isolated_objective(trial):
-                    leaking_rate = trial.suggest_float("leaking_rate", 0, 1)
-                    delta = trial.suggest_float("delta", 0, 1)
+                    leaking_rate = trial.suggest_float("leaking_rate", 0.00001, 1, log=True)
+                    delta = trial.suggest_float("delta", 0.00001, 1, log=True)
                     rho = trial.suggest_float("rho", 0, 1)
-                    model, _ = train_in_client(serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho)
+                    input_scale = trial.suggest_float("input_scale", 0, 1)
+                    model, _ = train_in_client(serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho, input_scale=input_scale)
                     pr_curve_auc = evaluate_in_client(model, serverMachineData, output_dir=output_dir)
 
                     return pr_curve_auc
@@ -96,6 +98,7 @@ if isolated:
                 delta = 0.0001
                 rho = 0.95
 
+            os.makedirs(os.path.join(output_dir, serverMachineData.data_name), exist_ok=True)
             model, _ = train_in_client(serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho)
 
             if save:
