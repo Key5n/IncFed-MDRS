@@ -64,13 +64,6 @@ def write_roc_curve(fprs, tprs, auc, filename):
     plt.legend()
     plt.savefig(filename)
 
-def update_global_P(P_global: NDArray, local_updates: NDArray):
-    top = np.dot(np.dot(P_global, local_updates), P_global)
-    bottom = 1 + np.trace(np.dot(local_updates, P_global))
-    P_global = P_global - top / bottom
-
-    return P_global
-
 def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001, input_scale: float = 1.0) -> dict[str,MDRS]:
     models: dict[str, MDRS] = {}
     N_x = 500
