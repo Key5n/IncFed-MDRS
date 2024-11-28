@@ -102,7 +102,6 @@ if isolated:
             model, _ = train_in_client(serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho)
 
             if save:
-                print("isolated model is saved")
                 with open(os.path.join(output_dir, serverMachineData.data_name, "model.pickle"), "wb") as f:
                     pickle.dump(model, f, pickle.HIGHEST_PROTOCOL)
         else:
