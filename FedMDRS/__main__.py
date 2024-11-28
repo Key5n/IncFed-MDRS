@@ -26,7 +26,7 @@ if federated:
                 delta = trial.suggest_float("delta", 0, 1)
                 rho = trial.suggest_float("rho", 0, 1)
                 model = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
-                pr_curve_auc_average = evaluate_in_clients(model, serverMachineDataset)
+                pr_curve_auc_average, _ = evaluate_in_clients(model, serverMachineDataset)
 
                 return pr_curve_auc_average
 

@@ -6,7 +6,7 @@ from collections import Counter
 import warnings
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc
+from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, precision_recall_curve, roc_curve
 from esn import MDRS
 
 @dataclass(frozen=True)
@@ -62,7 +62,7 @@ def write_analysis(dirname, label_test, label_pred):
         print("f1 score", f1_score(label_test, label_pred),file=o)
         print(classification_report(label_test, label_pred), file=o)
 
-def write_precision_recall_curve(recall, precision, auc, filename):
+def write_pr_curve(recall, precision, auc, filename):
     plt.clf()
 
     # Plot Curve
@@ -123,18 +123,20 @@ def train_in_client(serverMachineData: ServerMachineData, leaking_rate=1.0, rho=
 
     return model, local_updates
 
-def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -> float:
+def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -> tuple[float, float]:
     pr_curve_aucs = []
+    pr_curve_aucs_with_modification = []
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset) * 100}%")
 
         model = models[serverMachineData.data_name]
-        pr_curve_auc = evaluate_in_client(model, serverMachineData)
+        pr_curve_auc, pr_curve_auc_with_modification = evaluate_in_client(model, serverMachineData)
         pr_curve_aucs.append(pr_curve_auc)
+        pr_curve_aucs_with_modification.append(pr_curve_auc_with_modification)
 
-    return np.mean(pr_curve_aucs, dtype=float)
+    return np.mean(pr_curve_aucs, dtype=float), np.mean(pr_curve_aucs_with_modification, dtype=float)
 
-def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result") -> float:
+def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result") -> tuple[float, float]:
     name = serverMachineData.data_name
     os.makedirs(f"{output_dir}/{name}", exist_ok=True)
     with open(f"{output_dir}/{name}/log.txt", "w") as f:
@@ -146,21 +148,18 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="
 
         _, mahalanobis_distances = model.copy().adapt(data_test)
 
-        pred_label_for_each_threhold = get_pred_label_for_each_threshold(mahalanobis_distances)
-        adjusted_pred_label_for_each_threshold = np.array([modify_pred_label(label_test, pred_label) for pred_label in pred_label_for_each_threhold])
+        precision_modified_label, recall_modified_label, pr_curve_auc_modified_label, fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label = eval_with_modification(label_test, mahalanobis_distances)
+        write_pr_curve(recall_modified_label, precision_modified_label, pr_curve_auc_modified_label, f"{output_dir}/{name}/pr_curve_with_modification.png")
+        write_roc_curve(fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label, f"{output_dir}/{name}/roc_curve_with_modification.png")
 
-        precision, recall = precision_recall_curve(label_test, adjusted_pred_label_for_each_threshold)
-        fpr, tpr = roc_curve(label_test, adjusted_pred_label_for_each_threshold)
-
-        precision_recall_curve_auc = auc(recall, precision)
-        roc_curve_auc = auc(fpr, tpr)
-        write_precision_recall_curve(recall, precision, precision_recall_curve_auc, f"{output_dir}/{name}/precision_recall.png")
+        precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc = eval_without_modification(label_test, mahalanobis_distances)
+        write_pr_curve(recall, precision, pr_curve_auc, f"{output_dir}/{name}/pr_curve.png")
         write_roc_curve(fpr, tpr, roc_curve_auc, f"{output_dir}/{name}/roc_curve.png")
 
-        print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }")
-        print(f"{roc_curve_auc = }, {precision_recall_curve_auc = }", file=f)
+        print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }")
+        print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }", file=f)
 
-        return precision_recall_curve_auc
+        return pr_curve_auc, pr_curve_auc_modified_label
 
 def get_pred_label_for_each_threshold(y_score: NDArray) -> NDArray:
     desc_score_indices = np.argsort(y_score, kind="mergesort")[::-1]
@@ -200,7 +199,7 @@ def modify_pred_label(answer_label: NDArray, pred_label: NDArray) -> NDArray:
 
     return np.array(pred_label)
 
-def precision_recall_curve(y_true: NDArray, y_pred_array: NDArray):
+def pr_curve_based_on_label(y_true: NDArray, y_pred_array: NDArray):
     tps = []
     ps = []
     for y_pred in y_pred_array:
@@ -236,7 +235,7 @@ def precision_recall_curve(y_true: NDArray, y_pred_array: NDArray):
     recall = np.hstack((recall[sl], 0))
     return precision, recall
 
-def roc_curve(y_true: NDArray, y_pred_array: NDArray):
+def roc_curve_based_on_label(y_true: NDArray, y_pred_array: NDArray):
     tps = []
     fps = []
     ps = []
@@ -275,6 +274,27 @@ def roc_curve(y_true: NDArray, y_pred_array: NDArray):
         tpr = tps / tps[-1]
 
     return fpr, tpr
+
+def eval_without_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float]:
+    precision, recall, _ = precision_recall_curve(y_true, y_score)
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+
+    pr_curve_auc = auc(recall, precision)
+    roc_curve_auc = auc(fpr, tpr)
+
+    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc
+
+def eval_with_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float]:
+    pred_label_for_each_threhold = get_pred_label_for_each_threshold(y_score)
+    adjusted_pred_label_for_each_threshold = np.array([modify_pred_label(y_true, pred_label) for pred_label in pred_label_for_each_threhold])
+
+    precision, recall = pr_curve_based_on_label(y_true, adjusted_pred_label_for_each_threshold)
+    fpr, tpr = roc_curve_based_on_label(y_true, adjusted_pred_label_for_each_threshold)
+
+    pr_curve_auc = auc(recall, precision)
+    roc_curve_auc = auc(fpr, tpr)
+
+    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc
 
 class bcolors:
     HEADER = '\033[95m'
