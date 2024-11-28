@@ -19,9 +19,9 @@ class ServerMachineData:
 
 def create_dataset(
     dataset_name:str = "ServerMachineDataset",
-    train_data_dir_path:str = "ServerMachineDataset/train",
-    test_data_dir_path:str = "ServerMachineDataset/test",
-    test_label_dir_path:str = "ServerMachineDataset/test_label",
+    train_data_dir_path:str = os.path.join("ServerMachineDataset", "train"),
+    test_data_dir_path:str = os.path.join("ServerMachineDataset", "test"),
+    test_label_dir_path:str = os.path.join("ServerMachineDataset", "test_label"),
 ) -> list[ServerMachineData]:
     data_filenames = os.listdir(os.path.join(train_data_dir_path))
 
@@ -138,8 +138,8 @@ def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -
 
 def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result") -> tuple[float, float]:
     name = serverMachineData.data_name
-    os.makedirs(f"{output_dir}/{name}", exist_ok=True)
-    with open(f"{output_dir}/{name}/log.txt", "w") as f:
+    os.makedirs(os.path.join(output_dir, name), exist_ok=True)
+    with open(os.path.join(output_dir, name, "log.txt"), "w") as f:
         print(f"[test] dataset name: {name}", file=f)
         print(f"[test] dataset name: {name}")
 
@@ -149,12 +149,12 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="
         _, mahalanobis_distances = model.copy().adapt(data_test)
 
         precision_modified_label, recall_modified_label, pr_curve_auc_modified_label, fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label = eval_with_modification(label_test, mahalanobis_distances)
-        write_pr_curve(recall_modified_label, precision_modified_label, pr_curve_auc_modified_label, f"{output_dir}/{name}/pr_curve_with_modification.png")
-        write_roc_curve(fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label, f"{output_dir}/{name}/roc_curve_with_modification.png")
+        write_pr_curve(recall_modified_label, precision_modified_label, pr_curve_auc_modified_label, os.path.join(output_dir, name, "pr_curve_with_modification.png"))
+        write_roc_curve(fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label, os.path.join(output_dir, name, "roc_curve_with_modification.png"))
 
         precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc = eval_without_modification(label_test, mahalanobis_distances)
-        write_pr_curve(recall, precision, pr_curve_auc, f"{output_dir}/{name}/pr_curve.png")
-        write_roc_curve(fpr, tpr, roc_curve_auc, f"{output_dir}/{name}/roc_curve.png")
+        write_pr_curve(recall, precision, pr_curve_auc, os.path.join(output_dir, name, "pr_curve_without_modification.png"))
+        write_roc_curve(fpr, tpr, roc_curve_auc, os.path.join(output_dir, name, "roc_curve_without_modification.png"))
 
         print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }")
         print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }", file=f)
