@@ -14,6 +14,7 @@ serverMachineDataset = create_dataset()
 
 if federated:
     output_dir = os.path.join("result", "federated")
+    os.makedirs(output_dir, exist_ok=True)
     if train:
         if optimize:
             def federated_objective(trial):
@@ -61,6 +62,7 @@ if federated:
 if isolated:
     print("isolated")
     output_dir = os.path.join("result", "isolated")
+    os.makedirs(output_dir, exist_ok=True)
 
     for serverMachineData in serverMachineDataset:
         if train:
