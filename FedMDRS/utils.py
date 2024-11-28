@@ -1,12 +1,10 @@
 import os
 import numpy as np
-from numpy import floating
 from numpy.typing import NDArray
-from collections import Counter
 import warnings
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from sklearn.metrics import confusion_matrix, f1_score, classification_report, precision_score, recall_score, auc, precision_recall_curve, roc_curve
+from sklearn.metrics import auc, precision_recall_curve, roc_curve
 from esn import MDRS
 
 @dataclass(frozen=True)
@@ -41,27 +39,6 @@ def create_dataset(
 
     return dataset
 
-def generate_graph(test_label, threshold, mahalanobis_distances, filename):
-    plt.clf()
-    x = np.arange(len(test_label))
-    plt.axhline(y=threshold, color="green", linestyle="--", label="threshold")
-    plt.plot(x, mahalanobis_distances, label="Mahalanobis Distance")
-
-    for i in range(len(test_label)):
-        if test_label[i] == 1:
-            plt.axvspan(i, i, color="red", alpha=0.3)
-
-    plt.legend()
-    plt.savefig(filename)
-
-def write_analysis(dirname, label_test, label_pred):
-    with open(f"result/{dirname}/system.txt", "w") as o:
-        print("confusion_matrix", confusion_matrix(label_test, label_pred), file=o)
-        print("precision score", precision_score(label_test, label_pred), file=o)
-        print("recall score", recall_score(label_test, label_pred), file=o)
-        print("f1 score", f1_score(label_test, label_pred),file=o)
-        print(classification_report(label_test, label_pred), file=o)
-
 def write_pr_curve(recall, precision, auc, filename):
     plt.clf()
 
@@ -70,7 +47,7 @@ def write_pr_curve(recall, precision, auc, filename):
 
     plt.xlabel("Recall")
     plt.ylabel("Precision")
-    plt.title(f"Precision Recall Curve")
+    plt.title("Precision Recall Curve")
     plt.legend()
     plt.savefig(filename)
 
@@ -83,7 +60,7 @@ def write_roc_curve(fprs, tprs, auc, filename):
     plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
-    plt.title(f"ROC Curve")
+    plt.title("ROC Curve")
     plt.legend()
     plt.savefig(filename)
 
@@ -127,7 +104,7 @@ def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -
     pr_curve_aucs = []
     pr_curve_aucs_with_modification = []
     for i, serverMachineData in enumerate(serverMachineDataset):
-        print(f"Progress Rate: {i / len(serverMachineDataset) * 100}%")
+        print(f"Progress Rate: {i / len(serverMachineDataset):.1%}")
 
         model = models[serverMachineData.data_name]
         pr_curve_auc, pr_curve_auc_with_modification = evaluate_in_client(model, serverMachineData)
@@ -295,14 +272,3 @@ def eval_with_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, 
     roc_curve_auc = auc(fpr, tpr)
 
     return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'

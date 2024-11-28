@@ -1,14 +1,8 @@
 import os
 import pickle
-import numpy as np
 import optuna
 import json
 from utils import create_dataset, train_in_clients, train_in_client, evaluate_in_clients, evaluate_in_client
-
-dirname = "ServerMachineDataset"
-train_data_dir_path = os.path.join(dirname, "train")
-test_data_dir_path = os.path.join(dirname, "test")
-test_label_dir_path = os.path.join(dirname, "test_label")
 
 train = True
 isolated = True
@@ -55,10 +49,10 @@ if federated:
 
         if save:
             print("global model is saved")
-            with open("models.pickle", "wb") as f:
+            with open(os.path.join(output_dir, "models.pickle"), "wb") as f:
                 pickle.dump(models_dic, f, pickle.HIGHEST_PROTOCOL)
     else:
-        with open("models.pickle", "rb") as f:
+        with open(os.path.join(output_dir, "models.pickle"), "rb") as f:
             models_dic = pickle.load(f)
 
     evaluate_in_clients(models_dic, serverMachineDataset)
