@@ -58,7 +58,7 @@ if federated:
         with open(os.path.join(output_dir, "models.pickle"), "rb") as f:
             models_dic = pickle.load(f)
 
-    evaluate_in_clients(models_dic, serverMachineDataset)
+    evaluate_in_clients(models_dic, serverMachineDataset, output_dir)
 
 if isolated:
     print("isolated")

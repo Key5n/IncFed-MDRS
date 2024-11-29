@@ -94,21 +94,22 @@ def train_in_client(serverMachineData: ServerMachineData, leaking_rate=1.0, rho=
 
     return model, local_updates
 
-def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData]) -> tuple[float, float]:
+def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData], output_dir: str) -> tuple[float, float]:
     pr_curve_aucs = []
     pr_curve_aucs_with_modification = []
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset):.1%}")
 
         model = models[serverMachineData.data_name]
-        pr_curve_auc, pr_curve_auc_with_modification = evaluate_in_client(model, serverMachineData)
+        pr_curve_auc, pr_curve_auc_with_modification = evaluate_in_client(model, serverMachineData, output_dir)
         pr_curve_aucs.append(pr_curve_auc)
         pr_curve_aucs_with_modification.append(pr_curve_auc_with_modification)
 
     return np.mean(pr_curve_aucs, dtype=float), np.mean(pr_curve_aucs_with_modification, dtype=float)
 
-def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir="result") -> tuple[float, float]:
+def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir: str) -> tuple[float, float]:
     name = serverMachineData.data_name
+    os.makedirs(os.path.join(output_dir, name), exist_ok=True)
     with open(os.path.join(output_dir, name, "log.txt"), "w") as f:
         print(f"[test] dataset name: {name}", file=f)
         print(f"[test] dataset name: {name}")
