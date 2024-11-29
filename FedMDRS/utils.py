@@ -259,7 +259,8 @@ def eval_without_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArra
     pr_curve_auc = auc(recall, precision)
     roc_curve_auc = auc(fpr, tpr)
 
-    f1_scores = 2 / (1 / recall + 1 / precision)
+    f1_scores = np.zeros_like(precision)
+    np.divide(2 * recall * precision, recall + precision, out=f1_scores, where=((recall + precision) != 0))
     best_f1_score = np.max(f1_scores)
     mean_f1_score = np.mean(f1_scores)
     std_f1_score = np.std(f1_scores)
@@ -276,7 +277,8 @@ def eval_with_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, 
     pr_curve_auc = auc(recall, precision)
     roc_curve_auc = auc(fpr, tpr)
 
-    f1_scores = 2 / (1 / recall + 1 / precision)
+    f1_scores = np.zeros_like(precision)
+    np.divide(2 * recall * precision, recall + precision, out=f1_scores, where=(recall + precision != 0))
     best_f1_score = np.max(f1_scores)
     mean_f1_score = np.mean(f1_scores)
     std_f1_score = np.std(f1_scores)
