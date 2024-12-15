@@ -30,7 +30,7 @@ if federated:
                 )
                 delta = trial.suggest_float("delta", 0.00001, 1, log=True)
                 rho = trial.suggest_float("rho", 0, 2)
-                input_scale = trial.suggest_float("input_scale", 0, 1)
+                input_scale = trial.suggest_float("input_scale", 0, 1, log=True)
                 model = train_in_clients(
                     serverMachineDataset,
                     leaking_rate=leaking_rate,
@@ -51,6 +51,7 @@ if federated:
             leaking_rate = study.best_params["leaking_rate"]
             delta = study.best_params["delta"]
             rho = study.best_params["rho"]
+            input_scale = study.best_params["input_scale"]
 
             with open(os.path.join(output_dir, "best_params.json"), "w") as f:
                 json.dump(study.best_params, f)
@@ -60,13 +61,19 @@ if federated:
                 leaking_rate = loaded_best_params.leaking_rate
                 delta = loaded_best_params.delta
                 rho = loaded_best_params.rho
+                input_scale = loaded_best_params.input_scale
         else:
             leaking_rate = 1.0
             delta = 0.0001
             rho = 0.95
+            input_scale = 1.0
 
         models_dic = train_in_clients(
-            serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho
+            serverMachineDataset,
+            leaking_rate=leaking_rate,
+            delta=delta,
+            rho=rho,
+            input_scale=input_scale,
         )
 
         if save:
@@ -94,7 +101,7 @@ if isolated:
                     )
                     delta = trial.suggest_float("delta", 0.00001, 1, log=True)
                     rho = trial.suggest_float("rho", 0, 1)
-                    input_scale = trial.suggest_float("input_scale", 0, 1)
+                    input_scale = trial.suggest_float("input_scale", 0, 1, log=True)
                     model, _ = train_in_client(
                         serverMachineData,
                         leaking_rate=leaking_rate,
@@ -114,6 +121,7 @@ if isolated:
                 leaking_rate = study.best_params["leaking_rate"]
                 delta = study.best_params["delta"]
                 rho = study.best_params["rho"]
+                input_scale = study.best_params["input_scale"]
 
                 with open(os.path.join(output_dir, "best_params.json"), "w") as f:
                     json.dump(study.best_params, f)
@@ -123,16 +131,22 @@ if isolated:
                     leaking_rate = loaded_best_params.leaking_rate
                     delta = loaded_best_params.delta
                     rho = loaded_best_params.rho
+                    input_scale = loaded_best_params.input_scale
             else:
                 leaking_rate = 1.0
                 delta = 0.0001
                 rho = 0.95
+                input_scale = 1.0
 
             os.makedirs(
                 os.path.join(output_dir, serverMachineData.data_name), exist_ok=True
             )
             model, _ = train_in_client(
-                serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho
+                serverMachineData,
+                leaking_rate=leaking_rate,
+                delta=delta,
+                rho=rho,
+                input_scale=input_scale,
             )
 
             if save:
