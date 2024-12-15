@@ -415,7 +415,7 @@ class basic_metricor:
                 )
                 fn = len(true_events) - tp
                 rec_e = tp / (tp + fn)
-                prec_t = precision_score(label, preds)
+                prec_t = precision_score(label, preds, zero_division=0.0)
                 EventF1PA = 2 * rec_e * prec_t / (rec_e + prec_t + self.eps)
 
                 EventF1PA_scores.append(EventF1PA)
