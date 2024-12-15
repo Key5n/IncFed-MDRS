@@ -1,9 +1,9 @@
 import os
 import numpy as np
 from numpy.typing import NDArray
-from pate.PATE_metric import PATE
 from dataclasses import dataclass
 from esn import MDRS
+from .metrics import get_metrics
 
 
 @dataclass(frozen=True)
@@ -105,21 +105,17 @@ def train_in_client(
 def evaluate_in_clients(
     models, serverMachineDataset: list[ServerMachineData], output_dir: str
 ) -> tuple[float, float]:
-    pr_curve_aucs = []
-    pr_curve_aucs_with_modification = []
+    pates = []
+    VUS_PRs = []
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset):.1%}")
 
         model = models[serverMachineData.data_name]
-        pr_curve_auc, pr_curve_auc_with_modification = evaluate_in_client(
-            model, serverMachineData, output_dir
-        )
-        pr_curve_aucs.append(pr_curve_auc)
-        pr_curve_aucs_with_modification.append(pr_curve_auc_with_modification)
+        pate, VUS_PR = evaluate_in_client(model, serverMachineData, output_dir)
+        pates.append(pate)
+        VUS_PRs.append(VUS_PR)
 
-    return np.mean(pr_curve_aucs, dtype=float), np.mean(
-        pr_curve_aucs_with_modification, dtype=float
-    )
+    return np.mean(pates, dtype=float), np.mean(VUS_PRs, dtype=float)
 
 
 def evaluate_in_client(
@@ -136,7 +132,8 @@ def evaluate_in_client(
 
         _, mahalanobis_distances = model.copy().adapt(data_test)
 
-        # PATE returns floating[Any] or float, so forces float
-        pate = float(PATE(label_test, mahalanobis_distances, binary_scores=False))
+        evaluation_result = get_metrics(mahalanobis_distances, label_test)
+        pate = evaluation_result["PATE"]
+        VUS_PR = evaluation_result["VUS-PR"]
 
-    return pate, pate
+    return pate, VUS_PR

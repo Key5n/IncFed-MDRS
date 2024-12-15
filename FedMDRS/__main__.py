@@ -38,14 +38,12 @@ if federated:
                     rho=rho,
                     input_scale=input_scale,
                 )
-                pr_curve_auc_average, pr_curve_auc_average_modified_label = (
-                    evaluate_in_clients(model, serverMachineDataset)
+                pate_avg, VUS_PR_avg = evaluate_in_clients(
+                    model, serverMachineDataset, output_dir=output_dir
                 )
-                print(
-                    f"{pr_curve_auc_average = }, {pr_curve_auc_average_modified_label = }"
-                )
+                print(f"{pate_avg = }, {VUS_PR_avg = }")
 
-                return pr_curve_auc_average
+                return pate_avg
 
             study = optuna.create_study(direction="maximize")
             study.optimize(federated_objective, n_trials=50)
@@ -104,11 +102,11 @@ if isolated:
                         rho=rho,
                         input_scale=input_scale,
                     )
-                    pr_curve_auc = evaluate_in_client(
+                    pate, _ = evaluate_in_client(
                         model, serverMachineData, output_dir=output_dir
                     )
 
-                    return pr_curve_auc
+                    return pate
 
                 study = optuna.create_study(direction="maximize")
                 study.optimize(isolated_objective, n_trials=50)
