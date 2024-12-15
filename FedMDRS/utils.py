@@ -3,7 +3,7 @@ import numpy as np
 from numpy.typing import NDArray
 from dataclasses import dataclass
 from esn import MDRS
-from .metrics import get_metrics
+from evaluation.metrics import get_metrics
 
 
 @dataclass(frozen=True)
