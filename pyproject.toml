@@ -6,7 +6,8 @@ dependencies = [
   "networkx",
   "matplotlib",
   "scikit-learn",
-  "optuna"
+  "optuna",
+  "pate"
 ]
 
 [tool.setuptools]
