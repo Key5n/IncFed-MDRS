@@ -30,7 +30,7 @@ if federated:
                 )
                 delta = trial.suggest_float("delta", 0.00001, 1, log=True)
                 rho = trial.suggest_float("rho", 0, 2)
-                input_scale = trial.suggest_float("input_scale", 0, 1, log=True)
+                input_scale = trial.suggest_float("input_scale", 0.0001, 1, log=True)
                 model = train_in_clients(
                     serverMachineDataset,
                     leaking_rate=leaking_rate,
@@ -101,7 +101,9 @@ if isolated:
                     )
                     delta = trial.suggest_float("delta", 0.00001, 1, log=True)
                     rho = trial.suggest_float("rho", 0, 1)
-                    input_scale = trial.suggest_float("input_scale", 0, 1, log=True)
+                    input_scale = trial.suggest_float(
+                        "input_scale", 0.0001, 1, log=True
+                    )
                     model, _ = train_in_client(
                         serverMachineData,
                         leaking_rate=leaking_rate,
