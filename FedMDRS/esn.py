@@ -2,8 +2,10 @@ import numpy as np
 import networkx as nx
 from copy import deepcopy
 
+
 def identity(x):
     return x
+
 
 class Input:
     def __init__(self, N_u, N_x, input_scale, seed=0):
@@ -26,6 +28,7 @@ class Input:
 
     def copy(self):
         return deepcopy(self)
+
 
 class Reservoir:
     def __init__(self, N_x, density, rho, activation_func, leaking_rate, seed=0):
@@ -74,8 +77,10 @@ class Reservoir:
     def copy(self):
         return deepcopy(self)
 
-class MDRS():
-    def __init__(self,
+
+class MDRS:
+    def __init__(
+        self,
         N_u,
         N_x,
         threshold=None,
@@ -88,7 +93,7 @@ class MDRS():
         delta=0.0001,
         update=1,
         lam=1,
-        seed=0
+        seed=0,
     ):
         self.seed = seed
         self.Input = Input(N_u, N_x, input_scale, seed=self.seed)
@@ -126,11 +131,17 @@ class MDRS():
 
             if n > trans_len:
                 x = x.reshape((-1, 1))
-                self.precision_matrix = self.calc_next_precision_matrix(x, self.precision_matrix)
+                self.precision_matrix = self.calc_next_precision_matrix(
+                    x, self.precision_matrix
+                )
                 local_updates += np.dot(x, x.T)
 
                 mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
-                self.threshold = max(mahalanobis_distance, self.threshold) if self.threshold is not None else mahalanobis_distance
+                self.threshold = (
+                    max(mahalanobis_distance, self.threshold)
+                    if self.threshold is not None
+                    else mahalanobis_distance
+                )
 
         return local_updates
 
@@ -154,21 +165,34 @@ class MDRS():
             mahalanobis_distances.append(mahalanobis_distance)
 
             if mahalanobis_distance < self.threshold:
-                self.precision_matrix = self.calc_next_precision_matrix(x, self.precision_matrix)
+                self.precision_matrix = self.calc_next_precision_matrix(
+                    x, self.precision_matrix
+                )
                 label.append(0)
             else:
                 # mark the data as anomalous
                 label.append(1)
 
-        return np.array(label, dtype=np.int8), np.array(mahalanobis_distances, dtype=np.float64)
+        return np.array(label, dtype=np.int8), np.array(
+            mahalanobis_distances, dtype=np.float64
+        )
 
     def calc_next_precision_matrix(self, x, precision_matrix):
         x = np.reshape(x, (-1, 1))
         next_precision_matrix = precision_matrix
         for _ in np.arange(self.update):
             gain = 1 / self.lam * np.dot(next_precision_matrix, x)
-            gain = gain / (1 + 1 / self.lam * np.dot(np.dot(x.T, next_precision_matrix), x))
-            next_precision_matrix = 1 / self.lam * (next_precision_matrix - np.dot(np.dot(gain, x.T), next_precision_matrix))
+            gain = gain / (
+                1 + 1 / self.lam * np.dot(np.dot(x.T, next_precision_matrix), x)
+            )
+            next_precision_matrix = (
+                1
+                / self.lam
+                * (
+                    next_precision_matrix
+                    - np.dot(np.dot(gain, x.T), next_precision_matrix)
+                )
+            )
         return next_precision_matrix
 
     def set_P(self, P):

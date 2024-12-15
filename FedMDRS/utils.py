@@ -4,9 +4,11 @@ from numpy.typing import NDArray
 from numpy import floating
 import warnings
 import matplotlib.pyplot as plt
+from pate.PATE_metric import PATE
 from dataclasses import dataclass
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 from esn import MDRS
+
 
 @dataclass(frozen=True)
 class ServerMachineData:
@@ -16,11 +18,12 @@ class ServerMachineData:
     data_test: NDArray
     test_label: NDArray
 
+
 def create_dataset(
-    dataset_name:str = "ServerMachineDataset",
-    train_data_dir_path:str = os.path.join("ServerMachineDataset", "train"),
-    test_data_dir_path:str = os.path.join("ServerMachineDataset", "test"),
-    test_label_dir_path:str = os.path.join("ServerMachineDataset", "test_label"),
+    dataset_name: str = "ServerMachineDataset",
+    train_data_dir_path: str = os.path.join("ServerMachineDataset", "train"),
+    test_data_dir_path: str = os.path.join("ServerMachineDataset", "test"),
+    test_label_dir_path: str = os.path.join("ServerMachineDataset", "test_label"),
 ) -> list[ServerMachineData]:
     data_filenames = os.listdir(os.path.join(train_data_dir_path))
 
@@ -30,21 +33,30 @@ def create_dataset(
         test_data_file_path = os.path.join(test_data_dir_path, data_filename)
         test_label_file_path = os.path.join(test_label_dir_path, data_filename)
 
-        data_train = np.genfromtxt(train_data_file_path, dtype=np.float64, delimiter=",")
+        data_train = np.genfromtxt(
+            train_data_file_path, dtype=np.float64, delimiter=","
+        )
         data_test = np.genfromtxt(test_data_file_path, dtype=np.float64, delimiter=",")
-        test_label = np.genfromtxt(test_label_file_path, dtype=np.float64, delimiter=",")
+        test_label = np.genfromtxt(
+            test_label_file_path, dtype=np.float64, delimiter=","
+        )
 
         basename = data_filename.split(".")[0]
-        data = ServerMachineData(dataset_name, basename, data_train, data_test, test_label)
+        data = ServerMachineData(
+            dataset_name, basename, data_train, data_test, test_label
+        )
         dataset.append(data)
 
     return dataset
+
 
 def write_pr_curve(recall, precision, auc, filename):
     plt.clf()
 
     # Plot Curve
-    plt.plot(recall, precision, marker='o', label=f"Precision Recall Curve (AUC = {auc:.4f})")
+    plt.plot(
+        recall, precision, marker="o", label=f"Precision Recall Curve (AUC = {auc:.4f})"
+    )
 
     plt.xlabel("Recall")
     plt.ylabel("Precision")
@@ -52,26 +64,40 @@ def write_pr_curve(recall, precision, auc, filename):
     plt.legend()
     plt.savefig(filename)
 
+
 def write_roc_curve(fprs, tprs, auc, filename):
     plt.clf()
 
     # Plot Curve
-    plt.plot(fprs, tprs, marker='o', label=f"ROC Curve (AUC = {auc:.4f})")
+    plt.plot(fprs, tprs, marker="o", label=f"ROC Curve (AUC = {auc:.4f})")
 
-    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label="Random Model")
+    plt.plot([0, 1], [0, 1], linestyle="--", color="gray", label="Random Model")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("ROC Curve")
     plt.legend()
     plt.savefig(filename)
 
-def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate=1.0, rho=0.95, delta=0.0001, input_scale: float = 1.0) -> dict[str,MDRS]:
+
+def train_in_clients(
+    serverMachineDataset: list[ServerMachineData],
+    leaking_rate=1.0,
+    rho=0.95,
+    delta=0.0001,
+    input_scale: float = 1.0,
+) -> dict[str, MDRS]:
     models: dict[str, MDRS] = {}
     N_x = 500
 
     covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
     for serverMachineData in serverMachineDataset:
-        model, local_updates = train_in_client(serverMachineData, leaking_rate=leaking_rate, rho=rho, delta=delta, input_scale=input_scale)
+        model, local_updates = train_in_client(
+            serverMachineData,
+            leaking_rate=leaking_rate,
+            rho=rho,
+            delta=delta,
+            input_scale=input_scale,
+        )
         models[serverMachineData.data_name] = model
 
         covariance_matrix += local_updates
@@ -84,30 +110,54 @@ def train_in_clients(serverMachineDataset: list[ServerMachineData], leaking_rate
 
     return models
 
-def train_in_client(serverMachineData: ServerMachineData, leaking_rate=1.0, rho=0.95, delta=0.0001, input_scale: float = 1.0) -> tuple[MDRS, NDArray]:
+
+def train_in_client(
+    serverMachineData: ServerMachineData,
+    leaking_rate=1.0,
+    rho=0.95,
+    delta=0.0001,
+    input_scale: float = 1.0,
+) -> tuple[MDRS, NDArray]:
     print(f"[train] data name: {serverMachineData.data_name}")
     data_train = serverMachineData.data_train
     N_u = data_train.shape[1]
     N_x = 500
-    model = MDRS(N_u, N_x, leaking_rate=leaking_rate, delta=delta, rho=rho, input_scale=input_scale)
+    model = MDRS(
+        N_u,
+        N_x,
+        leaking_rate=leaking_rate,
+        delta=delta,
+        rho=rho,
+        input_scale=input_scale,
+    )
     local_updates = model.train(data_train)
 
     return model, local_updates
 
-def evaluate_in_clients(models, serverMachineDataset: list[ServerMachineData], output_dir: str) -> tuple[float, float]:
+
+def evaluate_in_clients(
+    models, serverMachineDataset: list[ServerMachineData], output_dir: str
+) -> tuple[float, float]:
     pr_curve_aucs = []
     pr_curve_aucs_with_modification = []
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset):.1%}")
 
         model = models[serverMachineData.data_name]
-        pr_curve_auc, pr_curve_auc_with_modification = evaluate_in_client(model, serverMachineData, output_dir)
+        pr_curve_auc, pr_curve_auc_with_modification = evaluate_in_client(
+            model, serverMachineData, output_dir
+        )
         pr_curve_aucs.append(pr_curve_auc)
         pr_curve_aucs_with_modification.append(pr_curve_auc_with_modification)
 
-    return np.mean(pr_curve_aucs, dtype=float), np.mean(pr_curve_aucs_with_modification, dtype=float)
+    return np.mean(pr_curve_aucs, dtype=float), np.mean(
+        pr_curve_aucs_with_modification, dtype=float
+    )
 
-def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir: str) -> tuple[float, float]:
+
+def evaluate_in_client(
+    model, serverMachineData: ServerMachineData, output_dir: str
+) -> tuple[float, float]:
     name = serverMachineData.data_name
     os.makedirs(os.path.join(output_dir, name), exist_ok=True)
     with open(os.path.join(output_dir, name, "log.txt"), "w") as f:
@@ -119,25 +169,72 @@ def evaluate_in_client(model, serverMachineData: ServerMachineData, output_dir: 
 
         _, mahalanobis_distances = model.copy().adapt(data_test)
 
-        precision_modified_label, recall_modified_label, pr_curve_auc_modified_label, \
-        fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label, \
-        best_f1_score_modified_label, mean_f1_score_modified_label, std_f1_score_modified_label = eval_with_modification(label_test, mahalanobis_distances)
-        write_pr_curve(recall_modified_label, precision_modified_label, pr_curve_auc_modified_label, os.path.join(output_dir, name, "pr_curve_with_modification.png"))
-        write_roc_curve(fpr_modified_label, tpr_modified_label, roc_curve_auc_modified_label, os.path.join(output_dir, name, "roc_curve_with_modification.png"))
+        (
+            precision_modified_label,
+            recall_modified_label,
+            pr_curve_auc_modified_label,
+            fpr_modified_label,
+            tpr_modified_label,
+            roc_curve_auc_modified_label,
+            best_f1_score_modified_label,
+            mean_f1_score_modified_label,
+            std_f1_score_modified_label,
+        ) = eval_with_modification(label_test, mahalanobis_distances)
+        write_pr_curve(
+            recall_modified_label,
+            precision_modified_label,
+            pr_curve_auc_modified_label,
+            os.path.join(output_dir, name, "pr_curve_with_modification.png"),
+        )
+        write_roc_curve(
+            fpr_modified_label,
+            tpr_modified_label,
+            roc_curve_auc_modified_label,
+            os.path.join(output_dir, name, "roc_curve_with_modification.png"),
+        )
 
-        precision, recall, pr_curve_auc, \
-        fpr, tpr, roc_curve_auc, \
-        best_f1_score, mean_f1_score, std_f1_score = eval_without_modification(label_test, mahalanobis_distances)
-        write_pr_curve(recall, precision, pr_curve_auc, os.path.join(output_dir, name, "pr_curve_without_modification.png"))
-        write_roc_curve(fpr, tpr, roc_curve_auc, os.path.join(output_dir, name, "roc_curve_without_modification.png"))
+        (
+            precision,
+            recall,
+            pr_curve_auc,
+            fpr,
+            tpr,
+            roc_curve_auc,
+            best_f1_score,
+            mean_f1_score,
+            std_f1_score,
+        ) = eval_without_modification(label_test, mahalanobis_distances)
+        write_pr_curve(
+            recall,
+            precision,
+            pr_curve_auc,
+            os.path.join(output_dir, name, "pr_curve_without_modification.png"),
+        )
+        write_roc_curve(
+            fpr,
+            tpr,
+            roc_curve_auc,
+            os.path.join(output_dir, name, "roc_curve_without_modification.png"),
+        )
 
-        print(f"{best_f1_score = }, {mean_f1_score} ± {std_f1_score}, {best_f1_score_modified_label = }, {mean_f1_score_modified_label} ± {std_f1_score_modified_label}")
-        print(f"{best_f1_score = }, {mean_f1_score} ± {std_f1_score}, {best_f1_score_modified_label = }, {mean_f1_score_modified_label} ± {std_f1_score_modified_label}", file=f)
+        print(
+            f"{best_f1_score = }, {mean_f1_score} ± {std_f1_score}, {best_f1_score_modified_label = }, {mean_f1_score_modified_label} ± {std_f1_score_modified_label}"
+        )
+        print(
+            f"{best_f1_score = }, {mean_f1_score} ± {std_f1_score}, {best_f1_score_modified_label = }, {mean_f1_score_modified_label} ± {std_f1_score_modified_label}",
+            file=f,
+        )
 
-        print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }")
-        print(f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }", file=f)
+        print(
+            f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }"
+        )
+        print(
+            f"{roc_curve_auc_modified_label = }, {pr_curve_auc_modified_label = }, {roc_curve_auc = }, {pr_curve_auc = }",
+            file=f,
+        )
 
         return pr_curve_auc, pr_curve_auc_modified_label
+
 
 def get_pred_label_for_each_threshold(y_score: NDArray) -> NDArray:
     desc_score_indices = np.argsort(y_score, kind="mergesort")[::-1]
@@ -153,6 +250,7 @@ def get_pred_label_for_each_threshold(y_score: NDArray) -> NDArray:
         pred.append(pred_label)
 
     return np.array(pred)
+
 
 def modify_pred_label(answer_label: NDArray, pred_label: NDArray) -> NDArray:
     # Find the anomaly intervals in the answer_label
@@ -176,6 +274,7 @@ def modify_pred_label(answer_label: NDArray, pred_label: NDArray) -> NDArray:
             pred_label[start:end] = 1
 
     return np.array(pred_label)
+
 
 def pr_curve_based_on_label(y_true: NDArray, y_pred_array: NDArray):
     tps = []
@@ -212,6 +311,7 @@ def pr_curve_based_on_label(y_true: NDArray, y_pred_array: NDArray):
     precision = np.hstack((precision[sl], 1))
     recall = np.hstack((recall[sl], 0))
     return precision, recall
+
 
 def roc_curve_based_on_label(y_true: NDArray, y_pred_array: NDArray):
     tps = []
@@ -253,7 +353,12 @@ def roc_curve_based_on_label(y_true: NDArray, y_pred_array: NDArray):
 
     return fpr, tpr
 
-def eval_without_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float, floating, floating, floating]:
+
+def eval_without_modification(
+    y_true: NDArray, y_score: NDArray
+) -> tuple[
+    NDArray, NDArray, float, NDArray, NDArray, float, floating, floating, floating
+]:
     precision, recall, _ = precision_recall_curve(y_true, y_score)
     fpr, tpr, _ = roc_curve(y_true, y_score)
 
@@ -261,27 +366,69 @@ def eval_without_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArra
     roc_curve_auc = auc(fpr, tpr)
 
     f1_scores = np.zeros_like(precision)
-    np.divide(2 * recall * precision, recall + precision, out=f1_scores, where=((recall + precision) != 0))
+    np.divide(
+        2 * recall * precision,
+        recall + precision,
+        out=f1_scores,
+        where=((recall + precision) != 0),
+    )
     best_f1_score = np.max(f1_scores)
     mean_f1_score = np.mean(f1_scores)
     std_f1_score = np.std(f1_scores)
 
-    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc, best_f1_score, mean_f1_score, std_f1_score
+    return (
+        precision,
+        recall,
+        pr_curve_auc,
+        fpr,
+        tpr,
+        roc_curve_auc,
+        best_f1_score,
+        mean_f1_score,
+        std_f1_score,
+    )
 
-def eval_with_modification(y_true: NDArray, y_score: NDArray) -> tuple[NDArray, NDArray, float, NDArray, NDArray, float, floating, floating, floating]:
+
+def eval_with_modification(
+    y_true: NDArray, y_score: NDArray
+) -> tuple[
+    NDArray, NDArray, float, NDArray, NDArray, float, floating, floating, floating
+]:
     pred_label_for_each_threhold = get_pred_label_for_each_threshold(y_score)
-    adjusted_pred_label_for_each_threshold = np.array([modify_pred_label(y_true, pred_label) for pred_label in pred_label_for_each_threhold])
+    adjusted_pred_label_for_each_threshold = np.array(
+        [
+            modify_pred_label(y_true, pred_label)
+            for pred_label in pred_label_for_each_threhold
+        ]
+    )
 
-    precision, recall = pr_curve_based_on_label(y_true, adjusted_pred_label_for_each_threshold)
+    precision, recall = pr_curve_based_on_label(
+        y_true, adjusted_pred_label_for_each_threshold
+    )
     fpr, tpr = roc_curve_based_on_label(y_true, adjusted_pred_label_for_each_threshold)
 
     pr_curve_auc = auc(recall, precision)
     roc_curve_auc = auc(fpr, tpr)
 
     f1_scores = np.zeros_like(precision)
-    np.divide(2 * recall * precision, recall + precision, out=f1_scores, where=(recall + precision != 0))
+    np.divide(
+        2 * recall * precision,
+        recall + precision,
+        out=f1_scores,
+        where=(recall + precision != 0),
+    )
     best_f1_score = np.max(f1_scores)
     mean_f1_score = np.mean(f1_scores)
     std_f1_score = np.std(f1_scores)
 
-    return precision, recall, pr_curve_auc, fpr, tpr, roc_curve_auc, best_f1_score, mean_f1_score, std_f1_score
+    return (
+        precision,
+        recall,
+        pr_curve_auc,
+        fpr,
+        tpr,
+        roc_curve_auc,
+        best_f1_score,
+        mean_f1_score,
+        std_f1_score,
+    )

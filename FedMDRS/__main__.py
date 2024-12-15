@@ -2,7 +2,13 @@ import os
 import pickle
 import optuna
 import json
-from utils import create_dataset, train_in_clients, train_in_client, evaluate_in_clients, evaluate_in_client
+from utils import (
+    create_dataset,
+    train_in_clients,
+    train_in_client,
+    evaluate_in_clients,
+    evaluate_in_client,
+)
 
 train = True
 isolated = True
@@ -17,14 +23,27 @@ if federated:
     os.makedirs(output_dir, exist_ok=True)
     if train:
         if optimize:
+
             def federated_objective(trial):
-                leaking_rate = trial.suggest_float("leaking_rate", 0.000001, 1, log=True)
+                leaking_rate = trial.suggest_float(
+                    "leaking_rate", 0.000001, 1, log=True
+                )
                 delta = trial.suggest_float("delta", 0.00001, 1, log=True)
                 rho = trial.suggest_float("rho", 0, 2)
                 input_scale = trial.suggest_float("input_scale", 0, 1)
-                model = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho, input_scale=input_scale)
-                pr_curve_auc_average, pr_curve_auc_average_modified_label = evaluate_in_clients(model, serverMachineDataset)
-                print(f"{pr_curve_auc_average = }, {pr_curve_auc_average_modified_label = }")
+                model = train_in_clients(
+                    serverMachineDataset,
+                    leaking_rate=leaking_rate,
+                    delta=delta,
+                    rho=rho,
+                    input_scale=input_scale,
+                )
+                pr_curve_auc_average, pr_curve_auc_average_modified_label = (
+                    evaluate_in_clients(model, serverMachineDataset)
+                )
+                print(
+                    f"{pr_curve_auc_average = }, {pr_curve_auc_average_modified_label = }"
+                )
 
                 return pr_curve_auc_average
 
@@ -48,7 +67,9 @@ if federated:
             delta = 0.0001
             rho = 0.95
 
-        models_dic = train_in_clients(serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho)
+        models_dic = train_in_clients(
+            serverMachineDataset, leaking_rate=leaking_rate, delta=delta, rho=rho
+        )
 
         if save:
             print("global model is saved")
@@ -68,13 +89,24 @@ if isolated:
     for serverMachineData in serverMachineDataset:
         if train:
             if optimize:
+
                 def isolated_objective(trial):
-                    leaking_rate = trial.suggest_float("leaking_rate", 0.00001, 1, log=True)
+                    leaking_rate = trial.suggest_float(
+                        "leaking_rate", 0.00001, 1, log=True
+                    )
                     delta = trial.suggest_float("delta", 0.00001, 1, log=True)
                     rho = trial.suggest_float("rho", 0, 1)
                     input_scale = trial.suggest_float("input_scale", 0, 1)
-                    model, _ = train_in_client(serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho, input_scale=input_scale)
-                    pr_curve_auc = evaluate_in_client(model, serverMachineData, output_dir=output_dir)
+                    model, _ = train_in_client(
+                        serverMachineData,
+                        leaking_rate=leaking_rate,
+                        delta=delta,
+                        rho=rho,
+                        input_scale=input_scale,
+                    )
+                    pr_curve_auc = evaluate_in_client(
+                        model, serverMachineData, output_dir=output_dir
+                    )
 
                     return pr_curve_auc
 
@@ -98,14 +130,26 @@ if isolated:
                 delta = 0.0001
                 rho = 0.95
 
-            os.makedirs(os.path.join(output_dir, serverMachineData.data_name), exist_ok=True)
-            model, _ = train_in_client(serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho)
+            os.makedirs(
+                os.path.join(output_dir, serverMachineData.data_name), exist_ok=True
+            )
+            model, _ = train_in_client(
+                serverMachineData, leaking_rate=leaking_rate, delta=delta, rho=rho
+            )
 
             if save:
-                with open(os.path.join(output_dir, serverMachineData.data_name, "model.pickle"), "wb") as f:
+                with open(
+                    os.path.join(
+                        output_dir, serverMachineData.data_name, "model.pickle"
+                    ),
+                    "wb",
+                ) as f:
                     pickle.dump(model, f, pickle.HIGHEST_PROTOCOL)
         else:
-            with open(os.path.join(output_dir, serverMachineData.data_name, "model.pickle"), "rb") as f:
+            with open(
+                os.path.join(output_dir, serverMachineData.data_name, "model.pickle"),
+                "rb",
+            ) as f:
                 model = pickle.load(f)
 
         evaluate_in_client(model, serverMachineData, output_dir=output_dir)
