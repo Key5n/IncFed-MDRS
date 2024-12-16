@@ -12,7 +12,7 @@ from utils import (
 
 train = True
 isolated = True
-federated = True
+federated = False
 save = True
 optimize = True
 
@@ -25,10 +25,8 @@ if federated:
         if optimize:
 
             def federated_objective(trial):
-                leaking_rate = trial.suggest_float(
-                    "leaking_rate", 0.000001, 1, log=True
-                )
-                delta = trial.suggest_float("delta", 0.00001, 1, log=True)
+                leaking_rate = trial.suggest_float("leaking_rate", 0.0001, 1, log=True)
+                delta = trial.suggest_float("delta", 0.0001, 1, log=True)
                 rho = trial.suggest_float("rho", 0, 2)
                 input_scale = trial.suggest_float("input_scale", 0.0001, 1, log=True)
                 model = train_in_clients(
@@ -46,7 +44,7 @@ if federated:
                 return pate_avg
 
             study = optuna.create_study(direction="maximize")
-            study.optimize(federated_objective, n_trials=50)
+            study.optimize(federated_objective, n_trials=20)
 
             leaking_rate = study.best_params["leaking_rate"]
             delta = study.best_params["delta"]
@@ -97,9 +95,9 @@ if isolated:
 
                 def isolated_objective(trial):
                     leaking_rate = trial.suggest_float(
-                        "leaking_rate", 0.00001, 1, log=True
+                        "leaking_rate", 0.0001, 1, log=True
                     )
-                    delta = trial.suggest_float("delta", 0.00001, 1, log=True)
+                    delta = trial.suggest_float("delta", 0.0001, 1, log=True)
                     rho = trial.suggest_float("rho", 0, 1)
                     input_scale = trial.suggest_float(
                         "input_scale", 0.0001, 1, log=True
@@ -118,7 +116,7 @@ if isolated:
                     return pate
 
                 study = optuna.create_study(direction="maximize")
-                study.optimize(isolated_objective, n_trials=50)
+                study.optimize(isolated_objective, n_trials=20)
 
                 leaking_rate = study.best_params["leaking_rate"]
                 delta = study.best_params["delta"]
