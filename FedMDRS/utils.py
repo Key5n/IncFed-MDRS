@@ -54,7 +54,7 @@ def train_in_clients(
     input_scale: float = 1.0,
 ) -> dict[str, MDRS]:
     models: dict[str, MDRS] = {}
-    N_x = 500
+    N_x = 200
 
     covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
     for serverMachineData in serverMachineDataset:
@@ -88,7 +88,7 @@ def train_in_client(
     print(f"[train] data name: {serverMachineData.data_name}")
     data_train = serverMachineData.data_train
     N_u = data_train.shape[1]
-    N_x = 500
+    N_x = 200
     model = MDRS(
         N_u,
         N_x,
