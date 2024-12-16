@@ -114,7 +114,7 @@ class MDRS:
         self.update = update
         self.precision_matrix = (1.0 / self.delta) * np.eye(N_x, N_x)
 
-    def train(self, U, trans_len=0):
+    def train(self, U, trans_len=10):
         """
         U: input data
         """
