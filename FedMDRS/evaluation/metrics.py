@@ -19,7 +19,7 @@ def get_metrics(score, labels, slidingWindow=100, pred=None, version="opt", thre
     )
 
     # PATE returns floating[Any] or float, so forces float
-    pate = float(PATE(labels, score, binary_scores=False))
+    pate = float(PATE(labels, score, binary_scores=False, n_jobs=-1))
 
     metrics["AUC-PR"] = AUC_PR
     metrics["AUC-ROC"] = AUC_ROC
