@@ -1,11 +1,12 @@
 import os
-import pickle
-from FedMDRS.utils.datasets import create_dataset
-from FedMDRS.utils.optimize import optimize_federated_HP, optimize_isolated_HP
+
+import numpy as np
+from utils.datasets import create_dataset
+from utils.optimize import optimize_federated_HP, optimize_isolated_HP
 
 import json
 
-from FedMDRS.utils.utils import (
+from utils.utils import (
     evaluate_in_client,
     evaluate_in_clients,
     train_in_client,
@@ -50,7 +51,7 @@ if federated:
             rho = 0.95
             input_scale = 1.0
 
-        models_dic = train_in_clients(
+        P_global = train_in_clients(
             serverMachineDataset,
             leaking_rate=leaking_rate,
             delta=delta,
@@ -60,14 +61,14 @@ if federated:
 
         if save:
             print("global model is saved")
-            with open(os.path.join(output_dir, "models.pickle"), "wb") as f:
-                pickle.dump(models_dic, f, pickle.HIGHEST_PROTOCOL)
+            with open(os.path.join(output_dir, "P_global.npy"), "wb") as f:
+                np.save(f, P_global)
     else:
-        with open(os.path.join(output_dir, "models.pickle"), "rb") as f:
-            models_dic = pickle.load(f)
+        with open(os.path.join(output_dir, "P_global.npy"), "rb") as f:
+            P_global = np.load(f)
 
     auc_roc_avg, auc_pr_avg, vus_roc_avg, vus_pr_avg, pate_avg = evaluate_in_clients(
-        models_dic, serverMachineDataset, output_dir
+        serverMachineDataset, P_global, output_dir
     )
 
     print(f"{auc_roc_avg = }")
@@ -114,29 +115,30 @@ if isolated:
                 rho = 0.95
                 input_scale = 1.0
 
-            model, _ = train_in_client(
+            covariance_matrix = train_in_client(
                 serverMachineData,
                 leaking_rate=leaking_rate,
                 delta=delta,
                 rho=rho,
                 input_scale=input_scale,
             )
+            P = np.linalg.inv(covariance_matrix)
 
             if save:
                 with open(
-                    os.path.join(output_dir_client, "model.pickle"),
+                    os.path.join(output_dir_client, "P.npy"),
                     "wb",
                 ) as f:
-                    pickle.dump(model, f, pickle.HIGHEST_PROTOCOL)
+                    np.save(f, P)
         else:
             with open(
-                os.path.join(output_dir_client, "model.pickle"),
+                os.path.join(output_dir_client, "P.npy"),
                 "rb",
             ) as f:
-                model = pickle.load(f)
+                P = np.load(f)
 
         auc_roc, auc_pr, vus_roc, vus_pr, pate = evaluate_in_client(
-            model, serverMachineData, output_dir=output_dir
+            serverMachineData, P, output_dir=output_dir
         )
 
         print(f"{auc_roc = }")

@@ -83,6 +83,7 @@ class MDRS:
         self,
         N_u,
         N_x,
+        precision_matrix=None,
         threshold=None,
         density=0.05,
         input_scale=1.0,
@@ -112,7 +113,11 @@ class MDRS:
         self.delta = delta
         self.lam = lam
         self.update = update
-        self.precision_matrix = (1.0 / self.delta) * np.eye(N_x, N_x)
+
+        if precision_matrix is None:
+            self.precision_matrix = (1.0 / self.delta) * np.eye(N_x, N_x)
+        else:
+            self.precision_matrix = precision_matrix
 
     def train(self, U, trans_len=10):
         """

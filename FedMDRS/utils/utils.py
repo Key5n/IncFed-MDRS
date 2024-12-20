@@ -3,48 +3,41 @@ import numpy as np
 from numpy.typing import NDArray
 from esn import MDRS
 from evaluation.metrics import get_metrics
-from FedMDRS.utils.datasets import ServerMachineData
 
 
 def train_in_clients(
-    serverMachineDataset: list[ServerMachineData],
+    serverMachineDataset,
     leaking_rate=1.0,
     rho=0.95,
     delta=0.0001,
     input_scale: float = 1.0,
-) -> dict[str, MDRS]:
-    models: dict[str, MDRS] = {}
+) -> NDArray:
     N_x = 200
 
     covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
     for serverMachineData in serverMachineDataset:
-        model, local_updates = train_in_client(
+        local_updates = train_in_client(
             serverMachineData,
             leaking_rate=leaking_rate,
             rho=rho,
             delta=delta,
             input_scale=input_scale,
         )
-        models[serverMachineData.data_name] = model
 
         covariance_matrix += local_updates
 
     P_global = np.linalg.inv(covariance_matrix + delta * np.identity(N_x))
 
-    for key, model in models.items():
-        model.set_P(P_global)
-        models[key] = model
-
-    return models
+    return P_global
 
 
 def train_in_client(
-    serverMachineData: ServerMachineData,
+    serverMachineData,
     leaking_rate=1.0,
     rho=0.95,
     delta=0.0001,
     input_scale: float = 1.0,
-) -> tuple[MDRS, NDArray]:
+) -> NDArray:
     print(f"[train] data name: {serverMachineData.data_name}")
     data_train = serverMachineData.data_train
     N_u = data_train.shape[1]
@@ -59,11 +52,13 @@ def train_in_client(
     )
     local_updates = model.train(data_train)
 
-    return model, local_updates
+    return local_updates
 
 
 def evaluate_in_clients(
-    models, serverMachineDataset: list[ServerMachineData], output_dir: str
+    serverMachineDataset,
+    P_global: NDArray,
+    output_dir: str,
 ) -> tuple[float, float, float, float, float]:
     auc_rocs = []
     auc_prs = []
@@ -73,9 +68,8 @@ def evaluate_in_clients(
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset):.1%}")
 
-        model = models[serverMachineData.data_name]
         auc_roc, auc_pr, vus_roc, vus_pr, pate = evaluate_in_client(
-            model, serverMachineData, output_dir
+            serverMachineData, P_global, output_dir
         )
         auc_rocs.append(auc_roc)
         auc_prs.append(auc_pr)
@@ -93,7 +87,13 @@ def evaluate_in_clients(
 
 
 def evaluate_in_client(
-    model, serverMachineData: ServerMachineData, output_dir: str
+    serverMachineData,
+    P: NDArray,
+    output_dir: str,
+    leaking_rate: float = 1.0,
+    rho: float = 0.95,
+    delta: float = 0.0001,
+    input_scale: float = 1.0,
 ) -> tuple[float, float, float, float, float]:
     name = serverMachineData.data_name
     os.makedirs(os.path.join(output_dir, name), exist_ok=True)
@@ -104,7 +104,18 @@ def evaluate_in_client(
         label_test = serverMachineData.test_label
         data_test = serverMachineData.data_test
 
-        _, mahalanobis_distances = model.copy().adapt(data_test)
+        N_u = data_test.shape[1]
+        N_x = 200
+        model = MDRS(
+            N_u,
+            N_x,
+            precision_matrix=P,
+            leaking_rate=leaking_rate,
+            delta=delta,
+            rho=rho,
+            input_scale=input_scale,
+        )
+        _, mahalanobis_distances = model.adapt(data_test)
 
         evaluation_result = get_metrics(mahalanobis_distances, label_test)
         auc_roc = evaluation_result["AUC-ROC"]

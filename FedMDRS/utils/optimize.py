@@ -1,5 +1,5 @@
 import optuna
-from FedMDRS.utils.utils import (
+from .utils import (
     evaluate_in_client,
     evaluate_in_clients,
     train_in_client,
