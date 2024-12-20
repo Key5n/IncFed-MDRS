@@ -108,23 +108,36 @@ def train_in_client(
 
 def evaluate_in_clients(
     models, serverMachineDataset: list[ServerMachineData], output_dir: str
-) -> tuple[float, float]:
+) -> tuple[float, float, float, float, float]:
+    auc_rocs = []
+    auc_prs = []
+    vus_rocs = []
+    vus_prs = []
     pates = []
-    VUS_PRs = []
     for i, serverMachineData in enumerate(serverMachineDataset):
         print(f"Progress Rate: {i / len(serverMachineDataset):.1%}")
 
         model = models[serverMachineData.data_name]
-        pate, VUS_PR = evaluate_in_client(model, serverMachineData, output_dir)
+        auc_roc, auc_pr, vus_roc, vus_pr, pate = evaluate_in_client(
+            model, serverMachineData, output_dir
+        )
+        auc_rocs.append(auc_roc)
+        auc_prs.append(auc_pr)
+        vus_rocs.append(vus_roc)
+        vus_prs.append(vus_pr)
         pates.append(pate)
-        VUS_PRs.append(VUS_PR)
 
-    return np.mean(pates, dtype=float), np.mean(VUS_PRs, dtype=float)
+    auc_roc_avg = np.mean(auc_rocs, dtype=float)
+    auc_pr_avg = np.mean(auc_prs, dtype=float)
+    vus_roc_avg = np.mean(vus_rocs, dtype=float)
+    vus_pr_avg = np.mean(vus_prs, dtype=float)
+    pate_avg = np.mean(pates, dtype=float)
+    return auc_roc_avg, auc_pr_avg, vus_roc_avg, vus_pr_avg, pate_avg
 
 
 def evaluate_in_client(
     model, serverMachineData: ServerMachineData, output_dir: str
-) -> tuple[float, float]:
+) -> tuple[float, float, float, float, float]:
     name = serverMachineData.data_name
     os.makedirs(os.path.join(output_dir, name), exist_ok=True)
     with open(os.path.join(output_dir, name, "log.txt"), "w") as f:
@@ -137,7 +150,10 @@ def evaluate_in_client(
         _, mahalanobis_distances = model.copy().adapt(data_test)
 
         evaluation_result = get_metrics(mahalanobis_distances, label_test)
+        auc_roc = evaluation_result["AUC-ROC"]
+        auc_pr = evaluation_result["AUC-PR"]
+        vus_roc = evaluation_result["VUS-ROC"]
+        vus_pr = evaluation_result["VUS-PR"]
         pate = evaluation_result["PATE"]
-        VUS_PR = evaluation_result["VUS-PR"]
 
-    return pate, VUS_PR
+    return auc_roc, auc_pr, vus_roc, vus_pr, pate

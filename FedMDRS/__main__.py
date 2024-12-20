@@ -36,10 +36,17 @@ if federated:
                     rho=rho,
                     input_scale=input_scale,
                 )
-                pate_avg, VUS_PR_avg = evaluate_in_clients(
-                    model, serverMachineDataset, output_dir=output_dir
+                auc_roc_avg, auc_pr_avg, vus_roc_avg, vus_pr_avg, pate_avg = (
+                    evaluate_in_clients(
+                        model, serverMachineDataset, output_dir=output_dir
+                    )
                 )
-                print(f"{pate_avg = }, {VUS_PR_avg = }")
+
+                print(f"{auc_roc_avg = }")
+                print(f"{auc_pr_avg = }")
+                print(f"{vus_roc_avg = }")
+                print(f"{vus_pr_avg = }")
+                print(f"{pate_avg = }")
 
                 return pate_avg
 
@@ -82,7 +89,14 @@ if federated:
         with open(os.path.join(output_dir, "models.pickle"), "rb") as f:
             models_dic = pickle.load(f)
 
-    evaluate_in_clients(models_dic, serverMachineDataset, output_dir)
+    auc_roc_avg, auc_pr_avg, vus_roc_avg, vus_pr_avg, pate_avg = evaluate_in_clients(
+        models_dic, serverMachineDataset, output_dir
+    )
+    print(f"{auc_roc_avg = }")
+    print(f"{auc_pr_avg = }")
+    print(f"{vus_roc_avg = }")
+    print(f"{vus_pr_avg = }")
+    print(f"{pate_avg = }")
 
 if isolated:
     print("isolated")
