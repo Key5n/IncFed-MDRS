@@ -1,7 +1,8 @@
 .venv/
 *.egg-info/
 build/
-ServerMachineDataset/
+datasets/**
+!datasets/
 result/
 */__pycache__/
 .DS_Store
