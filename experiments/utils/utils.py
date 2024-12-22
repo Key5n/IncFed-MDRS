@@ -1,7 +1,7 @@
 import os
+from FedMDRS.mdrs import MDRS
 import numpy as np
 from numpy.typing import NDArray
-from esn import MDRS
 from evaluation.metrics import get_metrics
 
 

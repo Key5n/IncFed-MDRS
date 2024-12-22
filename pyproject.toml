@@ -2,9 +2,6 @@
 name = "FedMDRS"
 version = "0.1.0"
 dependencies = [
-  "numpy",
-  "networkx",
-  "matplotlib",
   "scikit-learn",
   "optuna",
   "pate"

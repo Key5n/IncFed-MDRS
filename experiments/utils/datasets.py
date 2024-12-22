@@ -16,11 +16,13 @@ class ServerMachineData:
 def create_dataset(
     dataset_name: str = "ServerMachineDataset",
     train_data_dir_path: str = os.path.join(
-        "datasets", "ServerMachineDataset", "train"
+        "..", "datasets", "ServerMachineDataset", "train"
     ),
-    test_data_dir_path: str = os.path.join("datasets", "ServerMachineDataset", "test"),
+    test_data_dir_path: str = os.path.join(
+        "..", "datasets", "ServerMachineDataset", "test"
+    ),
     test_label_dir_path: str = os.path.join(
-        "datasets", "ServerMachineDataset", "test_label"
+        "..", "datasets", "ServerMachineDataset", "test_label"
     ),
 ) -> list[ServerMachineData]:
     data_filenames = os.listdir(os.path.join(train_data_dir_path))
