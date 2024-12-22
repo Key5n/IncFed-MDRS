@@ -115,7 +115,7 @@ def evaluate_in_client(
             rho=rho,
             input_scale=input_scale,
         )
-        _, mahalanobis_distances = model.adapt(data_test)
+        mahalanobis_distances = model.adapt(data_test)
 
         evaluation_result = get_metrics(mahalanobis_distances, label_test)
         auc_roc = evaluation_result["AUC-ROC"]

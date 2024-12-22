@@ -169,18 +169,7 @@ class MDRS:
             # print(f"{mahalanobis_distance = }")
             mahalanobis_distances.append(mahalanobis_distance)
 
-            if mahalanobis_distance < self.threshold:
-                self.precision_matrix = self.calc_next_precision_matrix(
-                    x, self.precision_matrix
-                )
-                label.append(0)
-            else:
-                # mark the data as anomalous
-                label.append(1)
-
-        return np.array(label, dtype=np.int8), np.array(
-            mahalanobis_distances, dtype=np.float64
-        )
+        return np.array(mahalanobis_distances, dtype=np.float64)
 
     def calc_next_precision_matrix(self, x, precision_matrix):
         x = np.reshape(x, (-1, 1))
