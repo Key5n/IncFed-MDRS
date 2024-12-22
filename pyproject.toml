@@ -2,6 +2,7 @@
 name = "FedMDRS"
 version = "0.1.0"
 dependencies = [
+  "pandas",
   "scikit-learn",
   "optuna",
   "pate"
