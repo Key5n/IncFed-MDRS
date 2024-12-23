@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from utils.datasets import create_dataset
+from utils.datasets import create_SMD_train, create_SMD_test
 from utils.optimize import optimize_federated_HP, optimize_isolated_HP
 
 import json
@@ -19,7 +19,7 @@ federated = True
 save = True
 optimize = False
 
-serverMachineDataset = create_dataset()
+serverMachineDataset = create_SMD_train()
 
 if federated:
     output_dir = os.path.join("result", "federated")
@@ -83,7 +83,7 @@ if isolated:
     os.makedirs(output_dir, exist_ok=True)
 
     for serverMachineData in serverMachineDataset:
-        output_dir_client = os.path.join(output_dir, serverMachineData.data_name)
+        output_dir_client = os.path.join(output_dir, serverMachineData.entity_name)
         os.makedirs(os.path.join(output_dir_client), exist_ok=True)
 
         if train:

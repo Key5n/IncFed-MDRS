@@ -1,4 +1,4 @@
-import os
+from .datasets import Entity
 import numpy as np
 from numpy.typing import NDArray
 from esn import MDRS
@@ -32,14 +32,14 @@ def train_in_clients(
 
 
 def train_in_client(
-    serverMachineData,
+    dataset: Entity,
     leaking_rate=1.0,
     rho=0.95,
     delta=0.0001,
     input_scale: float = 1.0,
 ) -> NDArray:
-    print(f"[train] data name: {serverMachineData.data_name}")
-    data_train = serverMachineData.data_train
+    print(f"[train] data name: {dataset.entity_name}")
+    data_train = dataset.train_data
     N_u = data_train.shape[1]
     N_x = 200
     model = MDRS(
