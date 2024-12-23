@@ -12,6 +12,19 @@ class Entity:
     train_data: NDArray
 
 
+def get_dataset(dataset_name: str) -> tuple[list[Entity], NDArray, NDArray]:
+    if dataset_name == "SMD":
+        entities = create_SMD_train()
+        X_test, y_test = create_SMD_test()
+    elif dataset_name == "PSM":
+        entities = create_PSM_train()
+        X_test, y_test = create_SMD_test()
+    else:
+        raise Exception(f"Dataset {dataset_name} is unknown")
+
+    return entities, X_test, y_test
+
+
 def create_SMD_train(
     train_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "train"

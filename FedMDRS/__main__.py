@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from utils.datasets import create_SMD_train, create_SMD_test
+from utils.datasets import get_dataset
 
 from utils.utils import (
     evaluate,
@@ -12,8 +12,7 @@ train = True
 federated = True
 save = True
 
-dataset = create_SMD_train()
-X_test, y_test = create_SMD_test()
+entities, X_test, y_test = get_dataset("SMD")
 
 if federated:
     output_dir = os.path.join("result", "federated")
@@ -26,7 +25,7 @@ if federated:
 
     if train:
         P_global = train_in_clients(
-            dataset,
+            entities,
             leaking_rate=leaking_rate,
             delta=delta,
             rho=rho,
