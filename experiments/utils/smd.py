@@ -4,7 +4,7 @@ from numpy.typing import NDArray
 from .datasets import Dataset, Entity
 
 
-def create_SMD(data_dir_path: str) -> NDArray:
+def get_SMD(data_dir_path: str) -> NDArray:
     data_filenames = os.listdir(data_dir_path)
 
     dataset = []
@@ -18,38 +18,33 @@ def create_SMD(data_dir_path: str) -> NDArray:
     return concatenated_dataset
 
 
-def create_SMD_train(
+def get_SMD_train(
     train_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "train"
-    )
-) -> Dataset:
-    dataset_name = "SMD"
-    X_train = create_SMD(train_data_dir_path)
-    smd_train = Dataset(dataset_name, X_train, None)
+    ),
+) -> NDArray:
+    X_train = get_SMD(train_data_dir_path)
 
-    return smd_train
+    return X_train
 
 
-def create_SMD_test(
+def get_SMD_test(
     test_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "test"
     ),
     test_label_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "test_label"
     ),
-) -> Dataset:
-    dataset_name = "SMD"
-    X_test = create_SMD(test_data_dir_path)
-    y_test = create_SMD(test_label_dir_path)
+) -> tuple[NDArray, NDArray]:
+    X_test = get_SMD(test_data_dir_path)
+    y_test = get_SMD(test_label_dir_path)
     if X_test.shape[0] != y_test.shape[0]:
         raise Exception(f"Length mismatch while creating SMD test dataset")
 
-    smd_test = Dataset(dataset_name, X_test, y_test)
-
-    return smd_test
+    return X_test, y_test
 
 
-def create_SMD_data(data_dir_path: str) -> NDArray:
+def get_SMD_data(data_dir_path: str) -> NDArray:
     data_filenames = os.listdir(data_dir_path)
 
     data_list = []
@@ -63,13 +58,13 @@ def create_SMD_data(data_dir_path: str) -> NDArray:
     return np.array(data_list)
 
 
-def create_SMD_entities_train(
+def get_SMD_entities_train(
     train_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "train"
     ),
 ) -> list[Entity]:
     dataset_name = "SMD"
-    X_train_list = create_SMD_data(train_data_dir_path)
+    X_train_list = get_SMD_data(train_data_dir_path)
 
     entities = []
     for i, X_train in enumerate(X_train_list):
@@ -79,7 +74,7 @@ def create_SMD_entities_train(
     return entities
 
 
-def create_SMD_entities_test(
+def get_SMD_entities_test(
     test_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "test"
     ),
@@ -88,8 +83,8 @@ def create_SMD_entities_test(
     ),
 ) -> list[Entity]:
     dataset_name = "SMD"
-    X_test_list = create_SMD_data(test_data_dir_path)
-    y_test_list = create_SMD_data(test_label_dir_path)
+    X_test_list = get_SMD_data(test_data_dir_path)
+    y_test_list = get_SMD_data(test_label_dir_path)
 
     entities = []
     for i, (X_test, y_test) in enumerate(zip(X_test_list, y_test_list)):
