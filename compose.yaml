@@ -1,11 +1,15 @@
 services:
-    fed-mdrs:
+    fedmdrs:
         build: .
-        image: fed-mdrs
-        container_name: fed-mdrs
-        volumes:
-            - .:/workspace
-    dotfiles:
-        image: key5n/python3.13.0
+        image: fedmdrs
+        container_name: fedmdrs
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - driver: cdi
+                          capabilities: ["gpu"]
+                          device_ids:
+                              - nvidia.com/gpu=all
         volumes:
             - .:/workspace
