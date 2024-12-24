@@ -4,12 +4,17 @@ from torch.utils.data import TorchDataset
 
 # For centralized situation
 class Dataset(TorchDataset):
-    def __init__(self, dataset_name: str, data: NDArray):
+    def __init__(self, dataset_name: str, data: NDArray, label: NDArray | None):
         self.data = data
+        # if label is None, set data to label
+        self.label = label
         self.dataset_name = dataset_name
 
     def __getitem__(self, i):
-        return self.data[i]
+        if self.label is None:
+            return self.data[i], None
+        else:
+            return self.data[i], self.label[i]
 
     def __len__(self):
         return self.data.shape[0]
@@ -22,13 +27,18 @@ class Entity(TorchDataset):
         dataset_name: str,
         entity_name: str,
         data: NDArray,
+        label: NDArray | None,
     ):
         self.dataset_name = dataset_name
         self.entity_name = entity_name
         self.data = data
+        self.label = label
 
     def __getitem__(self, i):
-        return self.data[i]
+        if self.label is None:
+            return self.data[i], None
+        else:
+            return self.data[i], self.label[i]
 
     def __len__(self):
         return self.data.shape[0]

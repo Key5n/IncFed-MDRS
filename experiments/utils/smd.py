@@ -1,10 +1,10 @@
 import os
 import numpy as np
+from numpy.typing import NDArray
 from .datasets import Dataset, Entity
 
 
-def create_SMD(data_dir_path: str) -> Dataset:
-    dataset_name = "SMD"
+def create_SMD(data_dir_path: str) -> NDArray:
     data_filenames = os.listdir(data_dir_path)
 
     dataset = []
@@ -15,16 +15,17 @@ def create_SMD(data_dir_path: str) -> Dataset:
         dataset.append(entity)
     concatenated_dataset = np.concatenate(dataset)
 
-    smd = Dataset(dataset_name, concatenated_dataset)
-    return smd
+    return concatenated_dataset
 
 
 def create_SMD_train(
     train_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "train"
     )
-):
-    smd_train = create_SMD(train_data_dir_path)
+) -> Dataset:
+    dataset_name = "SMD"
+    X_train = create_SMD(train_data_dir_path)
+    smd_train = Dataset(dataset_name, X_train, None)
 
     return smd_train
 
@@ -32,31 +33,34 @@ def create_SMD_train(
 def create_SMD_test(
     test_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "test"
-    )
-):
-    smd_test = create_SMD(test_data_dir_path)
+    ),
+    test_label_dir_path: str = os.path.join(
+        os.getcwd(), "datasets", "ServerMachineDataset", "test_label"
+    ),
+) -> Dataset:
+    dataset_name = "SMD"
+    X_test = create_SMD(test_data_dir_path)
+    y_test = create_SMD(test_label_dir_path)
+    if X_test.shape[0] != y_test.shape[0]:
+        raise Exception(f"Length mismatch while creating SMD test dataset")
+
+    smd_test = Dataset(dataset_name, X_test, y_test)
 
     return smd_test
 
 
-def create_SMD_entities(data_dir_path: str) -> list[Entity]:
-    dataset_name = "SMD"
+def create_SMD_data(data_dir_path: str) -> NDArray:
     data_filenames = os.listdir(data_dir_path)
 
-    entities: list[Entity] = []
+    data_list = []
     for data_filename in data_filenames:
-        train_data_file_path = os.path.join(data_dir_path, data_filename)
+        data_file_path = os.path.join(data_dir_path, data_filename)
 
-        train_data = np.genfromtxt(
-            train_data_file_path, dtype=np.float64, delimiter=","
-        )
+        data = np.genfromtxt(data_file_path, dtype=np.float64, delimiter=",")
 
-        entity_name = data_filename.split(".")[0]
+        data_list.append(data)
 
-        entity = Entity(dataset_name, entity_name, train_data)
-        entities.append(entity)
-
-    return entities
+    return np.array(data_list)
 
 
 def create_SMD_entities_train(
@@ -64,16 +68,32 @@ def create_SMD_entities_train(
         os.getcwd(), "datasets", "ServerMachineDataset", "train"
     ),
 ) -> list[Entity]:
-    train_entities = create_SMD_entities(train_data_dir_path)
+    dataset_name = "SMD"
+    X_train_list = create_SMD_data(train_data_dir_path)
 
-    return train_entities
+    entities = []
+    for i, X_train in enumerate(X_train_list):
+        entity = Entity(dataset_name, f"entity-{i}", X_train, None)
+        entities.append(entity)
+
+    return entities
 
 
 def create_SMD_entities_test(
     test_data_dir_path: str = os.path.join(
-        os.getcwd(), "datasets", "ServerMachineDataset", "train"
+        os.getcwd(), "datasets", "ServerMachineDataset", "test"
+    ),
+    test_label_dir_path: str = os.path.join(
+        os.getcwd(), "datasets", "ServerMachineDataset", "test_label"
     ),
 ) -> list[Entity]:
-    test_entities = create_SMD_entities(test_data_dir_path)
+    dataset_name = "SMD"
+    X_test_list = create_SMD_data(test_data_dir_path)
+    y_test_list = create_SMD_data(test_label_dir_path)
 
-    return test_entities
+    entities = []
+    for i, (X_test, y_test) in enumerate(zip(X_test_list, y_test_list)):
+        entity = Entity(dataset_name, f"entity-{i}", X_test, y_test)
+        entities.append(entity)
+
+    return entities
