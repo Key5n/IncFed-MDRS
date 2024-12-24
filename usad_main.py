@@ -1,5 +1,5 @@
 import numpy as np
-from experiments.utils.psm import create_PSM_test, create_PSM_train
+from experiments.utils.psm import get_PSM_train, get_PSM_test
 from experiments.utils.smd import (
     get_SMD_test,
     get_SMD_train,
@@ -14,7 +14,6 @@ from experiments.algorithms.USAD.utils import (
 from experiments.evaluation.metrics import get_metrics
 
 if __name__ == "__main__":
-    w_size = 5
     hidden_size = 100
     device = get_default_device()
     dataset = "SMD"
@@ -38,30 +37,29 @@ if __name__ == "__main__":
         latent_size = 33
         num_epochs = 250
         anomaly_proportion_window = 0.2
-        train_data = create_PSM_train()
-        test_data = create_PSM_test()
-
-    w_size = window_size * data_channels
-    z_size = window_size * latent_size
+        train_data = get_PSM_train()
+        test_data, test_label = get_PSM_test()
 
     train_loader, test_loader = generate_loaders(
         train_data,
         test_data,
         test_label,
         batch_size,
-        w_size,
+        window_size,
         step,
         anomaly_proportion_window,
+        seed=seed,
     )
 
-    model = UsadModel(w_size * train_data.data.shape[-1], hidden_size)
+    w_size = window_size * data_channels
+    z_size = window_size * latent_size
+
+    model = UsadModel(w_size, z_size)
     model = to_device(model, device)
 
     history = training(num_epochs, model, train_loader, test_loader, device)
-    results_point_wise = testing_pointwise(model, train_loader, device)
+    results_point_wise = testing_pointwise(model, test_loader, device)
     test_rec = np.array(results_point_wise)
 
-    labels = test_data.get_labels()
-
-    evaluation_result = get_metrics(test_rec, labels)
+    evaluation_result = get_metrics(test_rec, test_label)
     print(evaluation_result)
