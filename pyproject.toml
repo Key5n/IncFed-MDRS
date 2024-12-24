@@ -8,7 +8,8 @@ dependencies = [
   "scikit-learn",
   "optuna",
   "pate",
-  "torch"
+  "torch",
+  "tqdm"
 ]
 
 [tool.setuptools]

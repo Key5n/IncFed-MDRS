@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.utils import shuffle
 from .usad import to_device
+from tqdm import tqdm
 
 
 def evaluate(model, val_loader, n, device):
@@ -28,7 +29,7 @@ def training(
     optimizer2 = opt_func(
         list(model.encoder.parameters()) + list(model.decoder2.parameters())
     )
-    for epoch in range(epochs):
+    for epoch in tqdm(range(epochs)):
         for batch in train_loader:
             batch = torch.flatten(batch[0], start_dim=1)  # I added this
             batch = to_device(batch, device)
