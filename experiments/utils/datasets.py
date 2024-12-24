@@ -1,5 +1,5 @@
 from numpy.typing import NDArray
-from torch.utils.data import TorchDataset
+from torch.utils.data import Dataset as TorchDataset
 
 
 # For centralized situation
