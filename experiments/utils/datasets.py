@@ -19,6 +19,9 @@ class Dataset(TorchDataset):
     def __len__(self):
         return self.data.shape[0]
 
+    def get_labels(self) -> NDArray | None:
+        return self.label
+
 
 # For federated situation
 class Entity(TorchDataset):
