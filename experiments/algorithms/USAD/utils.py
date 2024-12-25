@@ -171,3 +171,15 @@ def generate_loaders(
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_dataloader, test_dataloader
+
+def getting_labels(data_loader):
+    all_labels = []
+
+    for batch in data_loader:
+        labels = batch[1].numpy()
+        all_labels.extend(labels.flatten())
+
+    # Convert list to numpy array
+    all_labels = np.array(all_labels)
+
+    return all_labels

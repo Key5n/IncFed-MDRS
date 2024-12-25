@@ -7,6 +7,7 @@ from experiments.utils.smd import (
 from experiments.algorithms.USAD.usad import get_default_device, to_device, UsadModel
 from experiments.algorithms.USAD.utils import (
     generate_loaders,
+    getting_labels,
     set_seed,
     testing_pointwise,
     training,
@@ -51,6 +52,7 @@ if __name__ == "__main__":
         seed=seed,
     )
 
+
     w_size = window_size * data_channels
     z_size = window_size * latent_size
 
@@ -61,5 +63,6 @@ if __name__ == "__main__":
     results_point_wise = testing_pointwise(model, test_loader, device)
     test_rec = np.array(results_point_wise)
 
-    evaluation_result = get_metrics(test_rec, test_label)
+    label = getting_labels(test_loader)
+    evaluation_result = get_metrics(test_rec, label)
     print(evaluation_result)
