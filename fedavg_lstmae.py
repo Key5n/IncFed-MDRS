@@ -1,4 +1,5 @@
 from typing import Dict
+import numpy as np
 import torch
 from torch import nn
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE, LSTMAEModule
@@ -7,7 +8,7 @@ from experiments.algorithms.USAD.utils import getting_labels
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.fedavg import calc_averaged_weights
 from experiments.utils.smd import get_SMD_test
-from experiments.utils.utils import get_default_device
+from experiments.utils.utils import get_default_device, set_seed
 from experiments.algorithms.LSTMAE.fed_utils import get_SMD_clients_LSTMAE
 
 
@@ -17,6 +18,8 @@ if __name__ == "__main__":
     seed = 42
     global_epochs = 1
     local_epochs = 1
+    client_rate = 1
+    set_seed()
 
     loss_fn = nn.MSELoss()
     optimizer_gen_function = torch.optim.Adam
@@ -52,15 +55,25 @@ if __name__ == "__main__":
     )
 
     for global_round in range(global_epochs):
+        num_active_client = int((len(clients) * client_rate))
+
+        active_clients_index = np.random.default_rng().choice(
+            range(len(clients)), num_active_client, replace=False
+        )
+        active_clients = [clients[i] for i in active_clients_index]
+
         next_state_dict_list: list[Dict] = []
         data_nums: list[int] = []
-        for client in clients:
+
+        for client in [active_clients[0]]:
             next_state_dict, data_num = client.train_avg(global_state_dict)
 
             next_state_dict_list.append(next_state_dict)
             data_nums.append(data_num)
 
+        print(global_state_dict)
         global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
+        print(global_state_dict)
 
     model = LSTMAE(
         loss_fn,
