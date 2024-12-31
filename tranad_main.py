@@ -5,13 +5,11 @@ from experiments.algorithms.TranAD.tranad import TranAD
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.psm import get_PSM_train, get_PSM_test
 from experiments.utils.utils import set_seed
-from experiments.utils.smd import (
-    get_SMD_train,
-)
+from experiments.utils.smd import get_SMD_train
+from experiments.algorithms.TranAD.smd import get_SMD_test
 from experiments.algorithms.TranAD.utils import (
     generate_loaders,
     getting_labels,
-    get_SMD_test,
 )
 
 if __name__ == "__main__":
