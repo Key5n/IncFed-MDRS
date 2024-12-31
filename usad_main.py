@@ -4,15 +4,16 @@ from experiments.utils.smd import (
     get_SMD_test,
     get_SMD_train,
 )
-from experiments.algorithms.USAD.usad import get_default_device, to_device, UsadModel
+from experiments.algorithms.USAD.usad import UsadModel
 from experiments.algorithms.USAD.utils import (
     generate_loaders,
     getting_labels,
-    set_seed,
     testing_pointwise,
     training,
 )
+from experiments.utils.utils import get_default_device, set_seed, to_device
 from experiments.evaluation.metrics import get_metrics
+
 
 if __name__ == "__main__":
     hidden_size = 100
@@ -51,7 +52,6 @@ if __name__ == "__main__":
         anomaly_proportion_window,
         seed=seed,
     )
-
 
     w_size = window_size * data_channels
     z_size = window_size * latent_size

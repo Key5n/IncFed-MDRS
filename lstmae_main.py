@@ -1,20 +1,14 @@
-import numpy as np
 import torch
 from torch import nn
+from experiments.utils.utils import get_default_device, set_seed
 from experiments.utils.psm import get_PSM_train, get_PSM_test
 from experiments.utils.smd import (
     get_SMD_test,
     get_SMD_train,
 )
-from experiments.algorithms.LSTMAE.lstmae import (
-    LSTMAE,
-)
-from experiments.algorithms.USAD.usad import get_default_device
+from experiments.algorithms.LSTMAE.lstmae import LSTMAE
 from experiments.algorithms.USAD.utils import getting_labels
-from experiments.algorithms.LSTMAE.utils import (
-    generate_loaders,
-    set_seed,
-)
+from experiments.algorithms.LSTMAE.utils import generate_loaders
 from experiments.evaluation.metrics import get_metrics
 
 if __name__ == "__main__":
