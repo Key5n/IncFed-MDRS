@@ -1,10 +1,9 @@
-from experiments.utils.utils import create_windows
+from tqdm import tqdm
 import numpy as np
 import torch
+from experiments.utils.utils import create_windows, to_device
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.utils import shuffle
-from .usad import to_device
-from tqdm import tqdm
 
 
 def evaluate(model, val_loader, n, device):

@@ -28,6 +28,9 @@ class LSTMAE:
 
         self.model.to_device(device)
 
+    def load_model(self, state_dict):
+        self.model.load_state_dict(state_dict)
+
     def fit(self, dataloader):
         size = len(dataloader.dataset)
         self.model.train()
