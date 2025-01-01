@@ -6,8 +6,6 @@ import numpy as np
 from experiments.algorithms.LSTMAE.lstmae import LSTMAEModule
 from torch.utils.data import DataLoader
 
-logger = logging.getLogger(__name__)
-
 
 # For federated situation
 class LSTMAEClient:
@@ -42,6 +40,8 @@ class LSTMAEClient:
         self.device = device
 
     def train_avg(self, global_state_dict) -> tuple[Dict, int]:
+        logger = logging.getLogger(__name__)
+
         model = LSTMAEModule(
             self.n_features,
             self.hidden_size,
