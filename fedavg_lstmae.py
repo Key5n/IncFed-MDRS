@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 import numpy as np
 import torch
@@ -14,8 +15,8 @@ from experiments.algorithms.LSTMAE.fed_utils import get_SMD_clients_LSTMAE
 
 
 if __name__ == "__main__":
-
-    logger = init_logger(f"{__name__}.log")
+    init_logger(f"{__file__}.log")
+    logger = logging.getLogger(__name__)
 
     device = get_default_device()
     dataset = "SMD"
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         data_nums: list[int] = []
 
         for client in active_clients:
-            print(client.entity_name)
+            logger.info(client.entity_name)
             next_state_dict, data_num = client.train_avg(global_state_dict)
 
             next_state_dict_list.append(next_state_dict)
@@ -95,4 +96,4 @@ if __name__ == "__main__":
 
     labels = getting_labels(test_dataloader)
     evaluation_result = get_metrics(scores, labels)
-    print(evaluation_result)
+    logger.info(evaluation_result)

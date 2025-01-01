@@ -1,21 +1,27 @@
-import logging
+import logging.config
 
 
 def init_logger(filename: str):
-    logging.basicConfig(filename=filename, level=logging.DEBUG, filemode="w")
-    # Create a logger
-    logger = logging.getLogger(__name__)
-
-    # Create a file handler to write logs to a file
-    file_handler = logging.FileHandler(filename)
-    file_handler.setLevel(logging.DEBUG)
-
-    # Create a stream handler to print logs to the console
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
-
-    # Add the handlers to the logger
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-
-    return logger
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "handlers": {
+                "file": {
+                    "class": "logging.FileHandler",  # Handler class for writing logs to a file
+                    "filename": filename,  # Log file name
+                    "level": "INFO",
+                },
+                "console": {
+                    "class": "logging.StreamHandler",
+                    "level": "INFO",
+                },
+            },
+            "root": {
+                "level": "INFO",
+                "handlers": [
+                    "file",
+                    "console",
+                ],
+            },
+        }
+    )
