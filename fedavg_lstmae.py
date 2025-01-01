@@ -2,6 +2,7 @@ from typing import Dict
 import numpy as np
 import torch
 from torch import nn
+from experiments.utils.logger import init_logger
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE, LSTMAEModule
 from experiments.algorithms.LSTMAE.utils import generate_test_loader
 from experiments.algorithms.USAD.utils import getting_labels
@@ -13,6 +14,9 @@ from experiments.algorithms.LSTMAE.fed_utils import get_SMD_clients_LSTMAE
 
 
 if __name__ == "__main__":
+
+    logger = init_logger(f"{__name__}.log")
+
     device = get_default_device()
     dataset = "SMD"
     seed = 42
@@ -70,6 +74,8 @@ if __name__ == "__main__":
             data_nums.append(data_num)
 
         global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
+
+        logger.info(global_round)
 
     model = LSTMAE(
         loss_fn,

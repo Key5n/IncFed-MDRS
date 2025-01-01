@@ -1,8 +1,12 @@
 from typing import Dict
-from tqdm import tqdm
+import logging
+from tqdm import trange
+from tqdm.contrib.logging import logging_redirect_tqdm
 import numpy as np
 from experiments.algorithms.LSTMAE.lstmae import LSTMAEModule
 from torch.utils.data import DataLoader
+
+logger = logging.getLogger(__name__)
 
 
 # For federated situation
@@ -51,23 +55,24 @@ class LSTMAEClient:
 
         optimizer = self.optimizer_generate_function(model.parameters(), lr=self.lr)
 
-        for _ in tqdm(range(self.local_epochs)):
-            batch_losses: list[float] = []
-            for X, y in self.train_dataloader:
-                X = X.to(self.device)
-                y = y.to(self.device)
+        with logging_redirect_tqdm():
+            for _ in trange(self.local_epochs):
+                batch_losses: list[float] = []
+                for X, y in self.train_dataloader:
+                    X = X.to(self.device)
+                    y = y.to(self.device)
 
-                _, y_pred = model(X)
-                loss = self.loss_fn(y_pred, y)
+                    _, y_pred = model(X)
+                    loss = self.loss_fn(y_pred, y)
 
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                    optimizer.zero_grad()
 
-                batch_losses.append(loss.item())
+                    batch_losses.append(loss.item())
 
-            batch_loss_avg = np.sum(batch_losses) / len(batch_losses)
-            tqdm.write(f"loss = {batch_loss_avg}")
+                batch_loss_avg = np.sum(batch_losses) / len(batch_losses)
+                logger.info(f"loss = {batch_loss_avg}")
 
         data_num = len(next(iter(self.train_dataloader)))
 
