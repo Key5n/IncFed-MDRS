@@ -38,3 +38,17 @@ def to_device(data, device):
     if isinstance(data, (list, tuple)):
         return [to_device(x, device) for x in data]
     return data.to(device, non_blocking=True)
+
+
+def choose_clients(clients: list, client_rate: float, seed) -> list:
+    num_active_client = int((len(clients) * client_rate))
+    # number of active_clients must be larger than 1
+    num_active_client = max(num_active_client, 1)
+
+    rng = np.random.default_rng(seed)
+    active_clients_index = rng.choice(
+        range(len(clients)), num_active_client, replace=False
+    )
+    active_clients = [clients[i] for i in active_clients_index]
+
+    return active_clients
