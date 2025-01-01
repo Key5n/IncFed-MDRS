@@ -1,5 +1,6 @@
 from typing import Dict
 from tqdm import tqdm
+import numpy as np
 from experiments.algorithms.LSTMAE.lstmae import LSTMAEModule
 from torch.utils.data import DataLoader
 
@@ -50,6 +51,7 @@ class LSTMAEClient:
         optimizer = self.optimizer_generate_function(model.parameters(), lr=self.lr)
 
         for _ in tqdm(range(self.local_epochs)):
+            batch_losses: list[float] = []
             for X, y in self.train_dataloader:
                 X = X.to(self.device)
                 y = y.to(self.device)
@@ -61,7 +63,11 @@ class LSTMAEClient:
                 optimizer.step()
                 optimizer.zero_grad()
 
-                tqdm.write(f"loss = {loss.item()}")
+                batch_losses.append(loss.item())
+
+            batch_loss_avg = np.sum(batch_losses) / len(batch_losses)
+            tqdm.write(f"loss = {batch_loss_avg}")
 
         data_num = len(next(iter(self.train_dataloader)))
+
         return model.state_dict(), data_num
