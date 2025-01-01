@@ -16,8 +16,8 @@ if __name__ == "__main__":
     device = get_default_device()
     dataset = "SMD"
     seed = 42
-    global_epochs = 1
-    local_epochs = 1
+    global_epochs = 10
+    local_epochs = 5
     client_rate = 0.25
     set_seed()
 
