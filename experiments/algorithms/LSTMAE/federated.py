@@ -47,6 +47,7 @@ class LSTMAEClient:
             self.device,
         )
         model.load_state_dict(global_state_dict)
+        model.to(self.device)
 
         optimizer = self.optimizer_generate_function(model.parameters(), lr=self.lr)
 
