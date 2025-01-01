@@ -54,12 +54,27 @@ if __name__ == "__main__":
         lr,
         device,
     )
+
     test_data, test_label = get_SMD_test()
     test_dataloader = generate_test_loader(
         test_data, test_label, batch_size, window_size, step
     )
+    # for testing
+    model = LSTMAE(
+        loss_fn,
+        optimizer_gen_function,
+        n_features,
+        hidden_size,
+        n_layers,
+        use_bias,
+        dropout,
+        batch_size,
+        lr,
+        device,
+    )
 
     for global_round in range(global_epochs):
+        logger.info(global_round)
         # choose different clients for each global round
         # but fix chosen clients on every run for reproduction
         active_clients = choose_clients(clients, client_rate, seed + global_round)
@@ -76,24 +91,10 @@ if __name__ == "__main__":
 
         global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
 
-        logger.info(global_round)
+        model.load_model(global_state_dict)
 
-    model = LSTMAE(
-        loss_fn,
-        optimizer_gen_function,
-        n_features,
-        hidden_size,
-        n_layers,
-        use_bias,
-        dropout,
-        batch_size,
-        lr,
-        device,
-    )
-    model.load_model(global_state_dict)
+        scores = model.run(test_dataloader)
 
-    scores = model.run(test_dataloader)
-
-    labels = getting_labels(test_dataloader)
-    evaluation_result = get_metrics(scores, labels)
-    logger.info(evaluation_result)
+        labels = getting_labels(test_dataloader)
+        evaluation_result = get_metrics(scores, labels)
+        logger.info(evaluation_result)
