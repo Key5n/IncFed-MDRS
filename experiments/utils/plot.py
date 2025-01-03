@@ -58,4 +58,4 @@ def plot(scores: NDArray, labels: NDArray, filename: str):
 
     # Show the plot
     plt.tight_layout()
-    plt.saveFig(filename)
+    plt.savefig(filename)
