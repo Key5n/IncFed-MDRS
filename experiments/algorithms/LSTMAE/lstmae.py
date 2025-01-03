@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.autograd import Variable
+from tqdm import tqdm
 
 
 class LSTMAE:
@@ -32,10 +33,10 @@ class LSTMAE:
         self.model.load_state_dict(state_dict)
 
     def fit(self, dataloader):
-        size = len(dataloader.dataset)
         self.model.train()
 
-        for batch, (X, y) in enumerate(dataloader):
+        losses = []
+        for X, y in dataloader:
             X = X.to(self.device)
             y = y.to(self.device)
 
@@ -46,8 +47,10 @@ class LSTMAE:
             self.optimizer.step()
             self.optimizer.zero_grad()
 
-            loss, current = loss.item(), batch * self.batch_size + len(X)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+            losses.append(loss.item())
+
+        loss_avg = np.mean(losses)
+        tqdm.write(f"loss: {loss_avg}")
 
     def run(self, dataloader):
         self.model.eval()
