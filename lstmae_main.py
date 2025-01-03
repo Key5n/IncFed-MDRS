@@ -6,6 +6,7 @@ from experiments.utils.smd import (
     get_SMD_test,
     get_SMD_train,
 )
+from experiments.utils.plot import plot
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE
 from experiments.algorithms.USAD.utils import getting_labels
 from experiments.algorithms.LSTMAE.utils import generate_loaders
@@ -77,8 +78,9 @@ if __name__ == "__main__":
     for epoch in range(epochs):
         model.fit(train_dataloader)
     scores = model.run(test_dataloader)
-
     labels = getting_labels(test_dataloader)
-    print(f"{scores.shape = }, {labels.shape = }")
+
+    plot(scores, labels, "result/lstmae.png")
+
     evaluation_result = get_metrics(scores, labels)
     print(evaluation_result)
