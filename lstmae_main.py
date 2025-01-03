@@ -77,10 +77,10 @@ if __name__ == "__main__":
 
     for epoch in range(epochs):
         model.fit(train_dataloader)
-    scores = model.run(test_dataloader)
-    labels = getting_labels(test_dataloader)
+        scores = model.run(test_dataloader)
+        labels = getting_labels(test_dataloader)
 
-    plot(scores, labels, "result/lstmae.png")
+        plot(scores, labels, f"result/lstmae-{epoch}.png")
 
-    evaluation_result = get_metrics(scores, labels)
-    print(evaluation_result)
+        evaluation_result = get_metrics(scores, labels)
+        print(evaluation_result)
