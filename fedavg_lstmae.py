@@ -1,5 +1,6 @@
 import logging
 from typing import Dict
+from experiments.utils.plot import plot
 import numpy as np
 import torch
 from torch import nn
@@ -97,5 +98,6 @@ if __name__ == "__main__":
         scores = model.run(test_dataloader)
 
         labels = getting_labels(test_dataloader)
+        plot(scores, labels, f"result/score-{global_round}.png")
         evaluation_result = get_metrics(scores, labels)
         logger.info(evaluation_result)
