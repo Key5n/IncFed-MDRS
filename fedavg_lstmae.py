@@ -53,6 +53,7 @@ if __name__ == "__main__":
         batch_size,
         lr,
         device,
+        step=step,
     )
 
     test_data, test_label = get_SMD_test()
