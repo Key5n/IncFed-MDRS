@@ -2,10 +2,9 @@ import os
 import pandas as pd
 import numpy as np
 from numpy.typing import NDArray
-from .datasets import Entity, Dataset
 
 
-def get_PSM(data_file_path: str) -> Dataset:
+def get_PSM(data_file_path: str) -> NDArray:
     data = pd.read_csv(data_file_path)
     data.drop(columns=[r"timestamp_(min)"], inplace=True)
     data = data.to_numpy()
@@ -17,7 +16,7 @@ def get_PSM_train(
     train_data_file_path: str = os.path.join(
         os.getcwd(), "datasets", "PSM", "train.csv"
     )
-) -> Dataset:
+) -> NDArray:
     psm_train = get_PSM(train_data_file_path)
 
     return psm_train
@@ -25,7 +24,7 @@ def get_PSM_train(
 
 def get_PSM_test(
     test_data_file_path: str = os.path.join(os.getcwd(), "datasets", "PSM", "test.csv")
-) -> Dataset:
+) -> NDArray:
     psm_test = get_PSM(test_data_file_path)
 
     return psm_test
