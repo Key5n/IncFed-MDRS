@@ -148,14 +148,9 @@ class LSTMAEModule(nn.Module):
             else:
                 _, dec_hidden = self.decoder(output[:, i].unsqueeze(1), dec_hidden)
 
-        output_flatten = output.reshape(
-            (output.shape[0], output.shape[1] * output.shape[2])
-        )
-        ts_batch_flatten = ts_batch.reshape(
-            (ts_batch.shape[0], ts_batch.shape[1] * ts_batch.shape[2])
-        )
-        rec_err = torch.abs(output_flatten**2 - ts_batch_flatten**2)
-        rec_err = torch.sum(rec_err, dim=1)
-        output = output[:, -1, :]
+        output = output[:, -1]
+        rec_error = nn.L1Loss(reduction="none")(output, ts_batch[:, -1])
 
-        return rec_err, output
+        rec_error_mean = torch.mean(rec_error, dim=1)
+
+        return rec_error_mean, output
