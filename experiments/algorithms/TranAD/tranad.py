@@ -124,18 +124,22 @@ class TranADModule(nn.Module):
 
 
 class TranAD:
-    def __init__(self, loss_fn, optimizer, scheduler, feats, lr, batch_size):
+    def __init__(self, loss_fn, optimizer, scheduler, feats, lr, batch_size, device):
         self.feats = feats
         self.model = TranADModule(feats, lr)
         self.loss_fn = loss_fn
         self.optimizer = optimizer(self.model.parameters(), lr=lr, weight_decay=1e-5)
         self.scheduler = scheduler(self.optimizer, 5, 0.9)
         self.batch_size = batch_size
+        self.device = device
+        self.model.to(device)
 
     def fit(self, dataloader, epoch):
         n = epoch + 1
         l1s = []
         for d, _ in dataloader:
+            d = d.to(self.device)
+
             local_bs = d.shape[0]
             window = d.permute(1, 0, 2)
             elem = window[-1, :, :].view(1, local_bs, self.feats)
@@ -164,6 +168,8 @@ class TranAD:
         losses = []
         with torch.no_grad():
             for d, _ in dataloader:
+                d = d.to(self.device)
+
                 local_batch_size = d.shape[0]
                 window = d.permute(1, 0, 2)
                 elem = window[-1, :, :].view(1, local_batch_size, self.feats)

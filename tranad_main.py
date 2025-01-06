@@ -26,6 +26,7 @@ if __name__ == "__main__":
     batch_size = 128
     epochs = 5
     window_size = 10
+    device = get_default_device()
     set_seed(seed)
 
     loss_fn = nn.MSELoss(reduction="none")
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         for test_data, test_labels in test_entities
     ]
 
-    model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size)
+    model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size, device)
 
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
