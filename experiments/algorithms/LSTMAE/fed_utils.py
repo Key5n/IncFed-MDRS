@@ -38,7 +38,6 @@ def get_SMD_clients_LSTMAE(
         os.getcwd(), "datasets", "ServerMachineDataset", "train"
     ),
     window_size=30,
-    step=1,
     seed=42,
 ) -> list[LSTMAEClient]:
     dataset_name = "SMD"
@@ -46,7 +45,7 @@ def get_SMD_clients_LSTMAE(
 
     clients = []
     for i, X_train in enumerate(X_train_list):
-        train_data = create_windows(X_train, window_size, step)
+        train_data = create_windows(X_train, window_size)
         train_data = shuffle(train_data, random_state=seed)
         train_data = torch.tensor(train_data, dtype=torch.float32)
         train_data = TensorDataset(

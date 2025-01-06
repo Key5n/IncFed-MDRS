@@ -5,14 +5,10 @@ from experiments.utils.utils import create_windows
 
 
 def generate_loaders(
-    train_data, test_data, test_labels, batch_size, window_size, step, seed=42
+    train_data, test_data, test_labels, batch_size, window_size, seed=42
 ):
-    train_loader = generate_train_loader(
-        train_data, batch_size, window_size, step, seed
-    )
-    test_loader = generate_test_loader(
-        test_data, test_labels, batch_size, window_size, step
-    )
+    train_loader = generate_train_loader(train_data, batch_size, window_size, seed)
+    test_loader = generate_test_loader(test_data, test_labels, batch_size, window_size)
 
     return train_loader, test_loader
 
@@ -21,10 +17,9 @@ def generate_train_loader(
     train_data,
     batch_size,
     window_size,
-    step,
     seed=42,
 ):
-    train_data = create_windows(train_data, window_size, step)
+    train_data = create_windows(train_data, window_size)
     train_data = shuffle(train_data, random_state=seed)
 
     # Convert data and labels into PyTorch tensors
@@ -46,10 +41,9 @@ def generate_test_loader(
     test_labels,
     batch_size,
     window_size,
-    step,
 ):
-    test_data = create_windows(test_data, window_size, step)
-    test_labels_point = create_windows(test_labels, window_size, step)
+    test_data = create_windows(test_data, window_size)
+    test_labels_point = create_windows(test_labels, window_size)
 
     # Convert data and labels into PyTorch tensors
     test_data = torch.tensor(test_data, dtype=torch.float32)

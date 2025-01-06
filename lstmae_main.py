@@ -33,17 +33,14 @@ if __name__ == "__main__":
     n_layers = (2, 2)
     use_bias = (True, True)
     dropout = (0, 0)
-    step = 100
 
     train_data = get_SMD_train()
     n_features = train_data.shape[1]
     test_entities = get_SMD_test_entities()
 
-    train_dataloader = generate_train_loader(
-        train_data, batch_size, window_size, step, seed
-    )
+    train_dataloader = generate_train_loader(train_data, batch_size, window_size, seed)
     test_dataloader_list = [
-        generate_test_loader(test_data, test_labels, batch_size, window_size, step)
+        generate_test_loader(test_data, test_labels, batch_size, window_size)
         for test_data, test_labels in test_entities
     ]
 

@@ -11,7 +11,6 @@ def generate_loaders(
     test_labels,
     batch_size,
     window_size,
-    step=1,
     seed=42,
 ):
     """
@@ -29,11 +28,11 @@ def generate_loaders(
     """
 
     # Segment the data into overlapping windows
-    train_data = create_windows(train_data, window_size, step)
+    train_data = create_windows(train_data, window_size)
     train_data = shuffle(train_data, random_state=seed)
 
-    test_data = create_windows(test_data, window_size, step)
-    test_labels_point = create_windows(test_labels, window_size, step)
+    test_data = create_windows(test_data, window_size)
+    test_labels_point = create_windows(test_labels, window_size)
 
     # Convert data and labels into PyTorch tensors
     train_data = torch.tensor(train_data, dtype=torch.float32)

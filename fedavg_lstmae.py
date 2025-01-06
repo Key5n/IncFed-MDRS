@@ -35,7 +35,6 @@ if __name__ == "__main__":
     n_layers = (2, 2)
     use_bias = (True, True)
     dropout = (0, 0)
-    step = 100
     batch_size = 512
     lr = 0.001
 
@@ -54,12 +53,11 @@ if __name__ == "__main__":
         batch_size,
         lr,
         device,
-        step=step,
     )
 
     test_data, test_label = get_SMD_test()
     test_dataloader = generate_test_loader(
-        test_data, test_label, batch_size, window_size, step
+        test_data, test_label, batch_size, window_size
     )
     # for testing
     model = LSTMAE(
