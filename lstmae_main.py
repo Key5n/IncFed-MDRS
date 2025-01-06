@@ -24,34 +24,19 @@ if __name__ == "__main__":
     batch_size = 512
     set_seed(seed)
 
-    if dataset == "SMD":
-        epochs = 100
-        batch_size = 64
-        lr = 0.001
-        hidden_size = 128
-        window_size = 30
-        n_layers = (2, 2)
-        use_bias = (True, True)
-        dropout = (0, 0)
-        step = 100
+    epochs = 100
+    batch_size = 64
+    lr = 0.001
+    hidden_size = 128
+    window_size = 30
+    n_layers = (2, 2)
+    use_bias = (True, True)
+    dropout = (0, 0)
+    step = 100
 
-        train_data = get_SMD_train()
-        n_features = train_data.shape[1]
-        test_entities = get_SMD_test_entities()
-    else:
-        epochs = 100
-        batch_size = 64
-        lr = 0.001
-        hidden_size = 128
-        window_size = 30
-        n_layers = (2, 2)
-        use_bias = (True, True)
-        dropout = (0, 0)
-        step = 100
-
-        train_data = get_PSM_train()
-        n_features = train_data.shape[1]
-        test_data, test_label = get_PSM_test()
+    train_data = get_SMD_train()
+    n_features = train_data.shape[1]
+    test_entities = get_SMD_test_entities()
 
     train_dataloader = generate_train_loader(
         train_data, batch_size, window_size, step, seed
