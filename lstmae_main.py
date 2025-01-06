@@ -1,6 +1,7 @@
 import os
 import torch
 from torch import nn
+from experiments.utils.logger import init_logger
 from experiments.utils.utils import get_default_device, set_seed
 from experiments.utils.psm import get_PSM_train, get_PSM_test
 from experiments.utils.smd import (
@@ -18,6 +19,10 @@ from experiments.algorithms.LSTMAE.utils import (
 from experiments.evaluation.metrics import get_metrics
 
 if __name__ == "__main__":
+    result_dir = os.path.join("result", "lstmae", "centralized")
+    os.makedirs(result_dir)
+    init_logger(os.path.join(result_dir, f"{__file__}.log"))
+
     hidden_size = 100
     device = get_default_device()
     dataset = "SMD"
@@ -64,8 +69,6 @@ if __name__ == "__main__":
         model.fit(train_dataloader)
 
     evaluation_results = []
-    result_dir = os.path.join("result", "lstmae", "centralized")
-    os.makedirs(result_dir)
     for i, test_dataloader in enumerate(test_dataloader_list):
         scores = model.run(test_dataloader)
         labels = getting_labels(test_dataloader)

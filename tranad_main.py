@@ -2,6 +2,7 @@ import os
 from tqdm import tqdm
 import torch
 from torch import nn
+from experiments.utils.logger import init_logger
 from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.plot import plot
 from experiments.algorithms.TranAD.tranad import TranAD
@@ -16,6 +17,10 @@ from experiments.algorithms.TranAD.utils import (
 )
 
 if __name__ == "__main__":
+    result_dir = os.path.join("result", "tranad", "centralized")
+    os.makedirs(result_dir)
+    init_logger(os.path.join(result_dir, f"{__file__}.log"))
+
     dataset = "SMD"
     seed = 42
     batch_size = 128
@@ -45,8 +50,6 @@ if __name__ == "__main__":
         model.fit(train_dataloader, epoch)
 
     evaluation_results = []
-    result_dir = os.path.join("result", "tranad", "centralized")
-    os.makedirs(result_dir)
     for i, test_dataloader in enumerate(test_dataloader_list):
         scores = model.run(test_dataloader)
         labels = getting_labels(test_dataloader)
