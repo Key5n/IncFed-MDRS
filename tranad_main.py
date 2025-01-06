@@ -1,14 +1,17 @@
+import os
 from tqdm import tqdm
 import torch
 from torch import nn
+from experiments.utils.get_final_scores import get_final_scores
+from experiments.utils.plot import plot
 from experiments.algorithms.TranAD.tranad import TranAD
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.psm import get_PSM_train, get_PSM_test
 from experiments.utils.utils import set_seed
-from experiments.utils.smd import get_SMD_train
-from experiments.algorithms.TranAD.smd import get_SMD_test
+from experiments.utils.smd import get_SMD_test_entities, get_SMD_train
 from experiments.algorithms.TranAD.utils import (
-    generate_loaders,
+    generate_test_loader,
+    generate_train_loader,
     getting_labels,
 )
 
@@ -24,34 +27,32 @@ if __name__ == "__main__":
     optimizer = torch.optim.AdamW
     scheduler = torch.optim.lr_scheduler.StepLR
 
-    if dataset == "SMD":
-        lr = 0.0001
+    lr = 0.0001
 
-        train_data = get_SMD_train()
-        n_features = train_data.shape[1]
-        test_data, test_label = get_SMD_test()
-    else:
-        lr = 0.001
+    train_data = get_SMD_train()
+    n_features = train_data.shape[1]
+    test_entities = get_SMD_test_entities()
 
-        train_data = get_PSM_train()
-        n_features = train_data.shape[1]
-        test_data, test_label = get_PSM_test()
-
-    train_dataloader, test_dataloader = generate_loaders(
-        train_data,
-        test_data,
-        test_label,
-        batch_size,
-        window_size,
-        seed=seed,
-    )
+    train_dataloader = generate_train_loader(train_data, batch_size, window_size, seed)
+    test_dataloader_list = [
+        generate_test_loader(test_data, test_labels, batch_size, window_size)
+        for test_data, test_labels in test_entities
+    ]
 
     model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size)
 
     for epoch in tqdm(range(epochs)):
         model.fit(train_dataloader, epoch)
-    scores = model.run(test_dataloader)
 
-    labels = getting_labels(test_dataloader)
-    evaluation_result = get_metrics(scores, labels)
-    print(evaluation_result)
+    evaluation_results = []
+    os.makedirs(os.path.join("result", "tranad"))
+    for i, test_dataloader in enumerate(test_dataloader_list):
+        scores = model.run(test_dataloader)
+        labels = getting_labels(test_dataloader)
+
+        plot(scores, labels, f"result/tranad/{i}.png")
+
+        evaluation_result = get_metrics(scores, labels)
+        evaluation_results.append(evaluation_result)
+
+    get_final_scores(evaluation_results)
