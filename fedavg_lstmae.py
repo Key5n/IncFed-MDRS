@@ -1,5 +1,7 @@
+import os
 import logging
 from typing import Dict
+from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.plot import plot
 import numpy as np
 import torch
@@ -10,13 +12,14 @@ from experiments.algorithms.LSTMAE.utils import generate_test_loader
 from experiments.algorithms.USAD.utils import getting_labels
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.fedavg import calc_averaged_weights
-from experiments.utils.smd import get_SMD_test
+from experiments.utils.smd import get_SMD_test_entities
 from experiments.utils.utils import choose_clients, get_default_device, set_seed
 from experiments.algorithms.LSTMAE.fed_utils import get_SMD_clients_LSTMAE
 
 
 if __name__ == "__main__":
-    init_logger(f"{__file__}.log")
+    result_dir = os.path.join("result", "lstmae", "federated")
+    init_logger(os.path.join(result_dir, f"{__file__}.log"))
     logger = logging.getLogger(__name__)
 
     device = get_default_device()
@@ -55,10 +58,11 @@ if __name__ == "__main__":
         device,
     )
 
-    test_data, test_label = get_SMD_test()
-    test_dataloader = generate_test_loader(
-        test_data, test_label, batch_size, window_size
-    )
+    test_entities = get_SMD_test_entities()
+    test_dataloader_list = [
+        generate_test_loader(test_data, test_labels, batch_size, window_size)
+        for test_data, test_labels in test_entities
+    ]
     # for testing
     model = LSTMAE(
         loss_fn,
@@ -93,9 +97,14 @@ if __name__ == "__main__":
 
         model.load_model(global_state_dict)
 
-        scores = model.run(test_dataloader)
+        evaluation_results = []
+        for i, test_dataloader in enumerate(test_dataloader_list):
+            scores = model.run(test_dataloader)
+            labels = getting_labels(test_dataloader)
 
-        labels = getting_labels(test_dataloader)
-        plot(scores, labels, f"result/score-{global_round}.png")
-        evaluation_result = get_metrics(scores, labels)
-        logger.info(evaluation_result)
+            plot(scores, labels, os.path.join(result_dir, f"{i}.png"))
+
+            evaluation_result = get_metrics(scores, labels)
+            evaluation_results.append(evaluation_result)
+
+        get_final_scores(evaluation_results)
