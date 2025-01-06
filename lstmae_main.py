@@ -3,13 +3,17 @@ from torch import nn
 from experiments.utils.utils import get_default_device, set_seed
 from experiments.utils.psm import get_PSM_train, get_PSM_test
 from experiments.utils.smd import (
-    get_SMD_test,
+    get_SMD_test_entities,
     get_SMD_train,
 )
+from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.plot import plot
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE
 from experiments.algorithms.USAD.utils import getting_labels
-from experiments.algorithms.LSTMAE.utils import generate_loaders
+from experiments.algorithms.LSTMAE.utils import (
+    generate_test_loader,
+    generate_train_loader,
+)
 from experiments.evaluation.metrics import get_metrics
 
 if __name__ == "__main__":
@@ -33,7 +37,7 @@ if __name__ == "__main__":
 
         train_data = get_SMD_train()
         n_features = train_data.shape[1]
-        test_data, test_label = get_SMD_test()
+        test_entities = get_SMD_test_entities()
     else:
         epochs = 100
         batch_size = 64
@@ -49,15 +53,13 @@ if __name__ == "__main__":
         n_features = train_data.shape[1]
         test_data, test_label = get_PSM_test()
 
-    train_dataloader, test_dataloader = generate_loaders(
-        train_data,
-        test_data,
-        test_label,
-        batch_size,
-        window_size,
-        step,
-        seed,
+    train_dataloader = generate_train_loader(
+        train_data, batch_size, window_size, step, seed
     )
+    test_dataloader_list = [
+        generate_test_loader(test_data, test_labels, batch_size, window_size, step)
+        for test_data, test_labels in test_entities
+    ]
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam
@@ -77,10 +79,15 @@ if __name__ == "__main__":
 
     for epoch in range(epochs):
         model.fit(train_dataloader)
+
+    evaluation_results = []
+    for test_dataloader in test_dataloader_list:
         scores = model.run(test_dataloader)
         labels = getting_labels(test_dataloader)
 
-        plot(scores, labels, f"result/lstmae-{epoch}.png")
+        # plot(scores, labels, f"result/lstmae-{epoch}.png")
 
         evaluation_result = get_metrics(scores, labels)
-        print(evaluation_result)
+        evaluation_results.append(evaluation_result)
+
+    get_final_scores(evaluation_results)

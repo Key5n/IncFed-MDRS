@@ -27,17 +27,29 @@ def get_SMD_train(
     return X_train
 
 
-def get_SMD_test(
+def get_SMD_test_entities(
     test_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "test"
     ),
     test_label_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "test_label"
     ),
-) -> tuple[NDArray, NDArray]:
-    X_test = get_SMD(test_data_dir_path)
-    y_test = get_SMD(test_label_dir_path)
-    if X_test.shape[0] != y_test.shape[0]:
-        raise Exception(f"Length mismatch while creating SMD test dataset")
+) -> list[tuple[NDArray, NDArray]]:
+    data_filenames = os.listdir(test_data_dir_path)
 
-    return X_test, y_test
+    entities: list[tuple[NDArray, NDArray]] = []
+    for data_filename in data_filenames:
+        test_data_file_path = os.path.join(test_data_dir_path, data_filename)
+        test_label_file_path = os.path.join(test_label_dir_path, data_filename)
+
+        test_data = np.genfromtxt(test_data_file_path, dtype=np.float64, delimiter=",")
+        test_label = np.genfromtxt(
+            test_label_file_path, dtype=np.float64, delimiter=","
+        )
+        if test_data.shape[0] != test_label.shape[0]:
+            raise Exception(f"Length mismatch while creating SMD test dataset")
+
+        entity: tuple[NDArray, NDArray] = (test_data, test_label)
+        entities.append(entity)
+
+    return entities
