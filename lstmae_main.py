@@ -1,4 +1,5 @@
 import os
+from tqdm import trange
 import torch
 from torch import nn
 from experiments.utils.logger import init_logger
@@ -65,7 +66,7 @@ if __name__ == "__main__":
         device,
     )
 
-    for epoch in range(epochs):
+    for epoch in trange(epochs):
         model.fit(train_dataloader)
 
     evaluation_results = []

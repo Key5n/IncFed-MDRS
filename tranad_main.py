@@ -1,5 +1,5 @@
 import os
-from tqdm import tqdm
+from tqdm import trange
 import torch
 from torch import nn
 from experiments.utils.logger import init_logger
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size)
 
-    for epoch in tqdm(range(epochs)):
+    for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
 
     evaluation_results = []
