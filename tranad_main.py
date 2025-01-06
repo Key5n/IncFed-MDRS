@@ -8,7 +8,7 @@ from experiments.utils.plot import plot
 from experiments.algorithms.TranAD.tranad import TranAD
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.psm import get_PSM_train, get_PSM_test
-from experiments.utils.utils import set_seed
+from experiments.utils.utils import get_default_device, set_seed
 from experiments.utils.smd import get_SMD_test_entities, get_SMD_train
 from experiments.algorithms.TranAD.utils import (
     generate_test_loader,
