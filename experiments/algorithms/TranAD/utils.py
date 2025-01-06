@@ -48,7 +48,7 @@ def generate_test_loader(
     return test_dataloader
 
 
-def getting_labels(data_loader):
+def getting_labels_for_TranAD(data_loader):
     all_labels = []
 
     for batch in data_loader:

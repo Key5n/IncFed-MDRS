@@ -13,7 +13,7 @@ from experiments.utils.smd import get_SMD_test_entities, get_SMD_train
 from experiments.algorithms.TranAD.utils import (
     generate_test_loader,
     generate_train_loader,
-    getting_labels,
+    getting_labels_for_TranAD,
 )
 
 if __name__ == "__main__":
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     evaluation_results = []
     for i, test_dataloader in enumerate(test_dataloader_list):
         scores = model.run(test_dataloader)
-        labels = getting_labels(test_dataloader)
+        labels = getting_labels_for_TranAD(test_dataloader)
 
         plot(scores, labels, os.path.join(result_dir, f"{i}.png"))
 
