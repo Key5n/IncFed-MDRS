@@ -22,18 +22,17 @@ def get_SMD_interpretation_labels(
     return label
 
 
-def get_SMD_test(
+def get_SMD_test_entities_for_TranAD(
     test_data_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "test"
     ),
     interpretation_label_dir_path: str = os.path.join(
         os.getcwd(), "datasets", "ServerMachineDataset", "interpretation_label"
     ),
-) -> tuple[NDArray, NDArray]:
+) -> list[tuple[NDArray, NDArray]]:
     data_filenames = os.listdir(test_data_dir_path)
 
-    X_test = []
-    y_test = []
+    entities: list[tuple[NDArray, NDArray]] = []
     for data_filename in data_filenames:
         test_data_file_path = os.path.join(test_data_dir_path, data_filename)
         interpretation_label_file_path = os.path.join(
@@ -45,7 +44,10 @@ def get_SMD_test(
             interpretation_label_file_path, test_data.shape
         )
 
-        X_test.append(test_data)
-        y_test.append(test_label)
+        if test_data.shape[0] != test_label.shape[0]:
+            raise Exception(f"Length mismatch while creating SMD test dataset")
 
-    return np.concatenate(X_test), np.concatenate(y_test)
+        entity = (test_data, test_label)
+        entities.append(entity)
+
+    return entities

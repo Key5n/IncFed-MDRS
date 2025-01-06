@@ -6,10 +6,11 @@ from experiments.utils.logger import init_logger
 from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.plot import plot
 from experiments.algorithms.TranAD.tranad import TranAD
+from experiments.algorithms.TranAD.smd import get_SMD_test_entities_for_TranAD
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.psm import get_PSM_train, get_PSM_test
 from experiments.utils.utils import get_default_device, set_seed
-from experiments.utils.smd import get_SMD_test_entities, get_SMD_train
+from experiments.utils.smd import get_SMD_train
 from experiments.algorithms.TranAD.utils import (
     generate_test_loader,
     generate_train_loader,
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
     train_data = get_SMD_train()
     n_features = train_data.shape[1]
-    test_entities = get_SMD_test_entities()
+    test_entities = get_SMD_test_entities_for_TranAD()
 
     train_dataloader = generate_train_loader(train_data, batch_size, window_size, seed)
     test_dataloader_list = [
