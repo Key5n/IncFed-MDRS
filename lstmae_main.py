@@ -1,3 +1,4 @@
+import os
 import torch
 from torch import nn
 from experiments.utils.utils import get_default_device, set_seed
@@ -66,11 +67,12 @@ if __name__ == "__main__":
         model.fit(train_dataloader)
 
     evaluation_results = []
-    for test_dataloader in test_dataloader_list:
+    os.makedirs(os.path.join("result", "lstmae"))
+    for i, test_dataloader in enumerate(test_dataloader_list):
         scores = model.run(test_dataloader)
         labels = getting_labels(test_dataloader)
 
-        # plot(scores, labels, f"result/lstmae-{epoch}.png")
+        plot(scores, labels, f"result/lstmae/{i}.png")
 
         evaluation_result = get_metrics(scores, labels)
         evaluation_results.append(evaluation_result)
