@@ -64,12 +64,13 @@ if __name__ == "__main__":
         model.fit(train_dataloader)
 
     evaluation_results = []
-    os.makedirs(os.path.join("result", "lstmae"))
+    result_dir = os.path.join("result", "lstmae", "centralized")
+    os.makedirs(result_dir)
     for i, test_dataloader in enumerate(test_dataloader_list):
         scores = model.run(test_dataloader)
         labels = getting_labels(test_dataloader)
 
-        plot(scores, labels, f"result/lstmae/{i}.png")
+        plot(scores, labels, os.path.join(result_dir, f"{i}.png"))
 
         evaluation_result = get_metrics(scores, labels)
         evaluation_results.append(evaluation_result)
