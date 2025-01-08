@@ -10,7 +10,7 @@ from experiments.utils.smd import (
     get_SMD_train,
 )
 from experiments.utils.get_final_scores import get_final_scores
-from experiments.utils.plot import plot
+from experiments.utils.diagram.plot import plot
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE
 from experiments.algorithms.USAD.utils import getting_labels
 from experiments.algorithms.LSTMAE.utils import (

@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from experiments.utils.logger import init_logger
 from experiments.utils.get_final_scores import get_final_scores
-from experiments.utils.plot import plot
+from experiments.utils.diagram.plot import plot
 from experiments.algorithms.TranAD.tranad import TranAD
 from experiments.algorithms.TranAD.smd import get_SMD_test_entities_for_TranAD
 from experiments.evaluation.metrics import get_metrics
