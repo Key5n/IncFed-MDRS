@@ -41,7 +41,7 @@ if __name__ == "__main__":
     )
     test_entities = get_SMD_test_entities()
     test_dataloader_list = [
-        generate_test_loader(test_data, test_labels, batch_size, window_size)
+        generate_test_loader(test_data, test_labels, window_size, batch_size)
         for test_data, test_labels in test_entities
     ]
 
