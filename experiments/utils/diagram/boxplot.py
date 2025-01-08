@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 
 def boxplot(X, tick_labels: list[str], colors: list[str], result_dir: str):
     _, ax = plt.subplots()
-    bplot = ax.boxplot(X, tick_labels=tick_labels, showfliers=False)
     ax.set_title("Evaluation Metrics")
     ax.set_ylabel("Metrics Score")
+
+    bplot = ax.boxplot(X, tick_labels=tick_labels, showfliers=False, patch_artist=True)
 
     for patch, color in zip(bplot["boxes"], colors):
         patch.set_facecolor(color)
