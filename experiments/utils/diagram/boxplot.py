@@ -12,7 +12,7 @@ def boxplot(X, tick_labels: list[str], colors: list[str], result_dir: str):
     for patch, color in zip(bplot["boxes"], colors):
         patch.set_facecolor(color)
 
-    filename = os.path.join(result_dir, "boxplot.png")
+    filename = os.path.join(result_dir, "boxplot.pdf")
     plt.savefig(filename)
 
     plt.clf()
