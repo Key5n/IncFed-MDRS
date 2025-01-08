@@ -1,4 +1,7 @@
+from logging import getLogger
 import math
+
+from tqdm.contrib.logging import logging_redirect_tqdm
 import numpy as np
 import torch
 from torch import nn
@@ -135,6 +138,7 @@ class TranAD:
         self.model.to(device)
 
     def fit(self, dataloader, epoch):
+        logger = getLogger(__name__)
         n = epoch + 1
         l1s = []
         for d, _ in dataloader:
@@ -159,7 +163,8 @@ class TranAD:
             self.optimizer.step()
 
         self.scheduler.step()
-        tqdm.write(f"Epoch {epoch},\tL1 = {np.mean(l1s)}")
+        with logging_redirect_tqdm():
+            logger.info(f"Epoch {epoch},\tL1 = {np.mean(l1s)}")
         return np.mean(l1s), self.optimizer.param_groups[0]["lr"]
 
     def run(self, dataloader):
