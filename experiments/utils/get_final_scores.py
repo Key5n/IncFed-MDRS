@@ -21,9 +21,9 @@ def get_final_scores(evaluation_results: list[Dict]):
 
         pate_scores.append(pate)
         vus_pr_scores.append(vus_pr)
-        vus_roc.append(vus_roc)
-        auc_pr.append(auc_pr)
-        auc_roc.append(auc_roc)
+        vus_roc_scores.append(vus_roc)
+        auc_pr_scores.append(auc_pr)
+        auc_roc_scores.append(auc_roc)
 
     auc_roc_avg = np.mean(auc_roc_scores, dtype=float)
     auc_pr_avg = np.mean(auc_pr_scores, dtype=float)
