@@ -1,9 +1,10 @@
 from logging import getLogger
 from typing import Dict
+from experiments.utils.diagram.boxplot import boxplot
 import numpy as np
 
 
-def get_final_scores(evaluation_results: list[Dict]):
+def get_final_scores(evaluation_results: list[Dict], filename: str):
     logger = getLogger(__name__)
 
     pate_scores = []
@@ -42,3 +43,8 @@ def get_final_scores(evaluation_results: list[Dict]):
     logger.info(f"VUS-ROC: {vus_roc_avg} ± {vus_roc_std}")
     logger.info(f"VUS-PR: {vus_pr_avg} ± {vus_pr_std}")
     logger.info(f"PATE: {pate_avg} ± {pate_std}")
+
+    boxplot(
+        [pate_scores, vus_pr_scores, vus_roc_scores, auc_pr_scores, auc_roc_scores],
+        filename,
+    )
