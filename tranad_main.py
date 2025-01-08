@@ -61,5 +61,4 @@ if __name__ == "__main__":
         evaluation_result = get_metrics(scores, labels)
         evaluation_results.append(evaluation_result)
 
-    filename = os.path.join(result_dir, "boxplot.png")
-    get_final_scores(evaluation_results, filename)
+    get_final_scores(evaluation_results, result_dir)
