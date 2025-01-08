@@ -92,7 +92,7 @@ class UsadModel(nn.Module):
         )
 
 
-class Usad(nn.Module):
+class Usad:
     def __init__(self, w_size, z_size, optimizer, device: str):
         self.model = UsadModel(w_size, z_size)
         self.optimizer1 = optimizer(
@@ -107,7 +107,6 @@ class Usad(nn.Module):
 
     def fit(self, dataloader, epoch) -> None:
         logger = getLogger(__name__)
-
         self.model.train()
 
         loss1_list = []
