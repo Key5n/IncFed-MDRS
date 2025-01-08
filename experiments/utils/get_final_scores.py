@@ -34,11 +34,11 @@ def get_final_scores(evaluation_results: list[Dict], result_dir: str):
     auc_pr_save_path = os.path.join(result_dir, "auc_pr.csv")
     auc_roc_save_path = os.path.join(result_dir, "auc_roc.csv")
 
-    np.savetext(pate_save_path, pate_scores)
-    np.savetext(vus_pr_save_path, vus_pr_scores)
-    np.savetext(vus_roc_save_path, vus_roc_scores)
-    np.savetext(auc_pr_save_path, auc_pr_scores)
-    np.savetext(auc_roc_save_path, auc_roc_scores)
+    np.savetxt(pate_save_path, pate_scores)
+    np.savetxt(vus_pr_save_path, vus_pr_scores)
+    np.savetxt(vus_roc_save_path, vus_roc_scores)
+    np.savetxt(auc_pr_save_path, auc_pr_scores)
+    np.savetxt(auc_roc_save_path, auc_roc_scores)
 
     auc_roc_avg = np.mean(auc_roc_scores, dtype=float)
     auc_pr_avg = np.mean(auc_pr_scores, dtype=float)
