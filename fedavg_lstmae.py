@@ -1,8 +1,9 @@
 import os
 import logging
 from typing import Dict
+from tqdm.contrib import tenumerate
 from experiments.utils.get_final_scores import get_final_scores
-from experiments.utils.plot import plot
+from experiments.utils.diagram.plot import plot
 import numpy as np
 import torch
 from torch import nn
@@ -18,8 +19,8 @@ from experiments.algorithms.LSTMAE.fed_utils import get_SMD_clients_LSTMAE
 
 
 if __name__ == "__main__":
-    result_dir = os.path.join("result", "lstmae", "federated")
-    init_logger(os.path.join(result_dir, f"{__file__}.log"))
+    result_dir = os.path.join("result", "lstmae", "fedavg")
+    init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = logging.getLogger(__name__)
 
     device = get_default_device()
@@ -97,14 +98,14 @@ if __name__ == "__main__":
 
         model.load_model(global_state_dict)
 
-        evaluation_results = []
-        for i, test_dataloader in enumerate(test_dataloader_list):
-            scores = model.run(test_dataloader)
-            labels = getting_labels(test_dataloader)
+    evaluation_results = []
+    for i, test_dataloader in tenumerate(test_dataloader_list):
+        scores = model.run(test_dataloader)
+        labels = getting_labels(test_dataloader)
 
-            plot(scores, labels, os.path.join(result_dir, f"{i}.png"))
+        plot(scores, labels, os.path.join(result_dir, f"{i}.png"))
 
-            evaluation_result = get_metrics(scores, labels)
-            evaluation_results.append(evaluation_result)
+        evaluation_result = get_metrics(scores, labels)
+        evaluation_results.append(evaluation_result)
 
-        get_final_scores(evaluation_results)
+    get_final_scores(evaluation_results, result_dir)
