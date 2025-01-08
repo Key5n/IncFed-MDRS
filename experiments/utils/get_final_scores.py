@@ -59,7 +59,8 @@ def get_final_scores(evaluation_results: list[Dict], result_dir: str):
     logger.info(f"PATE: {pate_avg} ± {pate_std}")
 
     tick_labels = ["PATE", "VUS-PR", "VUS-ROC", "AUC-PR", "AUC-ROC"]
+    colors = ["red", "orange", "yellow", "green", "cyan"]
     X = [pate_scores, vus_pr_scores, vus_roc_scores, auc_pr_scores, auc_roc_scores]
 
     boxplot_save_path = os.path.join(result_dir, "boxplot.png")
-    boxplot(X, tick_labels, boxplot_save_path)
+    boxplot(X, tick_labels, colors, boxplot_save_path)
