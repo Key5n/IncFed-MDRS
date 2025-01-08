@@ -177,7 +177,7 @@ class TranAD:
                 if isinstance(z, tuple):
                     z = z[1]
                 loss = self.loss_fn(z, elem)[0]
-                losses.append(loss.detach().numpy())
+                losses.append(loss.detach().cpu().numpy())
 
         losses_concatenated = np.concatenate(losses)
         loss_final = np.mean(losses_concatenated, axis=1)
