@@ -1,5 +1,6 @@
 import os
-from tqdm import trange, tqdm
+from tqdm import trange
+from tqdm.contrib import tenumerate
 import torch
 from torch import nn
 from experiments.utils.logger import init_logger
@@ -70,7 +71,7 @@ if __name__ == "__main__":
         model.fit(train_dataloader)
 
     evaluation_results = []
-    for i, test_dataloader in tqdm(enumerate(test_dataloader_list)):
+    for i, test_dataloader in tenumerate(test_dataloader_list):
         scores = model.run(test_dataloader)
         labels = getting_labels(test_dataloader)
 
