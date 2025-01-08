@@ -63,9 +63,9 @@ class TranADClient:
                     z = z[1]
                 l1s.append(torch.mean(l1).item())
                 loss = torch.mean(l1)
-                optimizer.zero_grad()
                 loss.backward(retain_graph=True)
                 optimizer.step()
+                optimizer.zero_grad()
 
             schedular.step()
             with logging_redirect_tqdm():
