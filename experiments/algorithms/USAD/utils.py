@@ -1,4 +1,3 @@
-from tqdm import tqdm
 import numpy as np
 import torch
 from experiments.utils.utils import create_windows, to_device
@@ -7,12 +6,13 @@ from sklearn.utils import shuffle
 
 
 def generate_train_loader(train_data, window_size, batch_size, seed=42):
-    # Segment the data into overlapping windows
     train_data = create_windows(train_data, window_size)
     train_data = shuffle(train_data, random_state=seed)
 
-    # Prepare the training data using a TensorDataset (combining data and labels)
-    train_data = TensorDataset(train_data)
+    dummy = torch.tensor(np.zeros_like(train_data))
+    train_data = torch.tensor(train_data, dtype=torch.float32)
+
+    train_data = TensorDataset(train_data, dummy)
     train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False)
 
     return train_dataloader
