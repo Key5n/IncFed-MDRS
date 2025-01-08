@@ -188,3 +188,6 @@ class TranAD:
         loss_final = np.mean(losses_concatenated, axis=1)
 
         return loss_final
+
+    def load_model(self, state_dict):
+        self.model.load_state_dict(state_dict)
