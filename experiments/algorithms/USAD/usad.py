@@ -1,3 +1,7 @@
+import numpy as np
+from logging import getLogger
+from tqdm import trange
+from experiments.utils.utils import to_device
 import torch
 import torch.nn as nn
 
@@ -86,3 +90,78 @@ class UsadModel(nn.Module):
                 epoch, result["val_loss1"], result["val_loss2"]
             )
         )
+
+
+class Usad(nn.Module):
+    def __init__(self, w_size, z_size, optimizer, device: str):
+        self.model = UsadModel(w_size, z_size)
+        self.optimizer1 = optimizer(
+            self.model.encoder.parameters() + list(self.model.decoder1.parameters())
+        )
+        self.optimizer2 = optimizer(
+            self.model.encoder.parameters() + list(self.model.decoder2.parameters())
+        )
+        self.device = device
+
+        self.model = to_device(self.model, device)
+
+    def fit(self, dataloader, epoch) -> None:
+        logger = getLogger(__name__)
+
+        loss1_list = []
+        loss2_list = []
+        for batch in dataloader:
+            batch = torch.flatten(batch[0], start_dim=1)  # I added this
+            batch = to_device(batch, self.device)
+
+            # Train AE1
+            loss1, loss2 = self.model.training_step(batch, epoch + 1)
+            loss1.backward()
+            self.optimizer1.step()
+            self.optimizer1.zero_grad()
+
+            # Train AE2
+            loss1, loss2 = self.model.training_step(batch, epoch + 1)
+
+            loss1_list.append(loss1.item())
+            loss2_list.append(loss2.item())
+
+            loss2.backward()
+            self.optimizer2.step()
+            self.optimizer2.zero_grad()
+
+        logger.info(
+            f"Epoch {epoch}, loss1: {np.mean(loss1_list)}, loss2: {np.mean(loss2_list)}"
+        )
+
+    def run(self, dataloader, alpha=0.5, beta=0.5):
+        self.model.eval()
+        all_errors = []
+
+        with torch.no_grad():
+            for batch in dataloader:
+                original_shape = batch[0].shape
+                batch_flat = torch.flatten(batch[0], start_dim=1).to(self.device)
+
+                w1 = self.model.decoder1(self.model.encoder(batch_flat))
+                w2 = self.model.decoder2(self.model.encoder(w1))
+
+                # Reshape reconstructions to original shape
+                w1 = w1.view(original_shape)
+                w2 = w2.view(original_shape)
+
+                # Move batch[0] to the same device as w1 and w2
+                batch_on_device = batch[0].to(self.device)  # Move batch[0] to the GPU
+
+                # Compute point-wise errors
+                errors = (
+                    alpha * (batch_on_device - w1) ** 2
+                    + beta * (batch_on_device - w2) ** 2
+                )
+
+                # Take the mean over the features
+                mean_errors = torch.mean(errors, dim=2)
+
+                all_errors.extend(mean_errors.view(-1).tolist())
+
+        return np.array(all_errors)

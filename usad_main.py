@@ -1,21 +1,26 @@
-import numpy as np
-from experiments.utils.psm import get_PSM_train, get_PSM_test
-from experiments.utils.smd import (
-    get_SMD_test,
-    get_SMD_train,
-)
-from experiments.algorithms.USAD.usad import UsadModel
+import os
+import torch
+from tqdm import trange
+from tqdm.contrib import tenumerate
+from experiments.utils.get_final_scores import get_final_scores
+from experiments.utils.logger import init_logger
+from experiments.utils.diagram.plot import plot
+from experiments.utils.smd import get_SMD_test_entities, get_SMD_train
+from experiments.algorithms.USAD.usad import Usad
 from experiments.algorithms.USAD.utils import (
-    generate_loaders,
+    generate_test_loader,
+    generate_train_loader,
     getting_labels,
-    testing_pointwise,
-    training,
 )
-from experiments.utils.utils import get_default_device, set_seed, to_device
+from experiments.utils.utils import get_default_device, set_seed
 from experiments.evaluation.metrics import get_metrics
 
 
 if __name__ == "__main__":
+    result_dir = os.path.join("result", "usad", "centralized")
+    os.makedirs(result_dir, exist_ok=True)
+    init_logger(os.path.join(result_dir, "usad.log"))
+
     hidden_size = 100
     device = get_default_device()
     dataset = "SMD"
@@ -23,46 +28,39 @@ if __name__ == "__main__":
     batch_size = 512
     set_seed(seed)
 
-    if dataset == "SMD":
-        step = 5
-        window_size = 5
-        data_channels = 38
-        latent_size = 38
-        num_epochs = 250
-        anomaly_proportion_window = 0.2
-        train_data = get_SMD_train()
-        test_data, test_label = get_SMD_test()
-    else:
-        step = 5
-        window_size = 5
-        data_channels = 25
-        latent_size = 33
-        num_epochs = 250
-        anomaly_proportion_window = 0.2
-        train_data = get_PSM_train()
-        test_data, test_label = get_PSM_test()
+    window_size = 5
+    data_channels = 38
+    latent_size = 38
+    num_epochs = 250
+    train_data = get_SMD_train()
 
-    train_loader, test_loader = generate_loaders(
-        train_data,
-        test_data,
-        test_label,
-        batch_size,
-        window_size,
-        step,
-        anomaly_proportion_window,
-        seed=seed,
+    optimizer = torch.optim.Adam
+
+    train_dataloader = generate_train_loader(
+        train_data, window_size, batch_size, seed=seed
     )
+    test_entities = get_SMD_test_entities()
+    test_dataloader_list = [
+        generate_test_loader(test_data, test_labels, batch_size, window_size)
+        for test_data, test_labels in test_entities
+    ]
 
     w_size = window_size * data_channels
     z_size = window_size * latent_size
 
-    model = UsadModel(w_size, z_size)
-    model = to_device(model, device)
+    model = Usad(w_size, z_size, optimizer, device)
 
-    history = training(num_epochs, model, train_loader, test_loader, device)
-    results_point_wise = testing_pointwise(model, test_loader, device)
-    test_rec = np.array(results_point_wise)
+    for epoch in trange(num_epochs):
+        model.fit(train_dataloader, epoch)
 
-    label = getting_labels(test_loader)
-    evaluation_result = get_metrics(test_rec, label)
-    print(evaluation_result)
+    evaluation_results = []
+    for i, test_dataloader in tenumerate(test_dataloader_list):
+        scores = model.run(test_dataloader)
+        labels = getting_labels(test_dataloader)
+
+        plot(scores, labels, os.path.join(result_dir, f"{i}.png"))
+
+        evaluation_result = get_metrics(scores, labels)
+        evaluation_results.append(evaluation_result)
+
+    get_final_scores(evaluation_results, result_dir)
