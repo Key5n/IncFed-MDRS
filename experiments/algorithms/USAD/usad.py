@@ -108,6 +108,8 @@ class Usad(nn.Module):
     def fit(self, dataloader, epoch) -> None:
         logger = getLogger(__name__)
 
+        self.model.train()
+
         loss1_list = []
         loss2_list = []
         for batch in dataloader:

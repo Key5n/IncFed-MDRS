@@ -138,7 +138,9 @@ class TranAD:
         self.model.to(device)
 
     def fit(self, dataloader, epoch):
+        self.model.train()
         logger = getLogger(__name__)
+
         n = epoch + 1
         l1s = []
         for d, _ in dataloader:
