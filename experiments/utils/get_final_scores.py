@@ -1,10 +1,12 @@
+import os
 from logging import getLogger
 from typing import Dict
+import numpy as np
 from experiments.utils.diagram.boxplot import boxplot
 import numpy as np
 
 
-def get_final_scores(evaluation_results: list[Dict], filename: str):
+def get_final_scores(evaluation_results: list[Dict], result_dir: str):
     logger = getLogger(__name__)
 
     pate_scores = []
@@ -26,6 +28,18 @@ def get_final_scores(evaluation_results: list[Dict], filename: str):
         auc_pr_scores.append(auc_pr)
         auc_roc_scores.append(auc_roc)
 
+    pate_save_path = os.path.join(result_dir, "pate.csv")
+    vus_pr_save_path = os.path.join(result_dir, "vus_pr.csv")
+    vus_roc_save_path = os.path.join(result_dir, "vus_roc.csv")
+    auc_pr_save_path = os.path.join(result_dir, "auc_pr.csv")
+    auc_roc_save_path = os.path.join(result_dir, "auc_roc.csv")
+
+    np.savetext(pate_save_path, pate_scores)
+    np.savetext(vus_pr_save_path, vus_pr_scores)
+    np.savetext(vus_roc_save_path, vus_roc_scores)
+    np.savetext(auc_pr_save_path, auc_pr_scores)
+    np.savetext(auc_roc_save_path, auc_roc_scores)
+
     auc_roc_avg = np.mean(auc_roc_scores, dtype=float)
     auc_pr_avg = np.mean(auc_pr_scores, dtype=float)
     vus_roc_avg = np.mean(vus_roc_scores, dtype=float)
@@ -44,7 +58,8 @@ def get_final_scores(evaluation_results: list[Dict], filename: str):
     logger.info(f"VUS-PR: {vus_pr_avg} ± {vus_pr_std}")
     logger.info(f"PATE: {pate_avg} ± {pate_std}")
 
-    boxplot(
-        [pate_scores, vus_pr_scores, vus_roc_scores, auc_pr_scores, auc_roc_scores],
-        filename,
-    )
+    tick_labels = ["PATE", "VUS-PR", "VUS-ROC", "AUC-PR", "AUC-ROC"]
+    X = [pate_scores, vus_pr_scores, vus_roc_scores, auc_pr_scores, auc_roc_scores]
+
+    boxplot_save_path = os.path.join(result_dir, "boxplot.png")
+    boxplot(X, tick_labels, boxplot_save_path)
