@@ -1,9 +1,11 @@
+from logging import getLogger
 import time
 from pate.PATE_metric import PATE
 from .basic_metrics import basic_metricor, generate_curve
 
 
 def get_metrics(score, labels, slidingWindow=100, pred=None, version="opt", thre=250):
+    logger = getLogger(__name__)
     metrics = {}
 
     """
@@ -14,12 +16,12 @@ def get_metrics(score, labels, slidingWindow=100, pred=None, version="opt", thre
     auc_roc_start = time.time()
     AUC_ROC = grader.metric_ROC(labels, score)
     auc_roc_end = time.time()
-    print(f"AUCROC Time: {auc_roc_end - auc_roc_start}")
+    logger.info(f"AUCROC Time: {auc_roc_end - auc_roc_start}")
 
     auc_pr_start = time.time()
     AUC_PR = grader.metric_PR(labels, score)
     auc_pr_end = time.time()
-    print(f"AUCPR Time: {auc_pr_end - auc_pr_start}")
+    logger.info(f"AUCPR Time: {auc_pr_end - auc_pr_start}")
 
     # R_AUC_ROC, R_AUC_PR, _, _, _ = grader.RangeAUC(labels=labels, score=score, window=slidingWindow, plot_ROC=True)
     vus_start = time.time()
@@ -27,13 +29,13 @@ def get_metrics(score, labels, slidingWindow=100, pred=None, version="opt", thre
         labels, score, slidingWindow, version, thre
     )
     vus_end = time.time()
-    print(f"VUS Time: {vus_end - vus_start}")
+    logger.info(f"VUS Time: {vus_end - vus_start}")
 
     # PATE returns floating[Any] or float, so forces float
     pate_start = time.time()
     pate = float(PATE(labels, score, binary_scores=False, n_jobs=-1))
     pate_end = time.time()
-    print(f"PATE Time: {pate_end - pate_start}")
+    logger.info(f"PATE Time: {pate_end - pate_start}")
 
     metrics["AUC-PR"] = AUC_PR
     metrics["AUC-ROC"] = AUC_ROC
