@@ -1,9 +1,10 @@
-import numpy as np
 from logging import getLogger
-from tqdm import trange
-from experiments.utils.utils import to_device
+import numpy as np
 import torch
 import torch.nn as nn
+from tqdm import trange
+from tqdm.contrib.logging import logging_redirect_tqdm
+from experiments.utils.utils import to_device
 
 
 class Encoder(nn.Module):
@@ -133,9 +134,10 @@ class Usad:
             self.optimizer2.step()
             self.optimizer2.zero_grad()
 
-        logger.info(
-            f"Epoch {epoch}, loss1: {np.mean(loss1_list)}, loss2: {np.mean(loss2_list)}"
-        )
+        with logging_redirect_tqdm():
+            logger.info(
+                f"Epoch {epoch}, loss1: {np.mean(loss1_list)}, loss2: {np.mean(loss2_list)}"
+            )
 
     def run(self, dataloader, alpha=0.5, beta=0.5):
         self.model.eval()
