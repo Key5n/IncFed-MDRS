@@ -21,7 +21,7 @@ from experiments.evaluation.metrics import get_metrics
 
 if __name__ == "__main__":
     result_dir = os.path.join("result", "lstmae", "centralized")
-    os.makedirs(result_dir)
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, f"{__file__}.log"))
 
     hidden_size = 100

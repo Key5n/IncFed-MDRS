@@ -19,7 +19,7 @@ from experiments.algorithms.TranAD.utils import (
 
 if __name__ == "__main__":
     result_dir = os.path.join("result", "tranad", "centralized")
-    os.makedirs(result_dir)
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, f"{__file__}.log"))
 
     dataset = "SMD"
