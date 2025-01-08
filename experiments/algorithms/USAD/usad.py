@@ -124,15 +124,18 @@ class Usad:
             self.optimizer1.step()
             self.optimizer1.zero_grad()
 
-            # Train AE2
-            loss1, loss2 = self.model.training_step(batch, epoch + 1)
-
             loss1_list.append(loss1.item())
             loss2_list.append(loss2.item())
+
+            # Train AE2
+            loss1, loss2 = self.model.training_step(batch, epoch + 1)
 
             loss2.backward()
             self.optimizer2.step()
             self.optimizer2.zero_grad()
+
+            loss1_list.append(loss1.item())
+            loss2_list.append(loss2.item())
 
         with logging_redirect_tqdm():
             logger.info(
