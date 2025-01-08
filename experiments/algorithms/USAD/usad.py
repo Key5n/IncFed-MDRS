@@ -96,10 +96,12 @@ class Usad:
     def __init__(self, w_size, z_size, optimizer, device: str):
         self.model = UsadModel(w_size, z_size)
         self.optimizer1 = optimizer(
-            self.model.encoder.parameters() + list(self.model.decoder1.parameters())
+            list(self.model.encoder.parameters())
+            + list(self.model.decoder1.parameters())
         )
         self.optimizer2 = optimizer(
-            self.model.encoder.parameters() + list(self.model.decoder2.parameters())
+            list(self.model.encoder.parameters())
+            + list(self.model.decoder2.parameters())
         )
         self.device = device
 
