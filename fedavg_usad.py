@@ -1,7 +1,10 @@
 import os
 from logging import getLogger
 from typing import Dict
+
+from tqdm.contrib.logging import logging_redirect_tqdm
 import torch
+from tqdm import trange
 from tqdm.contrib import tenumerate
 from experiments.algorithms.USAD.fed_utils import get_SMD_clients_Usad
 from experiments.algorithms.USAD.utils import generate_test_loader, getting_labels
@@ -55,24 +58,25 @@ if __name__ == "__main__":
         seed=seed,
     )
 
-    for global_round in range(global_epochs):
-        logger.info(global_round)
+    with logging_redirect_tqdm():
+        for global_round in trange(global_epochs):
+            logger.info(global_round)
 
-        # choose different clients for each global round
-        # but fix chosen clients on every run for reproduction
-        active_clients = choose_clients(clients, client_rate, seed + global_round)
+            # choose different clients for each global round
+            # but fix chosen clients on every run for reproduction
+            active_clients = choose_clients(clients, client_rate, seed + global_round)
 
-        next_state_dict_list: list[Dict] = []
-        data_nums: list[int] = []
+            next_state_dict_list: list[Dict] = []
+            data_nums: list[int] = []
 
-        for client in active_clients:
-            logger.info(client.client_name)
-            next_state_dict, data_num = client.train_avg(global_state_dict)
+            for client in active_clients:
+                logger.info(client.client_name)
+                next_state_dict, data_num = client.train_avg(global_state_dict)
 
-            next_state_dict_list.append(next_state_dict)
-            data_nums.append(data_num)
+                next_state_dict_list.append(next_state_dict)
+                data_nums.append(data_num)
 
-        global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
+            global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
 
     model.load_model(global_state_dict)
 
