@@ -36,7 +36,7 @@ class TranADClient:
         self.prox_mu = prox_mu
 
     def train_avg(self, global_state_dict) -> tuple[Dict, int]:
-        logger = getLogger()
+        logger = getLogger(__name__)
 
         model = TranADModule(self.feats, self.lr)
         model.load_state_dict(global_state_dict)
@@ -79,7 +79,7 @@ class TranADClient:
         return model.state_dict(), data_num
 
     def train_prox(self, global_state_dict) -> tuple[Dict, int]:
-        logger = getLogger()
+        logger = getLogger(__name__)
 
         model = TranADModule(self.feats, self.lr)
         model.load_state_dict(global_state_dict)
