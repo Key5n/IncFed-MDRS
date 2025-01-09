@@ -193,3 +193,6 @@ class TranAD:
 
     def load_model(self, state_dict):
         self.model.load_state_dict(state_dict)
+
+    def state_dict(self):
+        return self.model.state_dict()

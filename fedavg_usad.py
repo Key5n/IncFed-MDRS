@@ -10,7 +10,7 @@ from experiments.utils.diagram.plot import plot
 from experiments.utils.fedavg import calc_averaged_weights
 from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.smd import get_SMD_test_entities
-from experiments.algorithms.USAD.usad import Usad, UsadModel
+from experiments.algorithms.USAD.usad import Usad
 from experiments.utils.logger import init_logger
 from experiments.utils.utils import choose_clients, get_default_device, set_seed
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     w_size = window_size * data_channels
     z_size = window_size * latent_size
 
-    model = UsadModel(w_size, z_size)
+    model = Usad(w_size, z_size, optimizer, device)
     global_state_dict = model.state_dict()
 
     clients = get_SMD_clients_Usad(
@@ -74,14 +74,13 @@ if __name__ == "__main__":
 
         global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
 
+    model.load_model(global_state_dict)
+
     test_entities = get_SMD_test_entities()
     test_dataloader_list = [
         generate_test_loader(test_data, test_labels, window_size, batch_size)
         for test_data, test_labels in test_entities
     ]
-
-    model = Usad(w_size, z_size, optimizer, device)
-    model.load_model(global_state_dict)
 
     evaluation_results = []
     for i, test_dataloader in tenumerate(test_dataloader_list):

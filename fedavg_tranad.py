@@ -56,14 +56,8 @@ if __name__ == "__main__":
         seed=seed,
     )
 
-    test_entities = get_SMD_test_entities_for_TranAD()
-    test_dataloader_list = [
-        generate_test_loader(test_data, test_labels, batch_size, window_size)
-        for test_data, test_labels in test_entities
-    ]
-
-    tranad_module = TranADModule(n_features, lr)
-    global_state_dict = tranad_module.state_dict()
+    model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size, device)
+    global_state_dict = model.state_dict()
 
     with logging_redirect_tqdm():
         for global_round in trange(global_epochs):
@@ -87,6 +81,12 @@ if __name__ == "__main__":
     # for testing
     model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size, device)
     model.load_model(global_state_dict)
+
+    test_entities = get_SMD_test_entities_for_TranAD()
+    test_dataloader_list = [
+        generate_test_loader(test_data, test_labels, batch_size, window_size)
+        for test_data, test_labels in test_entities
+    ]
 
     evaluation_results = []
     for i, test_dataloader in tenumerate(test_dataloader_list):

@@ -44,7 +44,7 @@ class Decoder(nn.Module):
         return w
 
 
-class UsadModel(nn.Module):
+class UsadModule(nn.Module):
     def __init__(self, w_size, z_size):
         super().__init__()
         self.encoder = Encoder(w_size, z_size)
@@ -95,7 +95,7 @@ class UsadModel(nn.Module):
 
 class Usad:
     def __init__(self, w_size, z_size, optimizer, device: str):
-        self.model = UsadModel(w_size, z_size)
+        self.model = UsadModule(w_size, z_size)
         self.optimizer1 = optimizer(
             list(self.model.encoder.parameters())
             + list(self.model.decoder1.parameters())
@@ -176,3 +176,6 @@ class Usad:
 
     def load_model(self, state_dict):
         self.model.load_state_dict(state_dict)
+
+    def state_dict(self):
+        return self.model.state_dict()
