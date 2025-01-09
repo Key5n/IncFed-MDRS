@@ -10,7 +10,7 @@ from experiments.algorithms.TranAD.fed_utils import get_SMD_clients_TranAD
 from experiments.utils.logger import init_logger
 from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.diagram.plot import plot
-from experiments.algorithms.TranAD.tranad import TranAD, TranADModule
+from experiments.algorithms.TranAD.tranad import TranAD
 from experiments.algorithms.TranAD.smd import get_SMD_test_entities_for_TranAD
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.utils import choose_clients, get_default_device, set_seed
@@ -78,8 +78,6 @@ if __name__ == "__main__":
 
             global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
 
-    # for testing
-    model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size, device)
     model.load_model(global_state_dict)
 
     test_entities = get_SMD_test_entities_for_TranAD()
