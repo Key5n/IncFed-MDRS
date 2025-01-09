@@ -1,3 +1,4 @@
+from copy import deepcopy
 from logging import getLogger
 import math
 
@@ -196,3 +197,6 @@ class TranAD:
 
     def state_dict(self):
         return self.model.state_dict()
+
+    def copy(self):
+        return deepcopy(self)

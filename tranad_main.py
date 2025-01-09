@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     evaluation_results = []
     for i, test_dataloader in tenumerate(test_dataloader_list):
-        scores = model.run(test_dataloader)
+        scores = model.copy().run(test_dataloader)
         labels = getting_labels_for_TranAD(test_dataloader)
 
         plot(scores, labels, os.path.join(result_dir, f"{i}.pdf"))

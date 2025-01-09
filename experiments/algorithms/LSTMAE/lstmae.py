@@ -1,3 +1,4 @@
+from copy import deepcopy
 import torch
 import torch.nn as nn
 import numpy as np
@@ -34,6 +35,9 @@ class LSTMAE:
 
     def state_dict(self):
         return self.model.state_dict()
+
+    def copy(self):
+        return deepcopy(self)
 
     def fit(self, dataloader):
         self.model.train()

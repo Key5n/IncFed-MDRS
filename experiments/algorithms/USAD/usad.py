@@ -1,3 +1,4 @@
+from copy import deepcopy
 from logging import getLogger
 import numpy as np
 import torch
@@ -179,3 +180,6 @@ class Usad:
 
     def state_dict(self):
         return self.model.state_dict()
+
+    def copy(self):
+        return deepcopy(self)
