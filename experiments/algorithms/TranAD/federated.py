@@ -1,3 +1,8 @@
+from experiments.utils.scaffold import (
+    get_client_update,
+    update_client_control_variate,
+    update_model_with_control_variates,
+)
 import numpy as np
 from typing import Dict
 from logging import getLogger
@@ -33,7 +38,11 @@ class TranADClient:
         self.lr = lr
         self.device = device
 
+        # fedprox
         self.prox_mu = prox_mu
+
+        # scaffold
+        self.c_local = TranADModule(feats, lr).state_dict()
 
     def train_avg(self, global_state_dict) -> tuple[Dict, int]:
         logger = getLogger(__name__)
@@ -128,3 +137,70 @@ class TranADClient:
 
         data_num = len(next(iter(self.train_dataloader)))
         return model.state_dict(), data_num
+
+    def train_scaffold(
+        self, global_state_dict: Dict, c_global: Dict
+    ) -> tuple[Dict, int, Dict]:
+        logger = getLogger()
+
+        model = TranADModule(self.feats, self.lr)
+        model.load_state_dict(global_state_dict)
+        model.to(self.device)
+        model.train()
+
+        optimizer = self.optimizer_generate_function(
+            model.parameters(), lr=self.lr, weight_decay=1e-5
+        )
+        schedular = self.schedular(optimizer, 5, 0.9)
+
+        count = 0
+        with logging_redirect_tqdm():
+            for n in trange(self.local_epochs):
+                l1s = []
+                for d, _ in self.train_dataloader:
+                    d = d.to(self.device)
+
+                    local_bs = d.shape[0]
+                    window = d.permute(1, 0, 2)
+                    elem = window[-1, :, :].view(1, local_bs, self.feats)
+                    z = model(window, elem)
+                    l1 = (
+                        self.loss_fn(z, elem)
+                        if not isinstance(z, tuple)
+                        else (1 / n) * self.loss_fn(z[0], elem)
+                        + (1 - 1 / n) * self.loss_fn(z[1], elem)
+                    )
+                    if isinstance(z, tuple):
+                        z = z[1]
+                    l1s.append(torch.mean(l1).item())
+                    loss = torch.mean(l1)
+                    loss.backward(retain_graph=True)
+                    optimizer.step()
+                    optimizer.zero_grad()
+
+                    current_model_dict = model.state_dict()
+                    updated_model = update_model_with_control_variates(
+                        current_model_dict, c_global, self.c_local, self.lr
+                    )
+
+                    model.load_state_dict(updated_model)
+                    count += 1
+
+                schedular.step()
+                with logging_redirect_tqdm():
+                    logger.info(f"Epoch {n},\tL1 = {np.mean(l1s)}")
+
+        next_c_local = update_client_control_variate(
+            model.state_dict(),
+            global_state_dict,
+            self.c_local,
+            c_global,
+            count,
+            self.lr,
+        )
+
+        c_local_updates = get_client_update(next_c_local, self.c_local)
+        self.c_local = next_c_local
+
+        data_num = len(next(iter(self.train_dataloader)))
+        return model.state_dict(), data_num, c_local_updates
