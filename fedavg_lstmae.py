@@ -20,6 +20,7 @@ from experiments.algorithms.LSTMAE.fed_utils import get_SMD_clients_LSTMAE
 
 if __name__ == "__main__":
     result_dir = os.path.join("result", "lstmae", "fedavg")
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = logging.getLogger(__name__)
 
