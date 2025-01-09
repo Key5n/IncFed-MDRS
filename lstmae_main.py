@@ -75,7 +75,7 @@ if __name__ == "__main__":
         scores = model.run(test_dataloader)
         labels = getting_labels(test_dataloader)
 
-        plot(scores, labels, os.path.join(result_dir, f"{i}.png"))
+        plot(scores, labels, os.path.join(result_dir, f"{i}.pdf"))
 
         evaluation_result = get_metrics(scores, labels)
         evaluation_results.append(evaluation_result)
