@@ -37,7 +37,7 @@ def get_SMD_clients_Usad(
 
     clients = []
     for i, X_train in enumerate(X_train_list):
-        train_dataloader = generate_train_loader(X_train, batch_size, window_size, seed)
+        train_dataloader = generate_train_loader(X_train, window_size, batch_size, seed)
         client = UsadClient(
             f"{dataset_name}-client-{i}",
             train_dataloader,
