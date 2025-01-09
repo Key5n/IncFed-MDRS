@@ -21,6 +21,9 @@ def generate_train_loader(train_data, window_size, batch_size, seed=42):
 def generate_test_loader(test_data, test_labels, window_size, batch_size, seed=42):
     test_data = create_windows(test_data, window_size)
     test_labels_point = create_windows(test_labels, window_size)
+    test_labels_point = np.array(
+        [np.repeat(1 if np.sum(x) >= 1 else 0, len(x)) for x in test_labels_point]
+    )
 
     test_data = torch.tensor(test_data, dtype=torch.float32)
     test_labels_point = torch.tensor(test_labels_point, dtype=torch.long)
