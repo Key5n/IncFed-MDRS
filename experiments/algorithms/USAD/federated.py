@@ -30,7 +30,7 @@ class UsadClient:
     def train_avg(self, global_state_dict):
         logger = getLogger(__name__)
 
-        model = UsadModel(self.w_size, self.z_size)
+        model = UsadModule(self.w_size, self.z_size)
         model.load_state_dict(global_state_dict)
         model.to(self.device)
 
