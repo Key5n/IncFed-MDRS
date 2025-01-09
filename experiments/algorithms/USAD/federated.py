@@ -2,7 +2,7 @@ from logging import getLogger
 import numpy as np
 from tqdm import trange
 from tqdm.contrib.logging import logging_redirect_tqdm
-from experiments.algorithms.USAD.usad import UsadModel
+from experiments.algorithms.USAD.usad import UsadModule
 from experiments.utils.utils import to_device
 import torch
 from torch.utils.data import DataLoader
