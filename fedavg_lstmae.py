@@ -40,7 +40,7 @@ if __name__ == "__main__":
     n_layers = (2, 2)
     use_bias = (True, True)
     dropout = (0, 0)
-    batch_size = 512
+    batch_size = 256
     lr = 0.001
 
     clients = get_SMD_clients_LSTMAE(

@@ -29,7 +29,7 @@ if __name__ == "__main__":
     device = get_default_device()
     dataset = "SMD"
     seed = 42
-    batch_size = 512
+    batch_size = 256
     set_seed(seed)
 
     epochs = 100
