@@ -173,3 +173,6 @@ class Usad:
                 all_errors.extend(mean_errors.view(-1).tolist())
 
         return np.array(all_errors)
+
+    def load_model(self, state_dict):
+        self.model.load_state_dict(state_dict)
