@@ -41,6 +41,7 @@ class TranADClient:
         model = TranADModule(self.feats, self.lr)
         model.load_state_dict(global_state_dict)
         model.to(self.device)
+        model.train()
 
         optimizer = self.optimizer_generate_function(
             model.parameters(), lr=self.lr, weight_decay=1e-5
@@ -85,6 +86,7 @@ class TranADClient:
         global_model_parameters = model.parameters()
 
         model.to(self.device)
+        model.train()
 
         optimizer = self.optimizer_generate_function(
             model.parameters(), lr=self.lr, weight_decay=1e-5
