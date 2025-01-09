@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 class LSTMAEClient:
     def __init__(
         self,
-        entity_name: str,
+        client_name: str,
         train_dataloader: DataLoader,
         optimizer_generate_function,
         loss_fn,
@@ -26,7 +26,7 @@ class LSTMAEClient:
         device: str,
         prox_mu: float = 0.01,
     ):
-        self.entity_name = entity_name
+        self.client_name = client_name
         self.train_dataloader = train_dataloader
         self.optimizer_generate_function = optimizer_generate_function
         self.loss_fn = loss_fn

@@ -66,7 +66,7 @@ if __name__ == "__main__":
         data_nums: list[int] = []
 
         for client in active_clients:
-            logger.info(client.entity_name)
+            logger.info(client.client_name)
             next_state_dict, data_num = client.train_avg(global_state_dict)
 
             next_state_dict_list.append(next_state_dict)
