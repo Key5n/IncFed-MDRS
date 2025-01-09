@@ -43,7 +43,18 @@ if __name__ == "__main__":
     loss_fn = nn.MSELoss(reduction="none")
     optimizer = torch.optim.AdamW
     scheduler = torch.optim.lr_scheduler.StepLR
-    clients = get_SMD_clients_TranAD(optimizer, loss_fn, local_epochs)
+    clients = get_SMD_clients_TranAD(
+        optimizer,
+        scheduler,
+        loss_fn,
+        local_epochs,
+        n_features,
+        lr,
+        device,
+        batch_size,
+        window_size,
+        seed=seed,
+    )
 
     test_entities = get_SMD_test_entities_for_TranAD()
     test_dataloader_list = [
