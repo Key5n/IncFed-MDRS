@@ -46,8 +46,6 @@ def update_c_global(
 ) -> Dict:
     next_c_global = {}
     for key in c_global:
-        next_c_global[key] = (
-            c_global[key] + np.sum(client_update_list[key]) / num_clients
-        )
+        next_c_global[key] = c_global[key] + np.sum(client_update_list) / num_clients
 
     return next_c_global
