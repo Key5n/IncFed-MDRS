@@ -155,7 +155,9 @@ class TranADClient:
 
         count = 0
         with logging_redirect_tqdm():
-            for n in trange(self.local_epochs):
+            for epoch in trange(self.local_epochs):
+
+                n = epoch + 1
                 l1s = []
                 for d, _ in self.train_dataloader:
                     d = d.to(self.device)
