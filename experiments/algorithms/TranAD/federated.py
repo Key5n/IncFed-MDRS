@@ -57,8 +57,9 @@ class TranADClient:
         )
         schedular = self.schedular(optimizer, 5, 0.9)
 
-        for n in trange(self.local_epochs):
+        for epoch in trange(self.local_epochs):
             l1s = []
+            n = epoch + 1
             for d, _ in self.train_dataloader:
                 d = d.to(self.device)
 
@@ -102,8 +103,9 @@ class TranADClient:
         )
         schedular = self.schedular(optimizer, 5, 0.9)
 
-        for n in trange(self.local_epochs):
+        for epoch in trange(self.local_epochs):
             l1s = []
+            n = epoch + 1
             for d, _ in self.train_dataloader:
                 d = d.to(self.device)
 
