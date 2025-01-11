@@ -86,13 +86,13 @@ class TransformerDecoderLayer(nn.Module):
 
 # Proposed Model + Self Conditioning + Adversarial + MAML (VLDB 22)
 class TranADModule(nn.Module):
-    def __init__(self, feats, lr):
+    def __init__(self, feats, lr, window_size):
         super(TranADModule, self).__init__()
         self.name = "TranAD"
         self.lr = lr
         self.batch = 128
         self.n_feats = feats
-        self.n_window = 10
+        self.n_window = window_size
         self.n = self.n_feats * self.n_window
         self.pos_encoder = PositionalEncoding(2 * feats, 0.1, self.n_window)
         encoder_layers = TransformerEncoderLayer(
@@ -128,13 +128,14 @@ class TranADModule(nn.Module):
 
 
 class TranAD:
-    def __init__(self, loss_fn, optimizer, scheduler, feats, lr, batch_size, device):
+    def __init__(self, loss_fn, optimizer, scheduler, feats, lr, batch_size, window_size, device):
         self.feats = feats
-        self.model = TranADModule(feats, lr)
+        self.model = TranADModule(feats, lr, window_size)
         self.loss_fn = loss_fn
         self.optimizer = optimizer(self.model.parameters(), lr=lr, weight_decay=1e-5)
         self.scheduler = scheduler(self.optimizer, 5, 0.9)
         self.batch_size = batch_size
+        self.window_size = window_size
         self.device = device
         self.model.to(device)
 

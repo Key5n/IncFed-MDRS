@@ -47,7 +47,7 @@ if __name__ == "__main__":
         for test_data, test_labels in test_entities
     ]
 
-    model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size, device)
+    model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size, window_size, device)
 
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
