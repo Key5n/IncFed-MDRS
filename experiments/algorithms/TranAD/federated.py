@@ -42,7 +42,9 @@ class TranADClient:
         self.prox_mu = prox_mu
 
         # scaffold
-        self.c_local = TranADModule(feats, lr).state_dict()
+        initial_model = TranADModule(feats, lr)
+        initial_model.to(device)
+        self.c_local = initial_model.state_dict()
 
     def train_avg(self, global_state_dict) -> tuple[Dict, int]:
         logger = getLogger(__name__)
