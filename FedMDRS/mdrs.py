@@ -1,6 +1,6 @@
 import numpy as np
 from copy import deepcopy
-from layers import Input, Reservoir
+from FedMDRS.layers import Input, Reservoir
 
 
 class MDRS:

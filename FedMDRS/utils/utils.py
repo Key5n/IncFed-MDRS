@@ -1,23 +1,29 @@
-from .datasets import Entity
+import os
+from typing import Dict
+
+from tqdm import tqdm
+from tqdm.contrib import tenumerate
+from experiments.utils.diagram.plot import plot
 import numpy as np
 from numpy.typing import NDArray
-from mdrs import MDRS
-from evaluation.metrics import get_metrics
+from FedMDRS.mdrs import MDRS
+from experiments.evaluation.metrics import get_metrics
 
 
 def train_in_clients(
-    entities: list[Entity],
+    train_data_list: list[NDArray],
+    N_x: int = 200,
     leaking_rate=1.0,
     rho=0.95,
     delta=0.0001,
     input_scale: float = 1.0,
 ) -> NDArray:
-    N_x = 200
 
     covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
-    for entity in entities:
+    for train_data in tqdm(train_data_list):
         local_updates = train_in_client(
-            entity,
+            train_data,
+            N_x,
             leaking_rate=leaking_rate,
             rho=rho,
             delta=delta,
@@ -32,16 +38,14 @@ def train_in_clients(
 
 
 def train_in_client(
-    entity: Entity,
+    train_data: NDArray,
+    N_x: int,
     leaking_rate=1.0,
     rho=0.95,
     delta=0.0001,
     input_scale: float = 1.0,
 ) -> NDArray:
-    print(f"[train] data name: {entity.entity_name}")
-    data_train = entity.train_data
-    N_u = data_train.shape[1]
-    N_x = 200
+    N_u = train_data.shape[1]
     model = MDRS(
         N_u,
         N_x,
@@ -50,23 +54,40 @@ def train_in_client(
         rho=rho,
         input_scale=input_scale,
     )
-    local_updates = model.train(data_train)
+    local_updates = model.train(train_data)
 
     return local_updates
 
 
-def evaluate(
-    X_test: NDArray,
-    y_test: NDArray,
+def evaluate_in_clients(
+    test_data_list: list[tuple[NDArray, NDArray]],
     P_global: NDArray,
+    N_x: int,
+    result_dir: str,
+) -> list[Dict]:
+    evaluation_results: list[Dict] = []
+    for i, (test_data, test_label) in tenumerate(test_data_list):
+        evaluation_result = evaluate_in_client(
+            test_data, test_label, P_global, N_x, os.path.join(result_dir, f"{i}.pdf")
+        )
+
+        evaluation_results.append(evaluation_result)
+
+    return evaluation_results
+
+
+def evaluate_in_client(
+    test_data: NDArray,
+    test_label: NDArray,
+    P_global: NDArray,
+    N_x: int,
+    filename: str,
     leaking_rate: float = 1.0,
     rho: float = 0.95,
     delta: float = 0.0001,
     input_scale: float = 1.0,
-) -> tuple[float, float, float, float, float]:
-
-    N_u = X_test.shape[1]
-    N_x = 200
+) -> Dict:
+    N_u = test_data.shape[1]
     model = MDRS(
         N_u,
         N_x,
@@ -76,14 +97,9 @@ def evaluate(
         rho=rho,
         input_scale=input_scale,
     )
-    mahalanobis_distances = model.adapt(X_test)
+    scores = model.adapt(test_data)
 
-    evaluation_result = get_metrics(mahalanobis_distances, y_test)
+    plot(scores, test_label, filename)
+    evaluation_result = get_metrics(scores, test_label)
 
-    auc_roc = evaluation_result["AUC-ROC"]
-    auc_pr = evaluation_result["AUC-PR"]
-    vus_roc = evaluation_result["VUS-ROC"]
-    vus_pr = evaluation_result["VUS-PR"]
-    pate = evaluation_result["PATE"]
-
-    return auc_roc, auc_pr, vus_roc, vus_pr, pate
+    return evaluation_result
