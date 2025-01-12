@@ -1,4 +1,5 @@
 import os
+import ast
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
@@ -7,7 +8,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 def get_SMAP_list(data_dir_path: str, label_file_path) -> list[NDArray]:
     labeled_anomalies = pd.read_csv(label_file_path)
-    labeled_anomalies.sort_values("chan_id")
+    labeled_anomalies.sort_values("chan_id", inplace=True)
     smap_entity_ids = labeled_anomalies[labeled_anomalies["spacecraft"] == "SMAP"][
         "chan_id"
     ].values
@@ -49,15 +50,16 @@ def get_SMAP_train(
 
 def get_SMAP_test_label(label_file_path: str):
     labeled_anomalies = pd.read_csv(label_file_path)
-    labeled_anomalies.sort_values("chan_id")
+    labeled_anomalies.sort_values("chan_id", inplace=True)
 
     smap_entities = labeled_anomalies[labeled_anomalies["spacecraft"] == "SMAP"]
 
     test_labels = []
-    for smap_entity in smap_entities:
-        test_label = np.zeros(smap_entity["num_values"].values)
+    for i, smap_entity in smap_entities.iterrows():
+        test_label = np.zeros(smap_entity["num_values"])
 
-        anomaly_sequences = smap_entity["anomaly_sequences"].values
+        anomaly_sequences = smap_entity["anomaly_sequences"]
+        anomaly_sequences = ast.literal_eval(anomaly_sequences)
         for sequence in anomaly_sequences:
             test_label[sequence[0] : (sequence[1] + 1)] = 1
 
