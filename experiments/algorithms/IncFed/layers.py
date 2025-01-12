@@ -164,8 +164,9 @@ class ESN:
             y = np.dot(W_out, x)
 
             d = D[n]
-            score = np.abs(d - y)
+            score = np.mean((d - y) ** 2)
 
             scores.append(score)
+        scores = np.array(scores)
 
         return scores

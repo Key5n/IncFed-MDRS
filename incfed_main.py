@@ -24,7 +24,6 @@ if __name__ == "__main__":
     test_clients = get_SMD_test_clients()
 
     leaking_rate = 1.0
-    delta = 0.0001
     rho = 0.95
     input_scale = 1.0
     trans_len = 10
