@@ -10,5 +10,5 @@ rm -rf OmniAnomaly/
 # PSM
 mkdir -p datasets/psm
 git clone https://github.com/eBay/RANSynCoders.git
-mv RANSynCoders/data datasets/psm/
-rm -rf RANSynCoders
+mv RANSynCoders/data/* datasets/psm/
+rm -rf RANSynCoders/
