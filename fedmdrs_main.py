@@ -35,7 +35,6 @@ if __name__ == "__main__":
     delta = 0.0001
     rho = 0.95
     input_scale = 1.0
-    N_u = train_clients[0].shape[0]
     N_x = 200
 
     if train:
