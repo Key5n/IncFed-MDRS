@@ -95,38 +95,15 @@ def get_PSM_train_clients(
 
 
 def get_PSM_test_clients(
-    num_clients: int,
     test_data_file_path: str = os.path.join(os.getcwd(), "datasets", "PSM", "test.csv"),
     test_label_file_path: str = os.path.join(
         os.getcwd(), "datasets", "PSM", "test_label.csv"
     ),
-    beta: float | None = None,
-    required_length: int = 100,
 ) -> list[tuple[NDArray, NDArray]]:
     test_data = get_PSM(test_data_file_path)
     test_label = get_PSM(test_label_file_path, scale=False)
     test_label = test_label.reshape(-1)
 
-    clients: list[tuple[NDArray, NDArray]] = []
-    if beta is None:
-        test_data_sequences = np.array_split(test_data, num_clients)
-        test_label_sequences = np.array_split(test_label, num_clients)
-
-        for test_data_sequence, test_label_sequence in zip(test_data_sequences, test_label_sequences):
-            clients.append((test_data_sequence, test_label_sequence))
-    else:
-        start_index = get_start_index(test_data, beta, required_length, num_clients)
-
-        for i in range(len(start_index)):
-            if i != len(start_index) - 1:
-                test_data_sequence = test_data[start_index[i] : start_index[i + 1]]
-                test_label_sequence = test_label[start_index[i] : start_index[i + 1]]
-
-                clients.append((test_data_sequence, test_label_sequence))
-            else:
-                test_data_sequence = test_data[start_index[i] :]
-                test_label_sequence = test_label[start_index[i] :]
-
-                clients.append((test_data_sequence, test_label_sequence))
+    clients = [(test_data, test_label)]
 
     return clients

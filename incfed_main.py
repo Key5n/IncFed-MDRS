@@ -32,7 +32,7 @@ if __name__ == "__main__":
     else:
         num_clients = 24
         train_clients = get_PSM_train_clients(num_clients)
-        test_clients = get_PSM_test_clients(num_clients)
+        test_clients = get_PSM_test_clients()
 
     leaking_rate = 1.0
     rho = 0.95
