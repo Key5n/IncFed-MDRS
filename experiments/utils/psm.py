@@ -5,15 +5,18 @@ from numpy.typing import NDArray
 from sklearn.preprocessing import MinMaxScaler
 
 
-def get_PSM(data_file_path: str) -> NDArray:
+def get_PSM(data_file_path: str, scale=True) -> NDArray:
     data = pd.read_csv(data_file_path)
     data.drop(columns=[r"timestamp_(min)"], inplace=True)
     data = data.to_numpy()
 
-    scaler = MinMaxScaler()
-    data_transformed = scaler.fit_transform(data)
+    if scale:
+        scaler = MinMaxScaler()
+        data = scaler.fit_transform(data)
 
-    return data_transformed
+    data_without_nan = np.nan_to_num(data)
+
+    return data_without_nan
 
 
 def get_PSM_train(
@@ -101,7 +104,7 @@ def get_PSM_test_clients(
     required_length: int = 100,
 ) -> list[tuple[NDArray, NDArray]]:
     test_data = get_PSM(test_data_file_path)
-    test_label = get_PSM(test_label_file_path)
+    test_label = get_PSM(test_label_file_path, scale=False)
 
     clients: list[tuple[NDArray, NDArray]] = []
     if beta is None:
