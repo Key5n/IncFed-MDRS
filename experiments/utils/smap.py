@@ -34,6 +34,17 @@ def get_SMAP_concatenated(data_dir_path: str, label_file_path: str) -> NDArray:
 
     return dataset_concatenated
 
+def get_SMAP_train(
+    train_data_dir_path: str = os.path.join(
+        os.getcwd(), "datasets", "SMAP_MSL", "train"
+    ),
+    label_file_path: str = os.path.join(
+        os.getcwd(), "datasets", "SMAP_MSL", "labeled_anomalies.csv"
+    ),
+) -> NDArray:
+    train_data = get_SMAP_concatenated(train_data_dir_path, label_file_path)
+
+    return train_data
 
 def get_SMAP_train_clients(
     train_data_dir_path: str = os.path.join(

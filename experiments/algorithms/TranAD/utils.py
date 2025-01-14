@@ -48,14 +48,3 @@ def generate_test_loader(
     return test_dataloader
 
 
-def getting_labels_for_TranAD(data_loader):
-    all_labels = []
-
-    for batch in data_loader:
-        labels = batch[1].numpy()
-        all_labels.extend(labels)
-
-    all_labels = np.array(all_labels)
-    labels_final = (np.sum(all_labels, axis=1) >= 1) + 0
-
-    return labels_final

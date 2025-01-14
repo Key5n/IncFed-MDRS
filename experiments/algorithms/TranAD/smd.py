@@ -43,6 +43,7 @@ def get_SMD_test_entities_for_TranAD(
         test_label = get_SMD_interpretation_labels(
             interpretation_label_file_path, test_data.shape
         )
+        test_label = (np.sum(test_label, axis=1) >= 1) + 0
 
         if test_data.shape[0] != test_label.shape[0]:
             raise Exception(f"Length mismatch while creating SMD test dataset")
