@@ -2,6 +2,8 @@ import os
 from logging import getLogger
 
 import numpy as np
+from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
+from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
 from experiments.algorithms.IncFed.train import (
     evaluate_in_clients_incfed,
     train_in_clients_incfed,
@@ -15,13 +17,22 @@ save = True
 
 
 if __name__ == "__main__":
-    result_dir = os.path.join("result", "ESN-SRE", "IncFed")
+    dataset = "SMAP"
+    result_dir = os.path.join("result", "ESN-SRE", "IncFed", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "IncFed.log"))
     logger = getLogger(__name__)
 
-    train_clients = get_SMD_train_clients()
-    test_clients = get_SMD_test_clients()
+    if dataset == "SMD":
+        train_clients = get_SMD_train_clients()
+        test_clients = get_SMD_test_clients()
+    elif dataset == "SMAP":
+        train_clients = get_SMAP_train_clients()
+        test_clients = get_SMAP_test_clients()
+    else:
+        num_clients = 24
+        train_clients = get_PSM_train_clients(num_clients)
+        test_clients = get_PSM_test_clients(num_clients)
 
     leaking_rate = 1.0
     rho = 0.95

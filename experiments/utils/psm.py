@@ -22,21 +22,13 @@ def get_PSM_train(
     return psm_train
 
 
-def get_PSM_test(
-    test_data_file_path: str = os.path.join(os.getcwd(), "datasets", "PSM", "test.csv")
-) -> NDArray:
-    psm_test = get_PSM(test_data_file_path)
-
-    return psm_test
-
-
 def get_start_index(
-    num_data: int, beta: float, required_length: int, num_entities: int
+    num_data: int, beta: float, required_length: int, num_clients: int
 ):
     while True:
-        # e.g. [1000, 300, 1500, 7200] for num_data is 10000 and num_entities is 4
+        # e.g. [1000, 300, 1500, 7200] for num_data is 10000 and num_clients is 4
         proportions = np.floor(
-            np.random.dirichlet(np.repeat(beta, num_entities)) * num_data
+            np.random.dirichlet(np.repeat(beta, num_clients)) * num_data
         )
 
         if np.min(proportions) <= required_length:
@@ -54,24 +46,24 @@ def get_start_index(
     return start_index
 
 
-def get_PSM_data(
-    num_entities: int,
+def get_PSM_list(
+    num_clients: int,
     data_file_path: str,
     beta: float | None,
     required_length: int,
-) -> NDArray:
+) -> list[NDArray]:
     data = pd.read_csv(data_file_path)
     data.drop(columns=[r"timestamp_(min)"], inplace=True)
     data = data.to_numpy()
 
     data_list: list[NDArray] = []
     if beta is None:
-        data_list = np.array_split(data, num_entities)
+        data_list = np.array_split(data, num_clients)
 
         return data_list
 
     else:
-        start_index = get_start_index(data, beta, required_length, num_entities)
+        start_index = get_start_index(data, beta, required_length, num_clients)
 
         for i in range(len(start_index)):
             if i != len(start_index) - 1:
@@ -84,28 +76,28 @@ def get_PSM_data(
         return data_list
 
 
-def get_PSM_entities_train(
-    num_entites: int,
+def get_PSM_train_clients(
+    num_clients: int,
     train_data_file_path: str = os.path.join(
         os.getcwd(), "datasets", "PSM", "train.csv"
     ),
     beta: float | None = None,
     required_length: int = 100,
-) -> NDArray:
-    X_train = get_PSM_data(num_entites, train_data_file_path, beta, required_length)
+) -> list[NDArray]:
+    X_train = get_PSM_list(num_clients, train_data_file_path, beta, required_length)
 
     return X_train
 
 
-def get_PSM_entities_test(
-    num_entities: int,
+def get_PSM_test_clients(
+    num_clients: int,
     test_data_file_path: str = os.path.join(os.getcwd(), "datasets", "PSM", "test.csv"),
     test_label_file_path: str = os.path.join(
         os.getcwd(), "datasets", "PSM", "test_label.csv"
     ),
     beta: float | None = None,
     required_length: int = 100,
-) -> tuple[NDArray, NDArray]:
+) -> list[tuple[NDArray, NDArray]]:
     test_data = pd.read_csv(test_data_file_path)
     test_data.drop(columns=[r"timestamp_(min)"], inplace=True)
     test_data = test_data.to_numpy()
@@ -114,24 +106,26 @@ def get_PSM_entities_test(
     test_label.drop(columns=[r"timestamp_(min)"], inplace=True)
     test_label = test_data.to_numpy()
 
+    clients: list[tuple[NDArray, NDArray]] = []
     if beta is None:
-        X_test = np.array_split(test_data, num_entities)
-        y_test = np.array_split(test_label, num_entities)
-    else:
-        start_index = get_start_index(test_data, beta, required_length, num_entities)
+        test_data_sequences = np.array_split(test_data, num_clients)
+        test_label_sequences = np.array_split(test_label, num_clients)
 
-        X_test: list[NDArray] = []
-        y_test: list[NDArray] = []
+        for test_data_sequence, test_label_sequence in zip(test_data_sequences, test_label_sequences):
+            clients.append((test_data_sequence, test_label_sequence))
+    else:
+        start_index = get_start_index(test_data, beta, required_length, num_clients)
+
         for i in range(len(start_index)):
             if i != len(start_index) - 1:
-                test_dataset = test_data[start_index[i] : start_index[i + 1]]
-                test_label = test_label[start_index[i] : start_index[i + 1]]
-                X_test.append(test_dataset)
-                y_test.append(test_label)
-            else:
-                test_dataset = test_data[start_index[i] :]
-                test_label = test_label[start_index[i] :]
-                X_test.append(test_dataset)
-                y_test.append(test_label)
+                test_data_sequence = test_data[start_index[i] : start_index[i + 1]]
+                test_label_sequence = test_label[start_index[i] : start_index[i + 1]]
 
-    return X_test, y_test
+                clients.append((test_data_sequence, test_label_sequence))
+            else:
+                test_data_sequence = test_data[start_index[i] :]
+                test_label_sequence = test_label[start_index[i] :]
+
+                clients.append((test_data_sequence, test_label_sequence))
+
+    return clients
