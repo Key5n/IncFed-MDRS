@@ -3,6 +3,8 @@ from logging import getLogger
 
 import numpy as np
 from FedMDRS.utils.utils import evaluate_in_clients, train_in_clients
+from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
+from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
 from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.logger import init_logger
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
@@ -12,13 +14,22 @@ save = True
 
 
 if __name__ == "__main__":
-    result_dir = os.path.join("result", "mdrs", "proposed")
+    dataset = "SMAP"
+    result_dir = os.path.join("result", "mdrs", "proposed", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
     logger = getLogger(__name__)
 
-    train_clients = get_SMD_train_clients()
-    test_clients = get_SMD_test_clients()
+    if dataset == "SMD":
+        train_clients = get_SMD_train_clients()
+        test_clients = get_SMD_test_clients()
+    elif dataset == "SMAP":
+        train_clients = get_SMAP_train_clients()
+        test_clients = get_SMAP_test_clients()
+    else:
+        num_clients = 24
+        train_clients = get_PSM_train_clients(num_clients)
+        test_clients = get_PSM_test_clients(num_clients)
 
     leaking_rate = 1.0
     delta = 0.0001
@@ -37,7 +48,7 @@ if __name__ == "__main__":
         )
 
         if save:
-            print("global model is saved")
+            print("saved global precision matrix")
             with open(os.path.join(result_dir, "P_global.npy"), "wb") as f:
                 np.save(f, P_global)
     else:
