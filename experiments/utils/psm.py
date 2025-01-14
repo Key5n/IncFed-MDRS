@@ -105,6 +105,7 @@ def get_PSM_test_clients(
 ) -> list[tuple[NDArray, NDArray]]:
     test_data = get_PSM(test_data_file_path)
     test_label = get_PSM(test_label_file_path, scale=False)
+    test_label = test_label.reshape(-1)
 
     clients: list[tuple[NDArray, NDArray]] = []
     if beta is None:
