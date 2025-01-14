@@ -7,27 +7,29 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import numpy as np
 import torch
 from torch import nn
+from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
+from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
 from experiments.utils.logger import init_logger
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE
 from experiments.algorithms.LSTMAE.utils import generate_test_loader
 from experiments.algorithms.USAD.utils import getting_labels
 from experiments.evaluation.metrics import get_metrics
 from experiments.utils.fedavg import calc_averaged_weights
-from experiments.utils.smd import get_SMD_test_entities
 from experiments.utils.utils import choose_clients, get_default_device, set_seed
-from experiments.algorithms.LSTMAE.fed_utils import get_SMD_clients_LSTMAE
+from experiments.algorithms.LSTMAE.fed_utils import get_clients_LSTMAE
 from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.diagram.plot import plot
+from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 
 
 if __name__ == "__main__":
-    result_dir = os.path.join("result", "lstmae", "fedavg")
+    dataset = "SMD"
+    result_dir = os.path.join("result", "lstmae", "fedavg", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = logging.getLogger(__name__)
 
     device = get_default_device()
-    dataset = "SMD"
     seed = 42
     global_epochs = 10
     local_epochs = 5
@@ -45,18 +47,32 @@ if __name__ == "__main__":
     batch_size = 256
     lr = 0.001
 
-    clients = get_SMD_clients_LSTMAE(
+
+    if dataset == "SMD":
+        X_train_list = get_SMD_train_clients()
+        test_clients = get_SMD_test_clients()
+    elif dataset == "SMAP":
+        X_train_list = get_SMAP_train_clients()
+        test_clients = get_SMAP_test_clients()
+    else:
+        num_clients = 24
+        X_train_list = get_PSM_train_clients(num_clients)
+        test_clients = get_PSM_test_clients()
+
+    clients = get_clients_LSTMAE(
+        X_train_list,
         optimizer_gen_function,
         loss_fn,
-        local_epochs,
-        n_features,
-        hidden_size,
-        n_layers,
-        use_bias,
-        dropout,
-        batch_size,
-        lr,
-        device,
+        local_epochs=local_epochs,
+        n_features=n_features,
+        hidden_size=hidden_size,
+        n_layers=n_layers,
+        use_bias=use_bias,
+        dropout=dropout,
+        batch_size=batch_size,
+        window_size=window_size,
+        lr=lr,
+        device=device,
     )
 
     model = LSTMAE(
@@ -94,10 +110,9 @@ if __name__ == "__main__":
 
     model.load_model(global_state_dict)
 
-    test_entities = get_SMD_test_entities()
     test_dataloader_list = [
         generate_test_loader(test_data, test_labels, batch_size, window_size)
-        for test_data, test_labels in test_entities
+        for test_data, test_labels in test_clients
     ]
 
     evaluation_results = []

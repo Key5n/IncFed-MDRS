@@ -1,28 +1,9 @@
-import os
-import numpy as np
 from numpy.typing import NDArray
-import torch
-from torch.utils.data import TensorDataset, DataLoader
-from sklearn.utils import shuffle
-from experiments.utils.utils import create_windows
+from experiments.algorithms.LSTMAE.utils import generate_train_loader
 from experiments.algorithms.LSTMAE.federated import LSTMAEClient
 
-
-def get_SMD_data(data_dir_path: str) -> list[NDArray]:
-    data_filenames = os.listdir(data_dir_path)
-
-    data_list = []
-    for data_filename in data_filenames:
-        data_file_path = os.path.join(data_dir_path, data_filename)
-
-        data = np.genfromtxt(data_file_path, dtype=np.float64, delimiter=",")
-
-        data_list.append(data)
-
-    return data_list
-
-
-def get_SMD_clients_LSTMAE(
+def get_clients_LSTMAE(
+    X_train_list: list[NDArray],
     optimizer,
     loss_fn,
     local_epochs: int,
@@ -32,30 +13,22 @@ def get_SMD_clients_LSTMAE(
     use_bias: tuple,
     dropout: tuple,
     batch_size: int,
+    window_size: int,
     lr: float,
     device: str,
-    train_data_dir_path: str = os.path.join(
-        os.getcwd(), "datasets", "ServerMachineDataset", "train"
-    ),
-    window_size=30,
-    seed=42,
+    seed: int = 42
 ) -> list[LSTMAEClient]:
-    dataset_name = "SMD"
-    X_train_list = get_SMD_data(train_data_dir_path)
-
     clients = []
     for i, X_train in enumerate(X_train_list):
-        train_data = create_windows(X_train, window_size)
-        train_data = shuffle(train_data, random_state=seed)
-        train_data = torch.tensor(train_data, dtype=torch.float32)
-        train_data = TensorDataset(
-            train_data,
-            train_data[:, -1, :],
+        train_dataloader = generate_train_loader(
+            X_train,
+            batch_size=batch_size,
+            window_size=window_size,
+            seed=seed
         )
-        train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False)
 
         client = LSTMAEClient(
-            f"{dataset_name}-entity-{i}",
+            f"client-{i}",
             train_dataloader,
             optimizer,
             loss_fn,
