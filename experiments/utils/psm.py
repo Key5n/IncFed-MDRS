@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 from numpy.typing import NDArray
+from sklearn.preprocessing import MinMaxScaler
 
 
 def get_PSM(data_file_path: str) -> NDArray:
@@ -9,7 +10,10 @@ def get_PSM(data_file_path: str) -> NDArray:
     data.drop(columns=[r"timestamp_(min)"], inplace=True)
     data = data.to_numpy()
 
-    return data
+    scaler = MinMaxScaler()
+    data_transformed = scaler.fit_transform(data)
+
+    return data_transformed
 
 
 def get_PSM_train(
@@ -52,9 +56,7 @@ def get_PSM_list(
     beta: float | None,
     required_length: int,
 ) -> list[NDArray]:
-    data = pd.read_csv(data_file_path)
-    data.drop(columns=[r"timestamp_(min)"], inplace=True)
-    data = data.to_numpy()
+    data = get_PSM(data_file_path)
 
     data_list: list[NDArray] = []
     if beta is None:
@@ -98,13 +100,8 @@ def get_PSM_test_clients(
     beta: float | None = None,
     required_length: int = 100,
 ) -> list[tuple[NDArray, NDArray]]:
-    test_data = pd.read_csv(test_data_file_path)
-    test_data.drop(columns=[r"timestamp_(min)"], inplace=True)
-    test_data = test_data.to_numpy()
-
-    test_label = pd.read_csv(test_label_file_path)
-    test_label.drop(columns=[r"timestamp_(min)"], inplace=True)
-    test_label = test_data.to_numpy()
+    test_data = get_PSM(test_data_file_path)
+    test_label = get_PSM(test_label_file_path)
 
     clients: list[tuple[NDArray, NDArray]] = []
     if beta is None:
