@@ -26,6 +26,7 @@ class TranADClient:
         feats,
         lr,
         device,
+        window_size: int,
         prox_mu: float = 0.01,
     ):
         self.client_name = client_name
@@ -36,20 +37,21 @@ class TranADClient:
         self.local_epochs = local_epochs
         self.feats = feats
         self.lr = lr
+        self.window_size = window_size
         self.device = device
 
         # fedprox
         self.prox_mu = prox_mu
 
         # scaffold
-        initial_model = TranADModule(feats, lr)
+        initial_model = TranADModule(feats, lr, window_size=window_size)
         initial_model.to(device)
         self.c_local = initial_model.state_dict()
 
     def train_avg(self, global_state_dict) -> tuple[Dict, int]:
         logger = getLogger(__name__)
 
-        model = TranADModule(self.feats, self.lr)
+        model = TranADModule(self.feats, self.lr, window_size=self.window_size)
         model.load_state_dict(global_state_dict)
         model.to(self.device)
         model.train()
@@ -93,7 +95,7 @@ class TranADClient:
     def train_prox(self, global_state_dict) -> tuple[Dict, int]:
         logger = getLogger(__name__)
 
-        model = TranADModule(self.feats, self.lr)
+        model = TranADModule(self.feats, self.lr, window_size=self.window_size)
         model.load_state_dict(global_state_dict)
         global_model_parameters = model.parameters()
 
@@ -147,7 +149,7 @@ class TranADClient:
     ) -> tuple[Dict, int, Dict]:
         logger = getLogger()
 
-        model = TranADModule(self.feats, self.lr)
+        model = TranADModule(self.feats, self.lr, window_size=self.window_size)
         model.load_state_dict(global_state_dict)
         model.to(self.device)
         model.train()

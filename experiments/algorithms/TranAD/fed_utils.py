@@ -9,10 +9,10 @@ def get_clients_TranAD(
     schedular,
     loss_fn,
     local_epochs: int,
-    lr,
-    device,
-    batch_size,
-    window_size,
+    lr: float,
+    device: str,
+    batch_size: int,
+    window_size: int,
     seed=0,
 ):
     feats = X_train_list[0].shape[1]
@@ -30,6 +30,7 @@ def get_clients_TranAD(
             feats,
             lr,
             device,
+            window_size
         )
         clients.append(client)
 
