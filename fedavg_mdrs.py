@@ -1,5 +1,6 @@
 import os
 
+from experiments.utils.parser import args_parser
 import numpy as np
 from FedMDRS.utils.fedavg_mdrs import train_in_clients_fedavg
 from FedMDRS.utils.utils import evaluate_in_clients
@@ -58,7 +59,8 @@ def fedavg_mdrs(
 
 
 if __name__ == "__main__":
-    dataset = "SMD"
+    args = args_parser()
+    dataset = args.dataset
     result_dir = os.path.join("result", "mdrs", "fedavg", dataset)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 

@@ -2,6 +2,7 @@ import os
 from logging import getLogger
 import json
 
+from experiments.utils.parser import args_parser
 import optuna
 import numpy as np
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
@@ -85,7 +86,8 @@ def incfed_main(
 
 
 if __name__ == "__main__":
-    dataset = "SMAP"
+    args = args_parser()
+    dataset = args.dataset
     result_dir = os.path.join("result", "ESN-SRE", "IncFed", dataset)
     init_logger(os.path.join(result_dir, "IncFed.log"))
 

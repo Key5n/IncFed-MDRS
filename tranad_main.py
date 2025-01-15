@@ -4,6 +4,7 @@ from tqdm import trange
 from tqdm.contrib import tenumerate
 import torch
 from torch import nn
+from experiments.utils.parser import args_parser
 from experiments.algorithms.USAD.utils import getting_labels
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train
@@ -79,7 +80,8 @@ def tranad_main(
 
 
 if __name__ == "__main__":
-    dataset = "SMD"
+    args = args_parser()
+    dataset = args.dataset
     result_dir = os.path.join("result", "tranad", "centralized", dataset)
     init_logger(os.path.join(result_dir, "tranad.log"))
 

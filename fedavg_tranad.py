@@ -6,6 +6,7 @@ from tqdm.contrib import tenumerate
 from tqdm.contrib.logging import logging_redirect_tqdm
 import torch
 from torch import nn
+from experiments.utils.parser import args_parser
 from experiments.algorithms.TranAD.fed_utils import get_clients_TranAD
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
@@ -115,7 +116,8 @@ def fedavg_tranad(
 
 
 if __name__ == "__main__":
-    dataset = "SMD"
+    args = args_parser()
+    dataset = args.dataset
     result_dir = os.path.join("result", "tranad", "fedavg", dataset)
     init_logger(os.path.join(result_dir, "tranad.log"))
 

@@ -4,6 +4,7 @@ from typing import Dict
 from tqdm import trange
 from tqdm.contrib import tenumerate
 from tqdm.contrib.logging import logging_redirect_tqdm
+from experiments.utils.parser import args_parser
 import numpy as np
 import torch
 from torch import nn
@@ -130,7 +131,8 @@ def fedavg_lstmae(
 
 
 if __name__ == "__main__":
-    dataset = "SMD"
+    args = args_parser()
+    dataset = args.dataset
     result_dir = os.path.join("result", "lstmae", "fedavg", dataset)
     init_logger(os.path.join(result_dir, "lstmae.log"))
 

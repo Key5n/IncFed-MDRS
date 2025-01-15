@@ -5,6 +5,7 @@ import json
 
 import numpy as np
 from FedMDRS.utils.utils import evaluate_in_clients, train_in_clients
+from experiments.utils.parser import args_parser
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
 from experiments.utils.get_final_scores import get_final_scores
@@ -64,7 +65,8 @@ def fedmdrs_main(
 
 
 if __name__ == "__main__":
-    dataset = "SMD"
+    args = args_parser()
+    dataset = args.dataset
     result_dir = os.path.join("result", "mdrs", "proposed", dataset)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 

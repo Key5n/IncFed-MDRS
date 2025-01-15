@@ -2,6 +2,7 @@ from logging import getLogger
 import os
 from tqdm import trange
 from tqdm.contrib import tenumerate
+from experiments.utils.parser import args_parser
 import torch
 from torch import nn
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train
@@ -91,7 +92,8 @@ def lstmae_main(
 
 
 if __name__ == "__main__":
-    dataset = "SMAP"
+    args = args_parser()
+    dataset = args.dataset
     result_dir = os.path.join("result", "lstmae", "centralized", dataset)
     init_logger(os.path.join(result_dir, "lstmae.log"))
 
