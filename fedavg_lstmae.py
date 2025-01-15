@@ -22,31 +22,31 @@ from experiments.utils.diagram.plot import plot
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 
 
-if __name__ == "__main__":
-    dataset = "SMD"
-    result_dir = os.path.join("result", "lstmae", "fedavg", dataset)
+def fedavg_lstmae(
+    dataset: str,
+    result_dir: str,
+    global_epochs: int = 10,
+    local_epochs: int = 5,
+    client_rate: float = 0.25,
+    loss_fn=nn.MSELoss(),
+    optimizer_gen_function=torch.optim.Adam,
+    hidden_size: int = 128,
+    window_size: int = 30,
+    n_layers: tuple = (2, 2),
+    use_bias: tuple = (True, True),
+    dropout: tuple = (0, 0),
+    batch_size: int = 256,
+    lr: float = 0.001,
+    seed: int = 42,
+    device=get_default_device(),
+):
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = logging.getLogger(__name__)
+    args = locals()
+    logger.info(args)
 
-    device = get_default_device()
-    seed = 42
-    global_epochs = 10
-    local_epochs = 5
-    client_rate = 0.25
-    set_seed()
-
-    loss_fn = nn.MSELoss()
-    optimizer_gen_function = torch.optim.Adam
-    n_features = 38
-    hidden_size = 128
-    window_size = 30
-    n_layers = (2, 2)
-    use_bias = (True, True)
-    dropout = (0, 0)
-    batch_size = 256
-    lr = 0.001
-
+    set_seed(seed)
 
     if dataset == "SMD":
         X_train_list = get_SMD_train_clients()
@@ -58,6 +58,8 @@ if __name__ == "__main__":
         num_clients = 24
         X_train_list = get_PSM_train_clients(num_clients)
         test_clients = get_PSM_test_clients()
+
+    n_features = X_train_list[0].shape[1]
 
     clients = get_clients_LSTMAE(
         X_train_list,
@@ -126,3 +128,10 @@ if __name__ == "__main__":
         evaluation_results.append(evaluation_result)
 
     get_final_scores(evaluation_results, result_dir)
+
+
+if __name__ == "__main__":
+    dataset = "SMD"
+    result_dir = os.path.join("result", "lstmae", "fedavg", dataset)
+
+    fedavg_lstmae(dataset=dataset, result_dir=result_dir)

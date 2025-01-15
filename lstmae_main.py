@@ -1,3 +1,4 @@
+from logging import getLogger
 import os
 from tqdm import trange
 from tqdm.contrib import tenumerate
@@ -18,26 +19,30 @@ from experiments.algorithms.LSTMAE.utils import (
 )
 from experiments.evaluation.metrics import get_metrics
 
-if __name__ == "__main__":
-    dataset = "SMD"
-    result_dir = os.path.join("result", "lstmae", "centralized", dataset)
+
+def lstmae_main(
+    dataset: str,
+    result_dir: str,
+    loss_fn=nn.MSELoss(),
+    optimizer=torch.optim.Adam,
+    hidden_size: int = 100,
+    batch_size: int = 256,
+    epochs: int = 100,
+    lr: float = 0.001,
+    window_size: int = 100,
+    n_layers: tuple = (2, 2),
+    use_bias: tuple = (0, 0),
+    dropout=(0, 0),
+    device: str = get_default_device(),
+    seed: int = 42,
+):
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
+    logger = getLogger(__name__)
+    args = locals()
+    logger.info(args)
 
-    hidden_size = 100
-    device = get_default_device()
-    seed = 42
-    batch_size = 256
     set_seed(seed)
-
-    epochs = 100
-    batch_size = 64
-    lr = 0.001
-    hidden_size = 128
-    window_size = 30
-    n_layers = (2, 2)
-    use_bias = (True, True)
-    dropout = (0, 0)
 
     if dataset == "SMD":
         train_data = get_SMD_train()
@@ -56,9 +61,6 @@ if __name__ == "__main__":
         generate_test_loader(test_data, test_labels, batch_size, window_size)
         for test_data, test_labels in test_clients
     ]
-
-    loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam
 
     model = LSTMAE(
         loss_fn,
@@ -87,3 +89,10 @@ if __name__ == "__main__":
         evaluation_results.append(evaluation_result)
 
     get_final_scores(evaluation_results, result_dir)
+
+
+if __name__ == "__main__":
+    dataset = "SMAP"
+    result_dir = os.path.join("result", "lstmae", "centralized", dataset)
+
+    lstmae_main(dataset=dataset, result_dir=result_dir)

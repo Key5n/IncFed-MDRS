@@ -21,28 +21,29 @@ from experiments.utils.fedavg import calc_averaged_weights
 from experiments.algorithms.USAD.utils import getting_labels
 from experiments.utils.smd import get_SMD_train_clients
 
-if __name__ == "__main__":
-    dataset = "SMD"
-    result_dir = os.path.join("result", "tranad", "fedavg", dataset)
+
+def fedavg_tranad(
+    dataset: str,
+    result_dir: str,
+    global_epochs=10,
+    local_epochs=5,
+    client_rate=0.25,
+    seed=42,
+    batch_size=128,
+    window_size=10,
+    lr=0.0001,
+    loss_fn=nn.MSELoss(reduction="none"),
+    optimizer=torch.optim.AdamW,
+    scheduler=torch.optim.lr_scheduler.StepLR,
+    device=get_default_device(),
+):
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
+    args = locals()
+    logger.info(args)
 
-    global_epochs = 10
-    local_epochs = 5
-    client_rate = 0.25
-
-    seed = 42
-    batch_size = 128
-    epochs = 5
-    window_size = 10
-    lr = 0.0001
-    device = get_default_device()
     set_seed(seed)
-
-    loss_fn = nn.MSELoss(reduction="none")
-    optimizer = torch.optim.AdamW
-    scheduler = torch.optim.lr_scheduler.StepLR
 
     if dataset == "SMD":
         X_train_list = get_SMD_train_clients()
@@ -67,18 +68,11 @@ if __name__ == "__main__":
         device=device,
         batch_size=batch_size,
         window_size=window_size,
-        seed=seed
+        seed=seed,
     )
 
     model = TranAD(
-        loss_fn,
-        optimizer,
-        scheduler,
-        n_features,
-        lr,
-        batch_size,
-        window_size,
-        device
+        loss_fn, optimizer, scheduler, n_features, lr, batch_size, window_size, device
     )
     global_state_dict = model.state_dict()
 
@@ -119,3 +113,10 @@ if __name__ == "__main__":
         evaluation_results.append(evaluation_result)
 
     get_final_scores(evaluation_results, result_dir)
+
+
+if __name__ == "__main__":
+    dataset = "SMD"
+    result_dir = os.path.join("result", "tranad", "fedavg", dataset)
+
+    fedavg_tranad(dataset=dataset, result_dir=result_dir)

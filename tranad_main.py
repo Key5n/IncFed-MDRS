@@ -1,3 +1,4 @@
+from logging import getLogger
 import os
 from tqdm import trange
 from tqdm.contrib import tenumerate
@@ -19,24 +20,27 @@ from experiments.algorithms.TranAD.utils import (
     generate_train_loader,
 )
 
-if __name__ == "__main__":
-    dataset = "SMAP"
-    result_dir = os.path.join("result", "tranad", "centralized", dataset)
+
+def tranad_main(
+    dataset: str,
+    result_dir: str,
+    seed: int = 42,
+    batch_size: int = 128,
+    epochs: int = 5,
+    window_size: int = 10,
+    device: str = get_default_device(),
+    loss_fn=nn.MSELoss(reduction="none"),
+    optimizer=torch.optim.AdamW,
+    scheduler: int = torch.optim.lr_scheduler.StepLR,
+    lr: float = 0.0001,
+):
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
+    logger = getLogger(__name__)
+    args = locals()
+    logger.info(args)
 
-    seed = 42
-    batch_size = 128
-    epochs = 5
-    window_size = 10
-    device = get_default_device()
     set_seed(seed)
-
-    loss_fn = nn.MSELoss(reduction="none")
-    optimizer = torch.optim.AdamW
-    scheduler = torch.optim.lr_scheduler.StepLR
-
-    lr = 0.0001
 
     if dataset == "SMD":
         train_data = get_SMD_train()
@@ -55,7 +59,9 @@ if __name__ == "__main__":
         for test_data, test_labels in test_clients
     ]
 
-    model = TranAD(loss_fn, optimizer, scheduler, n_features, lr, batch_size, window_size, device)
+    model = TranAD(
+        loss_fn, optimizer, scheduler, n_features, lr, batch_size, window_size, device
+    )
 
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
@@ -71,3 +77,10 @@ if __name__ == "__main__":
         evaluation_results.append(evaluation_result)
 
     get_final_scores(evaluation_results, result_dir)
+
+
+if __name__ == "__main__":
+    dataset = "SMD"
+    result_dir = os.path.join("result", "tranad", "centralized", dataset)
+
+    tranad_main(dataset=dataset, result_dir=result_dir)
