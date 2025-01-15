@@ -10,20 +10,6 @@ def args_parser():
         required=True,
         choices=["SMD", "SMAP", "PSM"],
     )
-    parser.add_argument(
-        "--method",
-        type=str,
-        required=True,
-        choices=[
-            "FedMDRS",
-            "FedAvg_MDRS",
-            "IncFed",
-            "TranAD",
-            "LSTMAE",
-            "FedAvg_TranAD",
-            "FedAvg_LSTMAE",
-        ],
-    )
     args = parser.parse_args()
 
     return args
