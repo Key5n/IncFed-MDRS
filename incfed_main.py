@@ -32,7 +32,6 @@ def incfed_main(
 ):
     config = locals()
     os.makedirs(result_dir, exist_ok=True)
-    init_logger(os.path.join(result_dir, "IncFed.log"))
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -88,6 +87,7 @@ def incfed_main(
 if __name__ == "__main__":
     dataset = "SMAP"
     result_dir = os.path.join("result", "ESN-SRE", "IncFed", dataset)
+    init_logger(os.path.join(result_dir, "IncFed.log"))
 
     def objective(trial):
         leaking_rate = trial.suggest_float("leaking_rate", 0.0001, 1, log=True)

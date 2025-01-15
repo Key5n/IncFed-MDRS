@@ -24,9 +24,7 @@ def fedmdrs_main(
     save: bool = True,
 ):
     config = locals()
-    print("config: ", config)
     os.makedirs(result_dir, exist_ok=True)
-    init_logger(os.path.join(result_dir, "mdrs.log"))
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -66,8 +64,9 @@ def fedmdrs_main(
 
 
 if __name__ == "__main__":
-    dataset = "SMAP"
+    dataset = "SMD"
     result_dir = os.path.join("result", "mdrs", "proposed", dataset)
+    init_logger(os.path.join(result_dir, "mdrs.log"))
 
     def objective(trial):
         leaking_rate = trial.suggest_float("leaking_rate", 0.0001, 1, log=True)

@@ -39,7 +39,6 @@ def fedavg_tranad(
 ):
     config = locals()
     os.makedirs(result_dir, exist_ok=True)
-    init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -118,5 +117,6 @@ def fedavg_tranad(
 if __name__ == "__main__":
     dataset = "SMD"
     result_dir = os.path.join("result", "tranad", "fedavg", dataset)
+    init_logger(os.path.join(result_dir, "tranad.log"))
 
     fedavg_tranad(dataset=dataset, result_dir=result_dir)

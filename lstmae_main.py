@@ -38,7 +38,6 @@ def lstmae_main(
 ):
     config = locals()
     os.makedirs(result_dir, exist_ok=True)
-    init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -94,5 +93,6 @@ def lstmae_main(
 if __name__ == "__main__":
     dataset = "SMAP"
     result_dir = os.path.join("result", "lstmae", "centralized", dataset)
+    init_logger(os.path.join(result_dir, "lstmae.log"))
 
     lstmae_main(dataset=dataset, result_dir=result_dir)

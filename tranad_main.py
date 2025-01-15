@@ -36,7 +36,6 @@ def tranad_main(
 ):
     config = locals()
     os.makedirs(result_dir, exist_ok=True)
-    init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -82,5 +81,6 @@ def tranad_main(
 if __name__ == "__main__":
     dataset = "SMD"
     result_dir = os.path.join("result", "tranad", "centralized", dataset)
+    init_logger(os.path.join(result_dir, "tranad.log"))
 
     tranad_main(dataset=dataset, result_dir=result_dir)
