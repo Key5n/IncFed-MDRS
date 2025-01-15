@@ -36,11 +36,11 @@ def lstmae_main(
     device: str = get_default_device(),
     seed: int = 42,
 ):
+    config = locals()
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = getLogger(__name__)
-    args = locals()
-    logger.info(args)
+    logger.info(config)
 
     set_seed(seed)
 

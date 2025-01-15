@@ -34,11 +34,11 @@ def tranad_main(
     scheduler: int = torch.optim.lr_scheduler.StepLR,
     lr: float = 0.0001,
 ):
+    config = locals()
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
-    args = locals()
-    logger.info(args)
+    logger.info(config)
 
     set_seed(seed)
 

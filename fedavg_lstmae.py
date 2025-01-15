@@ -40,10 +40,10 @@ def fedavg_lstmae(
     seed: int = 42,
     device=get_default_device(),
 ):
+    args = locals()
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = logging.getLogger(__name__)
-    args = locals()
     logger.info(args)
 
     set_seed(seed)

@@ -30,20 +30,10 @@ def incfed_main(
     save: bool = True,
     result_dir: str = "result",
 ):
+    config = locals()
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "IncFed.log"))
     logger = getLogger(__name__)
-    config = {
-        "dataset": dataset,
-        "N_x": N_x,
-        "learking_rate": leaking_rate,
-        "rho": rho,
-        "input_scale": input_scale,
-        "beta": beta,
-        "trans_len": trans_len,
-        "train": train,
-        "save": save,
-    }
     logger.info(config)
 
     if dataset == "SMD":

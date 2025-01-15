@@ -37,11 +37,11 @@ def fedavg_tranad(
     scheduler=torch.optim.lr_scheduler.StepLR,
     device=get_default_device(),
 ):
+    config = locals()
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
-    args = locals()
-    logger.info(args)
+    logger.info(config)
 
     set_seed(seed)
 

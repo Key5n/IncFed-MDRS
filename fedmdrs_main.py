@@ -13,7 +13,8 @@ from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 
 
 def fedmdrs_main(
-    dataset: str = "SMAP",
+    dataset: str,
+    result_dir: str,
     N_x: int = 200,
     leaking_rate: float = 1.0,
     delta: float = 0.0001,
@@ -21,21 +22,12 @@ def fedmdrs_main(
     input_scale: float = 1.0,
     train: bool = True,
     save: bool = True,
-    result_dir: str = "result",
 ):
+    config = locals()
+    print("config: ", config)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
     logger = getLogger(__name__)
-    config = {
-        "dataset": dataset,
-        "N_x": N_x,
-        "leaking_rate": leaking_rate,
-        "delta": delta,
-        "rho": rho,
-        "input_scale": input_scale,
-        "train": train,
-        "save": save,
-    }
     logger.info(config)
 
     if dataset == "SMD":
@@ -74,7 +66,6 @@ def fedmdrs_main(
 
 
 if __name__ == "__main__":
-
     dataset = "SMAP"
     result_dir = os.path.join("result", "mdrs", "proposed", dataset)
 
