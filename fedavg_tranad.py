@@ -2,8 +2,8 @@ from logging import getLogger
 import os
 from typing import Dict
 from tqdm import trange
-from tqdm.contrib import tenumerate
 from tqdm.contrib.logging import logging_redirect_tqdm
+from experiments.utils.evaluate import evaluate
 import torch
 from torch import nn
 from experiments.utils.parser import args_parser
@@ -11,15 +11,11 @@ from experiments.algorithms.TranAD.fed_utils import get_clients_TranAD
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
 from experiments.utils.logger import init_logger
-from experiments.utils.get_final_scores import get_final_scores
-from experiments.utils.diagram.plot import plot
 from experiments.algorithms.TranAD.tranad import TranAD
 from experiments.algorithms.TranAD.smd import get_SMD_test_entities_for_TranAD
-from experiments.evaluation.metrics import get_metrics
 from experiments.utils.utils import choose_clients, get_default_device, set_seed
 from experiments.algorithms.TranAD.utils import generate_test_loader
 from experiments.utils.fedavg import calc_averaged_weights
-from experiments.algorithms.USAD.utils import getting_labels
 from experiments.utils.smd import get_SMD_train_clients
 
 
@@ -102,17 +98,7 @@ def fedavg_tranad(
         for test_data, test_labels in test_clients
     ]
 
-    evaluation_results = []
-    for i, test_dataloader in tenumerate(test_dataloader_list):
-        scores = model.copy().run(test_dataloader)
-        labels = getting_labels(test_dataloader)
-
-        plot(scores, labels, os.path.join(result_dir, f"{i}.pdf"))
-
-        evaluation_result = get_metrics(scores, labels)
-        evaluation_results.append(evaluation_result)
-
-    get_final_scores(evaluation_results, result_dir)
+    evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":

@@ -2,18 +2,15 @@ from logging import getLogger
 import os
 from tqdm import trange
 from tqdm.contrib import tenumerate
+from experiments.utils.evaluate import evaluate
 import torch
 from torch import nn
 from experiments.utils.parser import args_parser
-from experiments.algorithms.USAD.utils import getting_labels
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train
 from experiments.utils.logger import init_logger
-from experiments.utils.get_final_scores import get_final_scores
-from experiments.utils.diagram.plot import plot
 from experiments.algorithms.TranAD.tranad import TranAD
 from experiments.algorithms.TranAD.smd import get_SMD_test_entities_for_TranAD
-from experiments.evaluation.metrics import get_metrics
 from experiments.utils.utils import get_default_device, set_seed
 from experiments.utils.smd import get_SMD_train
 from experiments.algorithms.TranAD.utils import (
@@ -66,17 +63,7 @@ def tranad_main(
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
 
-    evaluation_results = []
-    for i, test_dataloader in tenumerate(test_dataloader_list):
-        scores = model.copy().run(test_dataloader)
-        labels = getting_labels(test_dataloader)
-
-        plot(scores, labels, os.path.join(result_dir, f"{i}.pdf"))
-
-        evaluation_result = get_metrics(scores, labels)
-        evaluation_results.append(evaluation_result)
-
-    get_final_scores(evaluation_results, result_dir)
+    evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":

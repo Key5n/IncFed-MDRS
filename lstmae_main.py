@@ -1,7 +1,7 @@
 from logging import getLogger
 import os
 from tqdm import trange
-from tqdm.contrib import tenumerate
+from experiments.utils.evaluate import evaluate
 from experiments.utils.parser import args_parser
 import torch
 from torch import nn
@@ -10,15 +10,11 @@ from experiments.utils.logger import init_logger
 from experiments.utils.utils import get_default_device, set_seed
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train
 from experiments.utils.smd import get_SMD_train, get_SMD_test_clients
-from experiments.utils.get_final_scores import get_final_scores
-from experiments.utils.diagram.plot import plot
-from experiments.algorithms.USAD.utils import getting_labels
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE
 from experiments.algorithms.LSTMAE.utils import (
     generate_test_loader,
     generate_train_loader,
 )
-from experiments.evaluation.metrics import get_metrics
 
 
 def lstmae_main(
@@ -75,20 +71,10 @@ def lstmae_main(
         device,
     )
 
-    for epoch in trange(epochs):
+    for _ in trange(epochs):
         model.fit(train_dataloader)
 
-    evaluation_results = []
-    for i, test_dataloader in tenumerate(test_dataloader_list):
-        scores = model.copy().run(test_dataloader)
-        labels = getting_labels(test_dataloader)
-
-        plot(scores, labels, os.path.join(result_dir, f"{i}.pdf"))
-
-        evaluation_result = get_metrics(scores, labels)
-        evaluation_results.append(evaluation_result)
-
-    get_final_scores(evaluation_results, result_dir)
+    evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":

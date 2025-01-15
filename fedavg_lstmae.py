@@ -2,10 +2,9 @@ import os
 import logging
 from typing import Dict
 from tqdm import trange
-from tqdm.contrib import tenumerate
 from tqdm.contrib.logging import logging_redirect_tqdm
+from experiments.utils.evaluate import evaluate
 from experiments.utils.parser import args_parser
-import numpy as np
 import torch
 from torch import nn
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
@@ -13,13 +12,9 @@ from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
 from experiments.utils.logger import init_logger
 from experiments.algorithms.LSTMAE.lstmae import LSTMAE
 from experiments.algorithms.LSTMAE.utils import generate_test_loader
-from experiments.algorithms.USAD.utils import getting_labels
-from experiments.evaluation.metrics import get_metrics
 from experiments.utils.fedavg import calc_averaged_weights
 from experiments.utils.utils import choose_clients, get_default_device, set_seed
 from experiments.algorithms.LSTMAE.fed_utils import get_clients_LSTMAE
-from experiments.utils.get_final_scores import get_final_scores
-from experiments.utils.diagram.plot import plot
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 
 
@@ -117,17 +112,7 @@ def fedavg_lstmae(
         for test_data, test_labels in test_clients
     ]
 
-    evaluation_results = []
-    for i, test_dataloader in tenumerate(test_dataloader_list):
-        scores = model.copy().run(test_dataloader)
-        labels = getting_labels(test_dataloader)
-
-        plot(scores, labels, os.path.join(result_dir, f"{i}.pdf"))
-
-        evaluation_result = get_metrics(scores, labels)
-        evaluation_results.append(evaluation_result)
-
-    get_final_scores(evaluation_results, result_dir)
+    evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":
