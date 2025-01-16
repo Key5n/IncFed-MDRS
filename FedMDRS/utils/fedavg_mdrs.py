@@ -12,8 +12,7 @@ def train_in_clients_fedavg(
     delta=0.0001,
     input_scale: float = 1.0,
 ) -> NDArray:
-
-    covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
+    covariance_matrix = delta * np.identity(N_x)
 
     all_data_length = np.sum([len(train_data) for train_data in train_data_list])
 
@@ -29,6 +28,6 @@ def train_in_clients_fedavg(
 
         covariance_matrix += local_updates * len(train_data) / all_data_length
 
-    P_global = np.linalg.inv(covariance_matrix + delta * np.identity(N_x))
+    P_global = np.linalg.inv(covariance_matrix)
 
     return P_global
