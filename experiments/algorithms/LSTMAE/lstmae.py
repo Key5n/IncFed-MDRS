@@ -21,7 +21,12 @@ class LSTMAE:
         device: str,
     ):
         self.model = LSTMAEModule(
-            n_features, hidden_size, n_layers, use_bias, dropout, device
+            n_features=n_features,
+            hidden_size=hidden_size,
+            n_layers=n_layers,
+            use_bias=use_bias,
+            dropout=dropout,
+            device=device
         )
         self.loss_fn = loss_fn
         self.optimizer = optimizer(self.model.parameters(), lr=lr)

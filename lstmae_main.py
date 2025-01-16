@@ -28,7 +28,7 @@ def lstmae_main(
     lr: float = 0.001,
     window_size: int = 100,
     n_layers: tuple = (2, 2),
-    use_bias: tuple = (0, 0),
+    use_bias: tuple = (True, True),
     dropout=(0, 0),
     device: str = get_default_device(),
     seed: int = 42,
@@ -60,14 +60,14 @@ def lstmae_main(
     model = LSTMAE(
         loss_fn,
         optimizer,
-        n_features,
-        hidden_size,
-        n_layers,
-        use_bias,
-        dropout,
-        batch_size,
-        lr,
-        device,
+        n_features=n_features,
+        hidden_size=hidden_size,
+        n_layers=n_layers,
+        use_bias=use_bias,
+        dropout=dropout,
+        batch_size=batch_size,
+        lr=lr,
+        device=device,
     )
 
     for _ in trange(epochs):
