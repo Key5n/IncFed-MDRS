@@ -19,7 +19,7 @@ def train_in_clients(
     input_scale: float = 1.0,
 ) -> NDArray:
 
-    covariance_matrix = np.zeros((N_x, N_x), dtype=np.float64)
+    covariance_matrix = delta * np.identity(N_x)
     for train_data in tqdm(train_data_list):
         local_updates = train_in_client(
             train_data,
@@ -32,7 +32,7 @@ def train_in_clients(
 
         covariance_matrix += local_updates
 
-    P_global = np.linalg.inv(covariance_matrix + delta * np.identity(N_x))
+    P_global = np.linalg.inv(covariance_matrix)
 
     return P_global
 
