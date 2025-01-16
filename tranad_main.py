@@ -33,7 +33,6 @@ def tranad_main(
     lr: float = 0.0001,
 ):
     config = locals()
-    os.makedirs(result_dir, exist_ok=True)
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -70,6 +69,7 @@ if __name__ == "__main__":
     args = args_parser()
     dataset = args.dataset
     result_dir = os.path.join("result", "tranad", "centralized", dataset)
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
 
     tranad_main(dataset=dataset, result_dir=result_dir)

@@ -23,8 +23,6 @@ def fedavg_mdrs(
     rho=0.95,
     input_scale=1.0,
 ):
-    os.makedirs(result_dir, exist_ok=True)
-
     if dataset == "SMD":
         train_clients = get_SMD_train_clients()
         test_clients = get_SMD_test_clients()
@@ -62,6 +60,7 @@ if __name__ == "__main__":
     args = args_parser()
     dataset = args.dataset
     result_dir = os.path.join("result", "mdrs", "fedavg", dataset)
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 
     fedavg_mdrs(dataset=dataset, result_dir=result_dir)

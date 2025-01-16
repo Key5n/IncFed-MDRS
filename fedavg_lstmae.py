@@ -37,7 +37,6 @@ def fedavg_lstmae(
     device=get_default_device(),
 ):
     args = locals()
-    os.makedirs(result_dir, exist_ok=True)
     logger = logging.getLogger(__name__)
     logger.info(args)
 
@@ -119,6 +118,7 @@ if __name__ == "__main__":
     args = args_parser()
     dataset = args.dataset
     result_dir = os.path.join("result", "lstmae", "fedavg", dataset)
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
 
     fedavg_lstmae(dataset=dataset, result_dir=result_dir)

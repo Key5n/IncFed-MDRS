@@ -35,7 +35,6 @@ def fedavg_tranad(
     device=get_default_device(),
 ):
     config = locals()
-    os.makedirs(result_dir, exist_ok=True)
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -105,6 +104,7 @@ if __name__ == "__main__":
     args = args_parser()
     dataset = args.dataset
     result_dir = os.path.join("result", "tranad", "fedavg", dataset)
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
 
     fedavg_tranad(dataset=dataset, result_dir=result_dir)

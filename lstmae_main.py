@@ -34,7 +34,6 @@ def lstmae_main(
     seed: int = 42,
 ):
     config = locals()
-    os.makedirs(result_dir, exist_ok=True)
     logger = getLogger(__name__)
     logger.info(config)
 
@@ -81,6 +80,7 @@ if __name__ == "__main__":
     args = args_parser()
     dataset = args.dataset
     result_dir = os.path.join("result", "lstmae", "centralized", dataset)
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
 
     lstmae_main(dataset=dataset, result_dir=result_dir)
