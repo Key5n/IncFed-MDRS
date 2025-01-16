@@ -1,4 +1,5 @@
 import os
+from logging import getLogger
 
 from experiments.utils.parser import args_parser
 import numpy as np
@@ -23,6 +24,10 @@ def fedavg_mdrs(
     rho=0.95,
     input_scale=1.0,
 ):
+    config = locals()
+    logger = getLogger(__name__)
+    logger.info(config)
+
     if dataset == "SMD":
         train_clients = get_SMD_train_clients()
         test_clients = get_SMD_test_clients()
