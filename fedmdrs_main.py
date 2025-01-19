@@ -1,7 +1,7 @@
 import os
 from logging import getLogger
 import optuna
-import json
+import joblib
 
 import numpy as np
 from FedMDRS.utils.utils import evaluate_in_clients, train_in_clients
@@ -88,8 +88,12 @@ if __name__ == "__main__":
 
         return pate_avg
 
-    study = optuna.create_study(direction="maximize")
+    study_save_path = os.path.join(result_dir, "study.pkl")
+    if os.path.isfile(study_save_path):
+        study = joblib.load(study_save_path)
+    else:
+        study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=100)
 
-    with open(os.path.join(result_dir, "best_params.json"), "w") as f:
-        json.dump(study.best_params, f)
+    with open(study_save_path) as f:
+        joblib.dump(study, f)
