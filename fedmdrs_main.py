@@ -71,10 +71,10 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "mdrs.log"))
 
     def objective(trial):
-        leaking_rate = trial.suggest_float("leaking_rate", 0.0001, 1, log=True)
+        leaking_rate = trial.suggest_float("leaking_rate", 0.001, 1, log=True)
         delta = trial.suggest_float("delta", 0.0001, 1, log=True)
-        rho = trial.suggest_float("rho", 0, 2)
-        input_scale = trial.suggest_float("input_scale", 0.0001, 1, log=True)
+        rho = trial.suggest_float("rho", 0.001, 2, log=True)
+        input_scale = trial.suggest_float("input_scale", 0.001, 1, log=True)
 
         pate_avg = fedmdrs_main(
             dataset=dataset,
@@ -95,5 +95,5 @@ if __name__ == "__main__":
         study = optuna.create_study(direction="maximize")
     study.optimize(objective, n_trials=100)
 
-    with open(study_save_path) as f:
+    with open(study_save_path, "wb") as f:
         joblib.dump(study, f)
