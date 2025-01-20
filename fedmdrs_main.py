@@ -93,7 +93,9 @@ if __name__ == "__main__":
         study = joblib.load(study_save_path)
     else:
         study = optuna.create_study(direction="maximize")
-    study.optimize(objective, n_trials=100)
 
-    with open(study_save_path, "wb") as f:
-        joblib.dump(study, f)
+    try:
+        study.optimize(objective, n_trials=100)
+    finally:
+        with open(study_save_path, "wb") as f:
+            joblib.dump(study, f)
