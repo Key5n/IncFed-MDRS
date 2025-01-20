@@ -32,6 +32,7 @@ def lstmae_main(
     dropout=(0, 0),
     device: str = get_default_device(),
     seed: int = 42,
+    evaluate_every: int = 30,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -70,10 +71,11 @@ def lstmae_main(
         device=device,
     )
 
-    for _ in trange(epochs):
+    for epoch in trange(epochs):
         model.fit(train_dataloader)
 
-    evaluate(model, test_dataloader_list, result_dir)
+        if (epoch + 1) % evaluate_every == 0:
+            evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":
@@ -83,4 +85,8 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
 
-    lstmae_main(dataset=dataset, result_dir=result_dir)
+    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=5)
+    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=10)
+    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=25)
+    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=50)
+    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=75)
