@@ -31,6 +31,7 @@ def tranad_main(
     optimizer=torch.optim.AdamW,
     scheduler: int = torch.optim.lr_scheduler.StepLR,
     lr: float = 0.0001,
+    evaluate_every: int = 20,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -62,7 +63,8 @@ def tranad_main(
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
 
-    evaluate(model, test_dataloader_list, result_dir)
+        if (epoch + 1) % evaluate_every == 0:
+            evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":
@@ -72,4 +74,8 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
 
-    tranad_main(dataset=dataset, result_dir=result_dir)
+    tranad_main(dataset=dataset, result_dir=result_dir, window_size=5)
+    tranad_main(dataset=dataset, result_dir=result_dir, window_size=10)
+    tranad_main(dataset=dataset, result_dir=result_dir, window_size=25)
+    tranad_main(dataset=dataset, result_dir=result_dir, window_size=50)
+    tranad_main(dataset=dataset, result_dir=result_dir, window_size=75)
