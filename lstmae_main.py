@@ -24,7 +24,7 @@ def lstmae_main(
     optimizer=torch.optim.Adam,
     hidden_size: int = 100,
     batch_size: int = 256,
-    epochs: int = 100,
+    epochs: int = 30,
     lr: float = 0.001,
     window_size: int = 100,
     n_layers: tuple = (2, 2),
@@ -32,7 +32,7 @@ def lstmae_main(
     dropout=(0, 0),
     device: str = get_default_device(),
     seed: int = 42,
-    evaluate_every: int = 30,
+    evaluate_every: int = 5,
 ):
     config = locals()
     logger = getLogger(__name__)

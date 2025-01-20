@@ -24,14 +24,14 @@ def tranad_main(
     result_dir: str,
     seed: int = 42,
     batch_size: int = 128,
-    epochs: int = 5,
+    epochs: int = 20,
     window_size: int = 10,
     device: str = get_default_device(),
     loss_fn=nn.MSELoss(reduction="none"),
     optimizer=torch.optim.AdamW,
     scheduler: int = torch.optim.lr_scheduler.StepLR,
     lr: float = 0.0001,
-    evaluate_every: int = 20,
+    evaluate_every: int = 5,
 ):
     config = locals()
     logger = getLogger(__name__)
