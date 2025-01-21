@@ -118,14 +118,10 @@ if __name__ == "__main__":
     best_pate = np.max([
         fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5),
         fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=25),
         fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=75),
 
         fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5, local_epochs=10),
         fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10, local_epochs=10),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=25, local_epochs=10),
         fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50, local_epochs=10),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=75, local_epochs=10),
     ])
     logger.info(f"best score: {best_pate}")

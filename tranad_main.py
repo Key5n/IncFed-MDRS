@@ -25,14 +25,13 @@ def tranad_main(
     result_dir: str,
     seed: int = 42,
     batch_size: int = 128,
-    epochs: int = 20,
+    epochs: int = 5,
     window_size: int = 10,
     device: str = get_default_device(),
     loss_fn=nn.MSELoss(reduction="none"),
     optimizer=torch.optim.AdamW,
     scheduler: int = torch.optim.lr_scheduler.StepLR,
     lr: float = 0.0001,
-    evaluate_every: int = 5,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -61,17 +60,12 @@ def tranad_main(
         loss_fn, optimizer, scheduler, n_features, lr, batch_size, window_size, device
     )
 
-    best_score = 0
-
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
 
-        if (epoch + 1) % evaluate_every == 0:
-            score = evaluate(model, test_dataloader_list, result_dir)
-            if score > best_score:
-                best_score = score
+    score = evaluate(model, test_dataloader_list, result_dir)
 
-    return best_score
+    return score
 
 if __name__ == "__main__":
     args = args_parser()
@@ -82,10 +76,6 @@ if __name__ == "__main__":
     logger = getLogger(__name__)
 
     best_score = np.max([
-        tranad_main(dataset=dataset, result_dir=result_dir, window_size=5),
-        tranad_main(dataset=dataset, result_dir=result_dir, window_size=10),
-        tranad_main(dataset=dataset, result_dir=result_dir, window_size=25),
-        tranad_main(dataset=dataset, result_dir=result_dir, window_size=50),
-        tranad_main(dataset=dataset, result_dir=result_dir, window_size=75),
+        tranad_main(dataset=dataset, result_dir=result_dir),
     ])
     logger.info(f"best score: {best_score}")
