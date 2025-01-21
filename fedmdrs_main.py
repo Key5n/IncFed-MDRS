@@ -69,6 +69,7 @@ if __name__ == "__main__":
     result_dir = os.path.join("result", "mdrs", "proposed", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
+    logger = getLogger(__name__)
 
     def objective(trial):
         leaking_rate = trial.suggest_float("leaking_rate", 0.001, 1, log=True)
@@ -97,5 +98,7 @@ if __name__ == "__main__":
     try:
         study.optimize(objective, n_trials=100)
     finally:
+        logger.info(f"best value: {study.best_trial.value}")
+        logger.info(f"best params: {study.best_params}")
         with open(study_save_path, "wb") as f:
             joblib.dump(study, f)
