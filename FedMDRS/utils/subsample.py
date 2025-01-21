@@ -2,9 +2,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-def subsample(x: NDArray, subsampling_size: int) -> NDArray:
-    x = np.reshape(x, (-1, 1))
-
-    x_subsampled = x[:subsampling_size]
+def subsample(x: NDArray, subsampling_size: int, seed: int) -> NDArray:
+    rng = np.random.default_rng(seed)
+    x_subsampled = rng.choice(x, subsampling_size, replace=False)
 
     return x_subsampled

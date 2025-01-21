@@ -68,7 +68,7 @@ class MDRS:
 
             if n > trans_len:
                 x = x.reshape((-1, 1))
-                x = subsample(x, self.N_x_tilde)
+                x = subsample(x, self.N_x_tilde, self.seed)
 
                 self.precision_matrix = self.calc_next_precision_matrix(
                     x, self.precision_matrix
@@ -100,7 +100,7 @@ class MDRS:
 
             x = self.Reservoir(x_in)
             x = x.reshape((-1, 1))
-            x = subsample(x, self.N_x_tilde)
+            x = subsample(x, self.N_x_tilde, self.seed)
 
             mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
             mahalanobis_distance = np.squeeze(mahalanobis_distance)
