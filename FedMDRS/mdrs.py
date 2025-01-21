@@ -9,16 +9,17 @@ class MDRS:
         self,
         N_u,
         N_x,
+        input_scale,
+        rho,
+        leaking_rate,
+        delta,
+        trans_len,
         precision_matrix=None,
         N_x_tilde=None,
         threshold=None,
         density=0.05,
-        input_scale=1.0,
-        rho=0.95,
         activation_func=np.tanh,
-        leaking_rate=1.0,
         noise_level=None,
-        delta=0.0001,
         update=1,
         lam=1,
         seed=0,
@@ -30,6 +31,7 @@ class MDRS:
         )
         self.N_u = N_u
         self.N_x = N_x
+        self.trans_len = trans_len
         self.threshold = None if threshold == None else threshold
         self.precision_matrix = None
         if noise_level is None:
@@ -51,7 +53,7 @@ class MDRS:
         else:
             self.precision_matrix = precision_matrix
 
-    def train(self, U, trans_len=10):
+    def train(self, U):
         """
         U: input data
         """
@@ -66,7 +68,7 @@ class MDRS:
 
             x = self.Reservoir(x_in)
 
-            if n > trans_len:
+            if n > self.trans_len:
                 x = x.reshape((-1, 1))
                 x = subsample(x, self.N_x_tilde, self.seed)
 
@@ -75,12 +77,12 @@ class MDRS:
                 )
                 local_updates += np.dot(x, x.T)
 
-                # mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
-                # self.threshold = (
-                #     max(mahalanobis_distance, self.threshold)
-                #     if self.threshold is not None
-                #     else mahalanobis_distance
-                # )
+                mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
+                self.threshold = (
+                    max(mahalanobis_distance, self.threshold)
+                    if self.threshold is not None
+                    else mahalanobis_distance
+                )
 
         return local_updates
 
@@ -104,7 +106,6 @@ class MDRS:
 
             mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
             mahalanobis_distance = np.squeeze(mahalanobis_distance)
-            # print(f"{mahalanobis_distance = }")
             mahalanobis_distances.append(mahalanobis_distance)
 
         return np.array(mahalanobis_distances, dtype=np.float64)

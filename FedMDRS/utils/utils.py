@@ -17,6 +17,7 @@ def train_in_clients(
     rho,
     delta,
     input_scale: float,
+    trans_len: int,
     N_x_tilde: int | None = None,
 ) -> NDArray:
 
@@ -33,6 +34,7 @@ def train_in_clients(
             rho=rho,
             delta=delta,
             input_scale=input_scale,
+            trans_len=trans_len,
         )
 
         covariance_matrix += local_updates
@@ -49,6 +51,7 @@ def train_in_client(
     rho,
     delta,
     input_scale: float,
+    trans_len: int,
     N_x_tilde: int | None = None,
 ) -> NDArray:
     N_u = train_data.shape[1]
@@ -60,6 +63,7 @@ def train_in_client(
         delta=delta,
         rho=rho,
         input_scale=input_scale,
+        trans_len=trans_len,
     )
     local_updates = model.train(train_data)
 
@@ -75,6 +79,7 @@ def evaluate_in_clients(
     rho: float,
     delta: float,
     input_scale: float,
+    trans_len: int,
     N_x_tilde: int | None = None,
 ) -> list[Dict]:
     evaluation_results: list[Dict] = []
@@ -90,6 +95,7 @@ def evaluate_in_clients(
             delta=delta,
             rho=rho,
             input_scale=input_scale,
+            trans_len=trans_len,
         )
 
         evaluation_results.append(evaluation_result)
@@ -107,6 +113,7 @@ def evaluate_in_client(
     rho: float,
     delta: float,
     input_scale: float,
+    trans_len: int,
     N_x_tilde: int | None = None,
 ) -> Dict:
     N_u = test_data.shape[1]
@@ -119,8 +126,12 @@ def evaluate_in_client(
         delta=delta,
         rho=rho,
         input_scale=input_scale,
+        trans_len=trans_len,
     )
     scores = model.adapt(test_data)
+
+    scores = scores[trans_len:]
+    test_label = test_label[trans_len:]
 
     plot(scores, test_label, filename)
     evaluation_result = get_metrics(scores, test_label)

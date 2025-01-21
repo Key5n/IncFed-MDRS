@@ -21,6 +21,7 @@ def fedmdrs_main(
     delta: float,
     rho: float,
     input_scale: float,
+    trans_len: int,
     N_x_tilde=None,
     train: bool = True,
     save: bool = True,
@@ -49,6 +50,7 @@ def fedmdrs_main(
             delta=delta,
             rho=rho,
             input_scale=input_scale,
+            trans_len=trans_len,
         )
 
         if save:
@@ -69,6 +71,7 @@ def fedmdrs_main(
         delta=delta,
         rho=rho,
         input_scale=input_scale,
+        trans_len=trans_len,
     )
 
     pate_avg = get_final_scores(evaluation_results, result_dir)
@@ -98,6 +101,7 @@ if __name__ == "__main__":
             delta=delta,
             rho=rho,
             input_scale=input_scale,
+            trans_len=100,
             save=False,
             result_dir=result_dir,
         )
