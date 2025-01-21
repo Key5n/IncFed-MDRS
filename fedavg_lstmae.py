@@ -21,7 +21,7 @@ from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 def fedavg_lstmae(
     dataset: str,
     result_dir: str,
-    global_epochs: int = 10,
+    global_epochs: int = 100,
     local_epochs: int = 5,
     client_rate: float = 0.25,
     loss_fn=nn.MSELoss(),
@@ -35,6 +35,7 @@ def fedavg_lstmae(
     lr: float = 0.001,
     seed: int = 42,
     device=get_default_device(),
+    evaluate_every: int = 1,
 ):
     args = locals()
     logger = logging.getLogger(__name__)
@@ -53,6 +54,10 @@ def fedavg_lstmae(
         X_train_list = get_PSM_train_clients(num_clients)
         test_clients = get_PSM_test_clients()
 
+    test_dataloader_list = [
+        generate_test_loader(test_data, test_labels, batch_size, window_size)
+        for test_data, test_labels in test_clients
+    ]
     n_features = X_train_list[0].shape[1]
 
     clients = get_clients_LSTMAE(
@@ -104,14 +109,9 @@ def fedavg_lstmae(
 
             global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
 
-    model.load_model(global_state_dict)
-
-    test_dataloader_list = [
-        generate_test_loader(test_data, test_labels, batch_size, window_size)
-        for test_data, test_labels in test_clients
-    ]
-
-    evaluate(model, test_dataloader_list, result_dir)
+            if (global_round + 1) % evaluate_every == 0:
+                model.load_model(global_state_dict)
+                evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":
@@ -121,4 +121,8 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
 
-    fedavg_lstmae(dataset=dataset, result_dir=result_dir)
+    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=5)
+    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=10)
+    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=25)
+    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=50)
+    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=75)

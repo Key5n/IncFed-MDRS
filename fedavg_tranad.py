@@ -22,7 +22,7 @@ from experiments.utils.smd import get_SMD_train_clients
 def fedavg_tranad(
     dataset: str,
     result_dir: str,
-    global_epochs=10,
+    global_epochs=100,
     local_epochs=5,
     client_rate=0.25,
     seed=42,
@@ -33,6 +33,7 @@ def fedavg_tranad(
     optimizer=torch.optim.AdamW,
     scheduler=torch.optim.lr_scheduler.StepLR,
     device=get_default_device(),
+    evaluate_every=1,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -51,6 +52,10 @@ def fedavg_tranad(
         X_train_list = get_PSM_train_clients(num_clients)
         test_clients = get_PSM_test_clients()
 
+    test_dataloader_list = [
+        generate_test_loader(test_data, test_labels, batch_size, window_size)
+        for test_data, test_labels in test_clients
+    ]
     n_features = X_train_list[0].shape[1]
 
     clients = get_clients_TranAD(
@@ -90,14 +95,10 @@ def fedavg_tranad(
 
             global_state_dict = calc_averaged_weights(next_state_dict_list, data_nums)
 
-    model.load_model(global_state_dict)
+            if (global_round + 1) % evaluate_every == 0:
+                model.load_model(global_state_dict)
 
-    test_dataloader_list = [
-        generate_test_loader(test_data, test_labels, batch_size, window_size)
-        for test_data, test_labels in test_clients
-    ]
-
-    evaluate(model, test_dataloader_list, result_dir)
+                evaluate(model, test_dataloader_list, result_dir)
 
 
 if __name__ == "__main__":
@@ -107,4 +108,8 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
 
-    fedavg_tranad(dataset=dataset, result_dir=result_dir)
+    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5)
+    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10)
+    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=25)
+    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50)
+    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=75)
