@@ -17,6 +17,7 @@ def fedmdrs_main(
     dataset: str,
     result_dir: str,
     N_x: int = 200,
+    N_x_tilde=None,
     leaking_rate: float = 1.0,
     delta: float = 0.0001,
     rho: float = 0.95,
@@ -42,6 +43,8 @@ def fedmdrs_main(
     if train:
         P_global = train_in_clients(
             train_clients,
+            N_x=N_x,
+            N_x_tilde=N_x_tilde,
             leaking_rate=leaking_rate,
             delta=delta,
             rho=rho,
@@ -79,6 +82,8 @@ if __name__ == "__main__":
 
         pate_avg = fedmdrs_main(
             dataset=dataset,
+            N_x=500,
+            N_x_tilde=200,
             leaking_rate=leaking_rate,
             delta=delta,
             rho=rho,

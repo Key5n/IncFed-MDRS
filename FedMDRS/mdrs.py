@@ -1,3 +1,4 @@
+from FedMDRS.utils.subsample import subsample
 import numpy as np
 from copy import deepcopy
 from FedMDRS.layers import Input, Reservoir
@@ -9,6 +10,7 @@ class MDRS:
         N_u,
         N_x,
         precision_matrix=None,
+        N_x_tilde=None,
         threshold=None,
         density=0.05,
         input_scale=1.0,
@@ -39,8 +41,13 @@ class MDRS:
         self.lam = lam
         self.update = update
 
+        if N_x_tilde is None:
+            N_x_tilde = N_x
+
+        self.N_x_tilde = N_x_tilde
+
         if precision_matrix is None:
-            self.precision_matrix = (1.0 / self.delta) * np.eye(N_x, N_x)
+            self.precision_matrix = (1.0 / self.delta) * np.eye(N_x_tilde, N_x_tilde)
         else:
             self.precision_matrix = precision_matrix
 
@@ -48,7 +55,7 @@ class MDRS:
         """
         U: input data
         """
-        local_updates = np.zeros((self.N_x, self.N_x), dtype=np.float64)
+        local_updates = np.zeros((self.N_x_tilde, self.N_x_tilde), dtype=np.float64)
         train_length = len(U)
 
         for n in range(train_length):
@@ -61,6 +68,8 @@ class MDRS:
 
             if n > trans_len:
                 x = x.reshape((-1, 1))
+                x = subsample(x, self.N_x_tilde)
+
                 self.precision_matrix = self.calc_next_precision_matrix(
                     x, self.precision_matrix
                 )
@@ -90,6 +99,7 @@ class MDRS:
             x_in = self.Input(U[n])
 
             x = self.Reservoir(x_in)
+            x = subsample(x, self.N_x_tilde)
             mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
             # print(f"{mahalanobis_distance = }")
             mahalanobis_distances.append(mahalanobis_distance)
