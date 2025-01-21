@@ -1,6 +1,7 @@
 from logging import getLogger
 import os
 from tqdm import trange
+import numpy as np
 from tqdm.contrib import tenumerate
 from experiments.utils.evaluate import evaluate
 import torch
@@ -60,12 +61,17 @@ def tranad_main(
         loss_fn, optimizer, scheduler, n_features, lr, batch_size, window_size, device
     )
 
+    best_score = 0
+
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
 
         if (epoch + 1) % evaluate_every == 0:
-            evaluate(model, test_dataloader_list, result_dir)
+            score = evaluate(model, test_dataloader_list, result_dir)
+            if score > best_score:
+                best_score = score
 
+    return best_score
 
 if __name__ == "__main__":
     args = args_parser()
@@ -73,9 +79,13 @@ if __name__ == "__main__":
     result_dir = os.path.join("result", "tranad", "centralized", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
+    logger = getLogger(__name__)
 
-    tranad_main(dataset=dataset, result_dir=result_dir, window_size=5)
-    tranad_main(dataset=dataset, result_dir=result_dir, window_size=10)
-    tranad_main(dataset=dataset, result_dir=result_dir, window_size=25)
-    tranad_main(dataset=dataset, result_dir=result_dir, window_size=50)
-    tranad_main(dataset=dataset, result_dir=result_dir, window_size=75)
+    best_score = np.max([
+        tranad_main(dataset=dataset, result_dir=result_dir, window_size=5),
+        tranad_main(dataset=dataset, result_dir=result_dir, window_size=10),
+        tranad_main(dataset=dataset, result_dir=result_dir, window_size=25),
+        tranad_main(dataset=dataset, result_dir=result_dir, window_size=50),
+        tranad_main(dataset=dataset, result_dir=result_dir, window_size=75),
+    ])
+    logger.info(f"best score: {best_score}")

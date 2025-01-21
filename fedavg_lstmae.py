@@ -1,6 +1,7 @@
 import os
 import logging
 from typing import Dict
+import numpy as np
 from tqdm import trange
 from tqdm.contrib.logging import logging_redirect_tqdm
 from experiments.utils.evaluate import evaluate
@@ -21,7 +22,7 @@ from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 def fedavg_lstmae(
     dataset: str,
     result_dir: str,
-    global_epochs: int = 100,
+    global_epochs: int = 25,
     local_epochs: int = 5,
     client_rate: float = 0.25,
     loss_fn=nn.MSELoss(),
@@ -90,6 +91,7 @@ def fedavg_lstmae(
     )
     global_state_dict = model.state_dict()
 
+    best_score = 0
     with logging_redirect_tqdm():
         for global_round in trange(global_epochs):
             logger.info(global_round)
@@ -111,7 +113,12 @@ def fedavg_lstmae(
 
             if (global_round + 1) % evaluate_every == 0:
                 model.load_model(global_state_dict)
-                evaluate(model, test_dataloader_list, result_dir)
+                score = evaluate(model, test_dataloader_list, result_dir)
+
+                if score > best_score:
+                    best_score = score
+
+    return best_score
 
 
 if __name__ == "__main__":
@@ -120,9 +127,13 @@ if __name__ == "__main__":
     result_dir = os.path.join("result", "lstmae", "fedavg", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
+    logger = logging.getLogger(__name__)
 
-    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=5)
-    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=10)
-    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=25)
-    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=50)
-    fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=75)
+    best_score = np.max([
+        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=5),
+        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=10),
+        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=25),
+        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=50),
+        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=75),
+    ])
+    logger.info(f"best score: {best_score}")

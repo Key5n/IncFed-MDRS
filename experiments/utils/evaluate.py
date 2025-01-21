@@ -19,4 +19,6 @@ def evaluate(model, test_dataloader_list: list[DataLoader], result_dir: str):
         evaluation_result = get_metrics(scores, labels)
         evaluation_results.append(evaluation_result)
 
-    get_final_scores(evaluation_results, result_dir)
+    pate_avg = get_final_scores(evaluation_results, result_dir)
+
+    return pate_avg

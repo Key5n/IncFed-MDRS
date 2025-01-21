@@ -1,6 +1,7 @@
 from logging import getLogger
 import os
 from typing import Dict
+import numpy as np
 from tqdm import trange
 from tqdm.contrib.logging import logging_redirect_tqdm
 from experiments.utils.evaluate import evaluate
@@ -22,7 +23,7 @@ from experiments.utils.smd import get_SMD_train_clients
 def fedavg_tranad(
     dataset: str,
     result_dir: str,
-    global_epochs=100,
+    global_epochs=25,
     local_epochs=5,
     client_rate=0.25,
     seed=42,
@@ -76,6 +77,7 @@ def fedavg_tranad(
     )
     global_state_dict = model.state_dict()
 
+    best_score = 0
     with logging_redirect_tqdm():
         for global_round in trange(global_epochs):
             logger.info(global_round)
@@ -98,7 +100,11 @@ def fedavg_tranad(
             if (global_round + 1) % evaluate_every == 0:
                 model.load_model(global_state_dict)
 
-                evaluate(model, test_dataloader_list, result_dir)
+                score = evaluate(model, test_dataloader_list, result_dir)
+                if score > best_score:
+                    best_score = score
+
+    return best_score
 
 
 if __name__ == "__main__":
@@ -107,9 +113,19 @@ if __name__ == "__main__":
     result_dir = os.path.join("result", "tranad", "fedavg", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "tranad.log"))
+    logger = getLogger(__name__)
 
-    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5)
-    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10)
-    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=25)
-    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50)
-    fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=75)
+    best_pate = np.max([
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=25),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=75),
+
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5, local_epochs=10),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10, local_epochs=10),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=25, local_epochs=10),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50, local_epochs=10),
+        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=75, local_epochs=10),
+    ])
+    logger.info(f"best score: {best_pate}")

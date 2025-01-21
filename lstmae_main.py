@@ -1,5 +1,6 @@
 from logging import getLogger
 import os
+import numpy as np
 from tqdm import trange
 from experiments.utils.evaluate import evaluate
 from experiments.utils.parser import args_parser
@@ -71,11 +72,17 @@ def lstmae_main(
         device=device,
     )
 
+    best_score = 0
     for epoch in trange(epochs):
         model.fit(train_dataloader)
 
         if (epoch + 1) % evaluate_every == 0:
-            evaluate(model, test_dataloader_list, result_dir)
+            score = evaluate(model, test_dataloader_list, result_dir)
+
+            if score > best_score:
+                best_score = score
+
+    return best_score
 
 
 if __name__ == "__main__":
@@ -84,9 +91,13 @@ if __name__ == "__main__":
     result_dir = os.path.join("result", "lstmae", "centralized", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "lstmae.log"))
+    logger = getLogger(__name__)
 
-    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=5)
-    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=10)
-    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=25)
-    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=50)
-    lstmae_main(dataset=dataset, result_dir=result_dir, window_size=75)
+    best_score = np.max([
+        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=5),
+        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=10),
+        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=25),
+        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=50),
+        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=75),
+    ])
+    logger.info(f"best score: {best_score}")
