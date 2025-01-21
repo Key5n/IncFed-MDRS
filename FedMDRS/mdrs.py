@@ -75,12 +75,12 @@ class MDRS:
                 )
                 local_updates += np.dot(x, x.T)
 
-                mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
-                self.threshold = (
-                    max(mahalanobis_distance, self.threshold)
-                    if self.threshold is not None
-                    else mahalanobis_distance
-                )
+                # mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
+                # self.threshold = (
+                #     max(mahalanobis_distance, self.threshold)
+                #     if self.threshold is not None
+                #     else mahalanobis_distance
+                # )
 
         return local_updates
 
@@ -99,8 +99,11 @@ class MDRS:
             x_in = self.Input(U[n])
 
             x = self.Reservoir(x_in)
+            x = x.reshape((-1, 1))
             x = subsample(x, self.N_x_tilde)
+
             mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
+            mahalanobis_distance = np.squeeze(mahalanobis_distance)
             # print(f"{mahalanobis_distance = }")
             mahalanobis_distances.append(mahalanobis_distance)
 

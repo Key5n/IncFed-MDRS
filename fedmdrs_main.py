@@ -16,12 +16,12 @@ from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 def fedmdrs_main(
     dataset: str,
     result_dir: str,
-    N_x: int = 200,
+    N_x: int,
+    leaking_rate: float,
+    delta: float,
+    rho: float,
+    input_scale: float,
     N_x_tilde=None,
-    leaking_rate: float = 1.0,
-    delta: float = 0.0001,
-    rho: float = 0.95,
-    input_scale: float = 1.0,
     train: bool = True,
     save: bool = True,
 ):

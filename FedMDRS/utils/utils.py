@@ -12,12 +12,12 @@ from experiments.evaluation.metrics import get_metrics
 
 def train_in_clients(
     train_data_list: list[NDArray],
-    N_x: int = 200,
+    N_x: int,
+    leaking_rate,
+    rho,
+    delta,
+    input_scale: float,
     N_x_tilde: int | None = None,
-    leaking_rate=1.0,
-    rho=0.95,
-    delta=0.0001,
-    input_scale: float = 1.0,
 ) -> NDArray:
 
     if N_x_tilde is None:
@@ -45,11 +45,11 @@ def train_in_clients(
 def train_in_client(
     train_data: NDArray,
     N_x: int,
+    leaking_rate,
+    rho,
+    delta,
+    input_scale: float,
     N_x_tilde: int | None = None,
-    leaking_rate=1.0,
-    rho=0.95,
-    delta=0.0001,
-    input_scale: float = 1.0,
 ) -> NDArray:
     N_u = train_data.shape[1]
     model = MDRS(
@@ -71,20 +71,20 @@ def evaluate_in_clients(
     P_global: NDArray,
     N_x: int,
     result_dir: str,
+    leaking_rate: float,
+    rho: float,
+    delta: float,
+    input_scale: float,
     N_x_tilde: int | None = None,
-    leaking_rate: float = 1.0,
-    rho: float = 0.95,
-    delta: float = 0.0001,
-    input_scale: float = 1.0,
 ) -> list[Dict]:
     evaluation_results: list[Dict] = []
     for i, (test_data, test_label) in tenumerate(test_data_list):
         evaluation_result = evaluate_in_client(
             test_data,
             test_label,
-            P_global,
-            N_x,
-            os.path.join(result_dir, f"{i}.pdf"),
+            P_global=P_global,
+            N_x=N_x,
+            filename=os.path.join(result_dir, f"{i}.pdf"),
             N_x_tilde=N_x_tilde,
             leaking_rate=leaking_rate,
             delta=delta,
@@ -103,11 +103,11 @@ def evaluate_in_client(
     P_global: NDArray,
     N_x: int,
     filename: str,
+    leaking_rate: float,
+    rho: float,
+    delta: float,
+    input_scale: float,
     N_x_tilde: int | None = None,
-    leaking_rate: float = 1.0,
-    rho: float = 0.95,
-    delta: float = 0.0001,
-    input_scale: float = 1.0,
 ) -> Dict:
     N_u = test_data.shape[1]
     model = MDRS(
