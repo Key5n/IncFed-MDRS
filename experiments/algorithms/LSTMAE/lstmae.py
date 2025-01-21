@@ -1,4 +1,7 @@
 from copy import deepcopy
+from logging import getLogger
+
+from tqdm.contrib.logging import logging_redirect_tqdm
 import torch
 import torch.nn as nn
 import numpy as np
@@ -46,6 +49,7 @@ class LSTMAE:
 
     def fit(self, dataloader):
         self.model.train()
+        logger = getLogger(__name__)
 
         losses = []
         for X, y in dataloader:
@@ -62,7 +66,8 @@ class LSTMAE:
             losses.append(loss.item())
 
         loss_avg = np.mean(losses)
-        tqdm.write(f"loss: {loss_avg}")
+        with logging_redirect_tqdm():
+            logger.info(f"loss: {loss_avg}")
 
     def run(self, dataloader):
         self.model.eval()
