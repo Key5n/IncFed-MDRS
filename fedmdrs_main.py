@@ -59,7 +59,17 @@ def fedmdrs_main(
         with open(os.path.join(result_dir, "P_global.npy"), "rb") as f:
             P_global = np.load(f)
 
-    evaluation_results = evaluate_in_clients(test_clients, P_global, N_x, result_dir)
+    evaluation_results = evaluate_in_clients(
+        test_clients,
+        P_global,
+        N_x,
+        result_dir,
+        N_x_tilde=N_x_tilde,
+        leaking_rate=leaking_rate,
+        delta=delta,
+        rho=rho,
+        input_scale=input_scale,
+    )
 
     pate_avg = get_final_scores(evaluation_results, result_dir)
 

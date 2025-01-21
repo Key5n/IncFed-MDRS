@@ -72,6 +72,10 @@ def evaluate_in_clients(
     N_x: int,
     result_dir: str,
     N_x_tilde: int | None = None,
+    leaking_rate: float = 1.0,
+    rho: float = 0.95,
+    delta: float = 0.0001,
+    input_scale: float = 1.0,
 ) -> list[Dict]:
     evaluation_results: list[Dict] = []
     for i, (test_data, test_label) in tenumerate(test_data_list):
@@ -82,6 +86,10 @@ def evaluate_in_clients(
             N_x,
             os.path.join(result_dir, f"{i}.pdf"),
             N_x_tilde=N_x_tilde,
+            leaking_rate=leaking_rate,
+            delta=delta,
+            rho=rho,
+            input_scale=input_scale,
         )
 
         evaluation_results.append(evaluation_result)
