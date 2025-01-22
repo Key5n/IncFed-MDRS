@@ -30,24 +30,6 @@ def evaluate(model, test_dataloader_list: list[DataLoader]) -> Dict:
         vus_pr = evaluation_result["VUS-PR"]
         pate = evaluation_result["PATE"]
 
-        auc_roc_avg = np.mean(auc_roc_scores, dtype=float)
-        auc_pr_avg = np.mean(auc_pr_scores, dtype=float)
-        vus_roc_avg = np.mean(vus_roc_scores, dtype=float)
-        vus_pr_avg = np.mean(vus_pr_scores, dtype=float)
-        pate_avg = np.mean(pate_scores, dtype=float)
-
-        auc_roc_std = np.std(auc_roc_scores, dtype=float)
-        auc_pr_std = np.std(auc_pr_scores, dtype=float)
-        vus_roc_std = np.std(vus_roc_scores, dtype=float)
-        vus_pr_std = np.std(vus_pr_scores, dtype=float)
-        pate_std = np.std(pate_scores, dtype=float)
-
-        logger.info(f"AUC-ROC: {auc_roc_avg} ± {auc_roc_std}")
-        logger.info(f"AUC-PR: {auc_pr_avg} ± {auc_pr_std}")
-        logger.info(f"VUS-ROC: {vus_roc_avg} ± {vus_roc_std}")
-        logger.info(f"VUS-PR: {vus_pr_avg} ± {vus_pr_std}")
-        logger.info(f"PATE: {pate_avg} ± {pate_std}")
-
         anomaly_scores.append(scores)
         labels_list.append(labels)
 
@@ -56,6 +38,24 @@ def evaluate(model, test_dataloader_list: list[DataLoader]) -> Dict:
         vus_roc_scores.append(vus_roc)
         vus_pr_scores.append(vus_pr)
         pate_scores.append(pate)
+
+    auc_roc_avg = np.mean(auc_roc_scores, dtype=float)
+    auc_pr_avg = np.mean(auc_pr_scores, dtype=float)
+    vus_roc_avg = np.mean(vus_roc_scores, dtype=float)
+    vus_pr_avg = np.mean(vus_pr_scores, dtype=float)
+    pate_avg = np.mean(pate_scores, dtype=float)
+
+    auc_roc_std = np.std(auc_roc_scores, dtype=float)
+    auc_pr_std = np.std(auc_pr_scores, dtype=float)
+    vus_roc_std = np.std(vus_roc_scores, dtype=float)
+    vus_pr_std = np.std(vus_pr_scores, dtype=float)
+    pate_std = np.std(pate_scores, dtype=float)
+
+    logger.info(f"AUC-ROC: {auc_roc_avg} ± {auc_roc_std}")
+    logger.info(f"AUC-PR: {auc_pr_avg} ± {auc_pr_std}")
+    logger.info(f"VUS-ROC: {vus_roc_avg} ± {vus_roc_std}")
+    logger.info(f"VUS-PR: {vus_pr_avg} ± {vus_pr_std}")
+    logger.info(f"PATE: {pate_avg} ± {pate_std}")
 
     result = {
         "anomaly_scores": anomaly_scores,
