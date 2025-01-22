@@ -14,7 +14,10 @@ def train_in_clients_fedavg(
     input_scale: float,
     trans_len: int,
 ) -> NDArray:
-    covariance_matrix = delta * np.identity(N_x)
+    if N_x_tilde is None:
+        N_x_tilde = N_x
+
+    covariance_matrix = delta * np.identity(N_x_tilde)
 
     all_data_length = np.sum([len(train_data) for train_data in train_data_list])
 
