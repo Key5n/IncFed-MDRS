@@ -42,16 +42,15 @@ def plot(scores: NDArray, labels: NDArray, filename: str):
     _, ax = plt.subplots(figsize=(10, 6))
 
     # Plot the anomaly scores
-    ax.plot(scores, label="Anomaly Scores", color="blue", linestyle="-")
+    ax.plot(scores, label="Anomaly Score", color="blue", linestyle="-")
 
     for r in range_anomaly:
         ax.axvspan(r[0], r[1], color="red", alpha=0.5)
 
     # Add grid, labels, and title
     ax.grid(True, linestyle="--", alpha=0.6)
-    ax.set_xlabel("Index", fontsize=12)
+    ax.set_xlabel("Time", fontsize=12)
     ax.set_ylabel("Anomaly Score", fontsize=12)
-    ax.set_title("Anomaly Scores with True Labels", fontsize=14)
 
     # Add a legend
     ax.legend(loc="upper left", fontsize=12)
