@@ -53,16 +53,16 @@ X = [
         os.path.join(os.getcwd(), f"result/mdrs/proposed/{dataset}/{metric}.csv"),
     ),
     np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/TranAD/centralized/{dataset}/{metric}.csv")
+        os.path.join(os.getcwd(), f"result/tranad/centralized/{dataset}/{metric}.csv")
     ),
     np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/TranAD/fedavg/{dataset}/{metric}.csv")
+        os.path.join(os.getcwd(), f"result/tranad/fedavg/{dataset}/{metric}.csv")
     ),
     np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/LSTMAE/centralized/{dataset}/{metric}.csv")
+        os.path.join(os.getcwd(), f"result/lstmae/centralized/{dataset}/{metric}.csv")
     ),
     np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/LSTMAE/fedavg/{dataset}/{metric}.csv")
+        os.path.join(os.getcwd(), f"result/lstmae/fedavg/{dataset}/{metric}.csv")
     ),
     np.genfromtxt(
         os.path.join(os.getcwd(), f"result/ESN-SRE/IncFed/{dataset}/{metric}.csv")
