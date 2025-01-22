@@ -1,9 +1,7 @@
 import os
 from logging import getLogger
-import json
 
 from experiments.utils.parser import args_parser
-import optuna
 import numpy as np
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients

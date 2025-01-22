@@ -1,7 +1,5 @@
 import os
 from logging import getLogger
-import optuna
-import joblib
 
 import numpy as np
 from FedMDRS.utils.utils import evaluate_in_clients, train_in_clients
