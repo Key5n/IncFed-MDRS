@@ -1,6 +1,7 @@
 import os
 import logging
 from typing import Dict
+from experiments.utils.save_scores import save_scores
 import numpy as np
 from tqdm import trange
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -113,10 +114,12 @@ def fedavg_lstmae(
 
             if (global_round + 1) % evaluate_every == 0:
                 model.load_model(global_state_dict)
-                score = evaluate(model, test_dataloader_list, result_dir)
+                result = evaluate(model, test_dataloader_list)
+                score = np.mean(result["pate_scores"])
 
                 if score > best_score:
                     best_score = score
+                    save_scores(result, result_dir)
 
     return best_score
 
