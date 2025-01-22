@@ -29,16 +29,15 @@ def get_PSM_train(
     return psm_train
 
 
-def get_start_index(
-    num_data: int, beta: float, required_length: int, num_clients: int
-):
+def get_start_index(num_data: int, beta: float, required_length: int, num_clients: int):
+    seed = 0
     while True:
+        rng = np.random.default_rng(seed)
         # e.g. [1000, 300, 1500, 7200] for num_data is 10000 and num_clients is 4
-        proportions = np.floor(
-            np.random.dirichlet(np.repeat(beta, num_clients)) * num_data
-        )
+        proportions = np.floor(rng.dirichlet([beta] * num_clients) * num_data)
 
         if np.min(proportions) <= required_length:
+            seed += 1
             continue
 
         # [0, 1000, 300, 1500, 7200]
@@ -47,7 +46,7 @@ def get_start_index(
         proportions_exclude_last_element = proportions_start_with_zero[:-1]
 
         # [0, 1000, 1300, 2800], meaning the start index of each client
-        start_index = np.floor(np.cumsum(proportions_exclude_last_element) * num_data)
+        start_index = np.floor(np.cumsum(proportions_exclude_last_element)).astype(int)
         break
 
     return start_index
@@ -68,7 +67,7 @@ def get_PSM_list(
         return data_list
 
     else:
-        start_index = get_start_index(data, beta, required_length, num_clients)
+        start_index = get_start_index(len(data), beta, required_length, num_clients)
 
         for i in range(len(start_index)):
             if i != len(start_index) - 1:
@@ -87,7 +86,7 @@ def get_PSM_train_clients(
         os.getcwd(), "datasets", "PSM", "train.csv"
     ),
     beta: float | None = None,
-    required_length: int = 100,
+    required_length: int = 10,
 ) -> list[NDArray]:
     X_train = get_PSM_list(num_clients, train_data_file_path, beta, required_length)
 
