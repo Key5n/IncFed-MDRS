@@ -25,7 +25,7 @@ def fedavg_tranad(
     result_dir: str,
     global_epochs=25,
     local_epochs=5,
-    client_rate=1,
+    client_rate=0.25,
     seed=42,
     batch_size=128,
     window_size=10,
