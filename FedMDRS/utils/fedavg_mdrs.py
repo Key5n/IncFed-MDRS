@@ -17,7 +17,7 @@ def train_in_clients_fedavg(
     if N_x_tilde is None:
         N_x_tilde = N_x
 
-    covariance_matrix = delta * np.identity(N_x_tilde)
+    P_global = 1 / delta * np.identity(N_x_tilde)
 
     all_data_length = np.sum([len(train_data) for train_data in train_data_list])
 
@@ -32,9 +32,8 @@ def train_in_clients_fedavg(
             N_x_tilde=N_x_tilde,
             trans_len=trans_len,
         )
+        local_updates = np.linalg.inv(local_updates)
 
-        covariance_matrix += local_updates * len(train_data) / all_data_length
-
-    P_global = np.linalg.inv(covariance_matrix)
+        P_global += local_updates * len(train_data) / all_data_length
 
     return P_global
