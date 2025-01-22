@@ -22,13 +22,13 @@ from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 def fedavg_lstmae(
     dataset: str,
     result_dir: str,
-    global_epochs: int = 25,
+    global_epochs: int = 50,
     local_epochs: int = 5,
     client_rate: float = 0.25,
     loss_fn=nn.MSELoss(),
     optimizer_gen_function=torch.optim.Adam,
     hidden_size: int = 128,
-    window_size: int = 30,
+    window_size: int = 100,
     n_layers: tuple = (2, 2),
     use_bias: tuple = (True, True),
     dropout: tuple = (0, 0),
@@ -36,7 +36,7 @@ def fedavg_lstmae(
     lr: float = 0.001,
     seed: int = 42,
     device=get_default_device(),
-    evaluate_every: int = 1,
+    evaluate_every: int = 5,
 ):
     args = locals()
     logger = logging.getLogger(__name__)
@@ -129,11 +129,4 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = logging.getLogger(__name__)
 
-    best_score = np.max([
-        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=5),
-        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=10),
-        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=25),
-        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=50),
-        fedavg_lstmae(dataset=dataset, result_dir=result_dir, window_size=75),
-    ])
-    logger.info(f"best score: {best_score}")
+    fedavg_lstmae(dataset=dataset, result_dir=result_dir)

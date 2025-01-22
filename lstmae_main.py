@@ -88,6 +88,6 @@ if __name__ == "__main__":
     logger = getLogger(__name__)
 
     best_score = np.max([
-        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=100),
+        lstmae_main(dataset=dataset, result_dir=result_dir),
     ])
     logger.info(f"best score: {best_score}")

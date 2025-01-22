@@ -25,7 +25,7 @@ def fedavg_tranad(
     result_dir: str,
     global_epochs=25,
     local_epochs=5,
-    client_rate=0.25,
+    client_rate=1,
     seed=42,
     batch_size=128,
     window_size=10,
@@ -34,7 +34,7 @@ def fedavg_tranad(
     optimizer=torch.optim.AdamW,
     scheduler=torch.optim.lr_scheduler.StepLR,
     device=get_default_device(),
-    evaluate_every=1,
+    evaluate_every=2,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -115,13 +115,4 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
 
-    best_pate = np.max([
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50),
-
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=5, local_epochs=10),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=10, local_epochs=10),
-        fedavg_tranad(dataset=dataset, result_dir=result_dir, window_size=50, local_epochs=10),
-    ])
-    logger.info(f"best score: {best_pate}")
+    fedavg_tranad(dataset=dataset, result_dir=result_dir)
