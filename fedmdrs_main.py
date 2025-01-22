@@ -17,11 +17,11 @@ def fedmdrs_main(
     dataset: str,
     result_dir: str,
     N_x: int,
-    leaking_rate: float,
-    delta: float,
-    rho: float,
-    input_scale: float,
-    trans_len: int,
+    leaking_rate: float = 1.0,
+    delta: float = 0.0001,
+    rho: float = 0.95,
+    input_scale: float = 1.0,
+    trans_len: int = 100,
     N_x_tilde=None,
     train: bool = True,
     save: bool = True,
@@ -87,37 +87,12 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "mdrs.log"))
     logger = getLogger(__name__)
 
-    def objective(trial):
-        leaking_rate = trial.suggest_float("leaking_rate", 0.001, 1, log=True)
-        delta = trial.suggest_float("delta", 0.0001, 1, log=True)
-        rho = trial.suggest_float("rho", 0.001, 2, log=True)
-        input_scale = trial.suggest_float("input_scale", 0.001, 1, log=True)
+    N_x = 500
+    N_x_tilde = 200
 
-        pate_avg = fedmdrs_main(
-            dataset=dataset,
-            N_x=500,
-            N_x_tilde=200,
-            leaking_rate=leaking_rate,
-            delta=delta,
-            rho=rho,
-            input_scale=input_scale,
-            trans_len=100,
-            save=False,
-            result_dir=result_dir,
-        )
-
-        return pate_avg
-
-    study_save_path = os.path.join(result_dir, "study.pkl")
-    if os.path.isfile(study_save_path):
-        study = joblib.load(study_save_path)
-    else:
-        study = optuna.create_study(direction="maximize")
-
-    try:
-        study.optimize(objective, n_trials=100)
-    finally:
-        logger.info(f"best value: {study.best_trial.value}")
-        logger.info(f"best params: {study.best_params}")
-        with open(study_save_path, "wb") as f:
-            joblib.dump(study, f)
+    fedmdrs_main(
+        dataset,
+        result_dir=result_dir,
+        N_x=N_x,
+        N_x_tilde=N_x_tilde,
+    )
