@@ -57,7 +57,7 @@ class MDRS:
         """
         U: input data
         """
-        local_updates = np.zeros((self.N_x_tilde, self.N_x_tilde), dtype=np.float64)
+        local_updates = self.delta * np.identity(self.N_x_tilde)
         train_length = len(U)
 
         for n in range(train_length):
