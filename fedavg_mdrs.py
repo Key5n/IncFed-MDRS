@@ -22,7 +22,9 @@ def fedavg_mdrs(
     leaking_rate=1.0,
     delta=0.0001,
     rho=0.95,
-    input_scale=1.0,
+    input_scale=0.001,
+    trans_len=100,
+    N_x_tilde: int | None = None,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -42,10 +44,13 @@ def fedavg_mdrs(
     if train:
         P_global = train_in_clients_fedavg(
             train_clients,
+            N_x,
+            N_x_tilde=N_x_tilde,
             leaking_rate=leaking_rate,
             delta=delta,
             rho=rho,
             input_scale=input_scale,
+            trans_len=trans_len,
         )
 
         if save:
@@ -56,7 +61,18 @@ def fedavg_mdrs(
         with open(os.path.join(result_dir, "P_global.npy"), "rb") as f:
             P_global = np.load(f)
 
-    evaluation_results = evaluate_in_clients(test_clients, P_global, N_x, result_dir)
+    evaluation_results = evaluate_in_clients(
+        test_clients,
+        P_global,
+        N_x,
+        result_dir,
+        N_x_tilde=N_x_tilde,
+        leaking_rate=leaking_rate,
+        delta=delta,
+        rho=rho,
+        input_scale=input_scale,
+        trans_len=trans_len,
+    )
 
     get_final_scores(evaluation_results, result_dir)
 
@@ -68,4 +84,7 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 
-    fedavg_mdrs(dataset=dataset, result_dir=result_dir)
+    N_x = 500
+    N_x_tilde = 200
+
+    fedavg_mdrs(dataset=dataset, result_dir=result_dir, N_x=N_x, N_x_tilde=N_x_tilde)

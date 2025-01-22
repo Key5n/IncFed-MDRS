@@ -6,11 +6,13 @@ from FedMDRS.utils.utils import train_in_client
 
 def train_in_clients_fedavg(
     train_data_list: list[NDArray],
-    N_x: int = 200,
-    leaking_rate=1.0,
-    rho=0.95,
-    delta=0.0001,
-    input_scale: float = 1.0,
+    N_x: int,
+    N_x_tilde: int | None,
+    leaking_rate: float,
+    rho: float,
+    delta: float,
+    input_scale: float,
+    trans_len: int,
 ) -> NDArray:
     covariance_matrix = delta * np.identity(N_x)
 
@@ -24,6 +26,8 @@ def train_in_clients_fedavg(
             rho=rho,
             delta=delta,
             input_scale=input_scale,
+            N_x_tilde=N_x_tilde,
+            trans_len=trans_len,
         )
 
         covariance_matrix += local_updates * len(train_data) / all_data_length
