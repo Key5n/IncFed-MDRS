@@ -1,6 +1,5 @@
 import os
 from logging import getLogger
-
 import numpy as np
 from FedMDRS.utils.utils import evaluate_in_clients, train_in_clients
 from experiments.utils.parser import args_parser
@@ -18,7 +17,7 @@ def fedmdrs_main(
     leaking_rate: float = 1.0,
     delta: float = 0.0001,
     rho: float = 0.95,
-    input_scale: float = 1.0,
+    input_scale: float = 0.001,
     trans_len: int = 100,
     N_x_tilde=None,
     train: bool = True,

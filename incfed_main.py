@@ -92,7 +92,7 @@ if __name__ == "__main__":
     leaking_rate = 1.0
     beta = 0.0001
     rho = 0.95
-    input_scale = 1.0
+    input_scale = 0.001
 
     incfed_main(
         dataset=dataset,
