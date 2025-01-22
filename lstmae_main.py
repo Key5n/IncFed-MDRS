@@ -27,7 +27,7 @@ def lstmae_main(
     batch_size: int = 256,
     epochs: int = 100,
     lr: float = 0.001,
-    window_size: int = 100,
+    window_size: int = 75,
     n_layers: tuple = (2, 2),
     use_bias: tuple = (True, True),
     dropout=(0, 0),

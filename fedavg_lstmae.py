@@ -29,7 +29,7 @@ def fedavg_lstmae(
     loss_fn=nn.MSELoss(),
     optimizer_gen_function=torch.optim.Adam,
     hidden_size: int = 128,
-    window_size: int = 100,
+    window_size: int = 75,
     n_layers: tuple = (2, 2),
     use_bias: tuple = (True, True),
     dropout: tuple = (0, 0),
