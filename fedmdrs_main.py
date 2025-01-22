@@ -18,7 +18,7 @@ def fedmdrs_main(
     delta: float = 0.0001,
     rho: float = 0.95,
     input_scale: float = 0.001,
-    trans_len: int = 100,
+    trans_len: int = 10,
     N_x_tilde=None,
     train: bool = True,
     save: bool = True,
@@ -35,7 +35,7 @@ def fedmdrs_main(
         test_clients = get_SMAP_test_clients()
     else:
         num_clients = 24
-        train_clients = get_PSM_train_clients(num_clients)
+        train_clients = get_PSM_train_clients(num_clients, required_length=trans_len)
         test_clients = get_PSM_test_clients()
 
     if train:

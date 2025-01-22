@@ -16,14 +16,14 @@ save = True
 
 
 def fedavg_mdrs(
-    dataset: "str",
+    dataset: str,
     result_dir: str,
     N_x=200,
     leaking_rate=1.0,
     delta=0.0001,
     rho=0.95,
     input_scale=0.001,
-    trans_len=100,
+    trans_len=10,
     N_x_tilde: int | None = None,
 ):
     config = locals()
@@ -38,7 +38,7 @@ def fedavg_mdrs(
         test_clients = get_SMAP_test_clients()
     else:
         num_clients = 24
-        train_clients = get_PSM_train_clients(num_clients)
+        train_clients = get_PSM_train_clients(num_clients, required_length=trans_len)
         test_clients = get_PSM_test_clients()
 
     if train:
