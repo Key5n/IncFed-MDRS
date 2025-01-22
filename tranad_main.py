@@ -63,7 +63,8 @@ def tranad_main(
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
 
-    score = evaluate(model, test_dataloader_list, result_dir)
+    result = evaluate(model, test_dataloader_list)
+    score = np.mean(result["pate_scores"])
 
     return score
 
