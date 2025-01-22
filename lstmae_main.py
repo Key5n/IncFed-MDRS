@@ -25,7 +25,7 @@ def lstmae_main(
     optimizer=torch.optim.Adam,
     hidden_size: int = 100,
     batch_size: int = 256,
-    epochs: int = 30,
+    epochs: int = 100,
     lr: float = 0.001,
     window_size: int = 100,
     n_layers: tuple = (2, 2),
@@ -33,7 +33,6 @@ def lstmae_main(
     dropout=(0, 0),
     device: str = get_default_device(),
     seed: int = 42,
-    evaluate_every: int = 5,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -72,17 +71,12 @@ def lstmae_main(
         device=device,
     )
 
-    best_score = 0
     for epoch in trange(epochs):
         model.fit(train_dataloader)
 
-        if (epoch + 1) % evaluate_every == 0:
-            score = evaluate(model, test_dataloader_list, result_dir)
+    score = evaluate(model, test_dataloader_list, result_dir)
 
-            if score > best_score:
-                best_score = score
-
-    return best_score
+    return score
 
 
 if __name__ == "__main__":
@@ -94,10 +88,6 @@ if __name__ == "__main__":
     logger = getLogger(__name__)
 
     best_score = np.max([
-        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=5),
-        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=10),
-        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=25),
-        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=50),
-        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=75),
+        lstmae_main(dataset=dataset, result_dir=result_dir, window_size=100),
     ])
     logger.info(f"best score: {best_score}")
