@@ -1,5 +1,6 @@
 from logging import getLogger
 import os
+from experiments.utils.save_scores import save_scores
 import numpy as np
 from tqdm import trange
 from experiments.utils.evaluate import evaluate
@@ -74,7 +75,9 @@ def lstmae_main(
     for epoch in trange(epochs):
         model.fit(train_dataloader)
 
-    score = evaluate(model, test_dataloader_list, result_dir)
+    result = evaluate(model, test_dataloader_list)
+    score = np.mean(result["pate_score"])
+    save_scores(result, result_dir)
 
     return score
 

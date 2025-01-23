@@ -1,6 +1,7 @@
 from logging import getLogger
 import os
 from tqdm import trange
+from experiments.utils.save_scores import save_scores
 import numpy as np
 from tqdm.contrib import tenumerate
 from experiments.utils.evaluate import evaluate
@@ -65,6 +66,8 @@ def tranad_main(
 
     result = evaluate(model, test_dataloader_list)
     score = np.mean(result["pate_scores"])
+
+    save_scores(result, result_dir)
 
     return score
 
