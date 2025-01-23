@@ -38,6 +38,8 @@ def fedavg_lstmae(
     seed: int = 42,
     device=get_default_device(),
     evaluate_every: int = 5,
+    # used for PSM only
+    num_clients: int = 24,
 ):
     args = locals()
     logger = logging.getLogger(__name__)
@@ -53,7 +55,6 @@ def fedavg_lstmae(
         X_train_list = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()
     else:
-        num_clients = 24
         X_train_list = get_PSM_train_clients(num_clients)
         test_clients = get_PSM_test_clients()
 

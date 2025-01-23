@@ -18,16 +18,17 @@ save = True
 
 
 def incfed_main(
-    dataset: str = "SMAP",
+    dataset: str,
+    result_dir: str,
     N_x: int = 200,
     leaking_rate: float = 1.0,
     rho: float = 0.95,
-    input_scale: float = 1.0,
+    input_scale: float = 0.001,
     beta=0.0001,
     trans_len=10,
     train: bool = True,
     save: bool = True,
-    result_dir: str = "result",
+    num_clients: int = 24,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -41,7 +42,6 @@ def incfed_main(
         train_clients = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()
     else:
-        num_clients = 24
         train_clients = get_PSM_train_clients(num_clients)
         test_clients = get_PSM_test_clients()
 
@@ -92,17 +92,7 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "IncFed.log"))
 
-    leaking_rate = 1.0
-    beta = 0.0001
-    rho = 0.95
-    input_scale = 0.001
-
     incfed_main(
         dataset=dataset,
-        leaking_rate=leaking_rate,
-        rho=rho,
-        input_scale=input_scale,
-        beta=beta,
-        save=False,
         result_dir=result_dir,
     )

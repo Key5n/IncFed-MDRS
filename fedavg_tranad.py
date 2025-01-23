@@ -36,6 +36,8 @@ def fedavg_tranad(
     scheduler=torch.optim.lr_scheduler.StepLR,
     device=get_default_device(),
     evaluate_every=2,
+    # used for PSM only
+    num_clients: int = 24,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -51,7 +53,6 @@ def fedavg_tranad(
         X_train_list = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()
     else:
-        num_clients = 24
         X_train_list = get_PSM_train_clients(num_clients)
         test_clients = get_PSM_test_clients()
 

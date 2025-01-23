@@ -22,6 +22,8 @@ def fedmdrs_main(
     N_x_tilde=None,
     train: bool = True,
     save: bool = True,
+    # used for PSM only
+    num_clients: int = 24,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -35,7 +37,6 @@ def fedmdrs_main(
         train_clients = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()
     else:
-        num_clients = 24
         train_clients = get_PSM_train_clients(num_clients, required_length=trans_len)
         test_clients = get_PSM_test_clients()
 
