@@ -38,6 +38,7 @@ def lstmae_main(
     config = locals()
     logger = getLogger(__name__)
     logger.info(config)
+    os.makedirs(result_dir, exist_ok=True)
 
     set_seed(seed)
 

@@ -29,6 +29,7 @@ def fedavg_mdrs(
     config = locals()
     logger = getLogger(__name__)
     logger.info(config)
+    os.makedirs(result_dir, exist_ok=True)
 
     if dataset == "SMD":
         train_clients = get_SMD_train_clients()

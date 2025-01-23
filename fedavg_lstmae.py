@@ -42,6 +42,7 @@ def fedavg_lstmae(
     args = locals()
     logger = logging.getLogger(__name__)
     logger.info(args)
+    os.makedirs(result_dir, exist_ok=True)
 
     set_seed(seed)
 
