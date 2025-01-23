@@ -1,9 +1,12 @@
 import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-def boxplot(X, tick_labels: list[str], colors: list[tuple], y_label: str):
+def boxplot(
+    X, tick_labels: list[str], colors: list[tuple], y_label: str, result_path: str
+):
     _, ax = plt.subplots()
     ax.set_ylabel(y_label.upper())
 
@@ -26,56 +29,77 @@ def boxplot(X, tick_labels: list[str], colors: list[tuple], y_label: str):
         patch.set_facecolor(color)
     plt.xticks(rotation=30)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(result_path)
 
     plt.clf()
     plt.close()
 
 
+result_dir = os.path.join(os.getcwd(), "result")
+
+datasets = ["SMD", "SMAP"]
+metrics = ["pate"]
+
+
 tick_labels = [
-    "Proposed",
     "TranAD",
-    "FedAvg TranAD",
     "LSTM-AE",
-    # "FedAvg LSTM-AE",
+    "FedAvg TranAD",
+    "FedAvg LSTM-AE",
     "IncFed ESN-SRE",
     "FedAvg MDRS",
+    "IncFed MD-RS",
 ]
+
 colors = [
     (216 / 255, 85 / 255, 255 / 255, 1 - i / len(tick_labels))
     for i in range(len(tick_labels))
 ]
-dataset = "SMD"
-metric = "pate"
 
-X = [
-    np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/mdrs/proposed/{dataset}/{metric}.csv")
-    ),
-    np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/tranad/centralized/{dataset}/{metric}.csv")
-    ),
-    np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/tranad/fedavg/{dataset}/{metric}.csv")
-    ),
-    np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/lstmae/centralized/{dataset}/{metric}.csv")
-    ),
-    # np.genfromtxt(
-    #     os.path.join(os.getcwd(), f"result/lstmae/fedavg/{dataset}/{metric}.csv")
-    # ),
-    np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/ESN-SRE/IncFed/{dataset}/{metric}.csv")
-    ),
-    np.genfromtxt(
-        os.path.join(os.getcwd(), f"result/mdrs/fedavg/{dataset}/{metric}.csv")
-    ),
-]
+for dataset in datasets:
+    for metric in metrics:
+        result_path = os.path.join(result_dir, f"{dataset}-{metric}.pdf")
 
+        X = [
+            np.genfromtxt(
+                os.path.join(
+                    os.getcwd(), f"result/tranad/centralized/{dataset}/{metric}.csv"
+                )
+            ),
+            np.genfromtxt(
+                os.path.join(
+                    os.getcwd(), f"result/lstmae/centralized/{dataset}/{metric}.csv"
+                )
+            ),
+            np.genfromtxt(
+                os.path.join(
+                    os.getcwd(), f"result/tranad/fedavg/{dataset}/{metric}.csv"
+                )
+            ),
+            np.genfromtxt(
+                os.path.join(
+                    os.getcwd(), f"result/lstmae/fedavg/{dataset}/{metric}.csv"
+                )
+            ),
+            np.genfromtxt(
+                os.path.join(
+                    os.getcwd(), f"result/ESN-SRE/IncFed/{dataset}/{metric}.csv"
+                )
+            ),
+            np.genfromtxt(
+                os.path.join(os.getcwd(), f"result/mdrs/fedavg/{dataset}/{metric}.csv")
+            ),
+            np.genfromtxt(
+                os.path.join(
+                    os.getcwd(), f"result/mdrs/proposed/{dataset}/{metric}.csv"
+                )
+            ),
+        ]
 
-boxplot(
-    X,
-    tick_labels=tick_labels,
-    colors=colors,
-    y_label=metric,
-)
+        boxplot(
+            X,
+            tick_labels=tick_labels,
+            colors=colors,
+            y_label=metric,
+            result_path=result_path,
+        )
