@@ -1,6 +1,8 @@
 from logging import getLogger
 from experiments.utils.diagram.plot_line_graph import plot_line_graph
 from fedavg_lstmae import fedavg_lstmae
+from fedavg_mdrs import fedavg_mdrs
+from fedmdrs_main import fedmdrs_main
 from incfed_main import incfed_main
 import numpy as np
 import os
@@ -44,7 +46,7 @@ if __name__ == "__main__":
             for num_clients in client_sizes
         ]
         fedavg_mdrs_scores = [
-            incfed_main(
+            fedavg_mdrs(
                 dataset=dataset,
                 result_dir=os.path.join(result_dir, "fedavg_mdrs", str(num_clients)),
                 num_clients=num_clients,
@@ -52,8 +54,10 @@ if __name__ == "__main__":
             for num_clients in client_sizes
         ]
         proposed_scores = [
-            incfed_main(
+            fedmdrs_main(
                 dataset=dataset,
+                N_x=500,
+                N_x_tilde=200,
                 result_dir=os.path.join(result_dir, "proposed", str(num_clients)),
                 num_clients=num_clients,
             )
