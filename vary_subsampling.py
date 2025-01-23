@@ -17,15 +17,29 @@ if __name__ == "__main__":
 
     N_x = 500
 
-    subsampling_sizes = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    subsampling_sizes = [10, 25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+    run = True
 
-    scores = [
-        fedmdrs_main(dataset, result_dir=result_dir, N_x=N_x, N_x_tilde=N_x_tilde)
+    if run:
+        scores = [
+            fedmdrs_main(
+                dataset,
+                result_dir=os.path.join(result_dir, str(N_x_tilde)),
+                N_x=N_x,
+                N_x_tilde=N_x_tilde,
+            )
+            for N_x_tilde in subsampling_sizes
+        ]
+    else:
+        scores = [
+            np.mean(np.genfromtxt(os.path.join(result_dir, str(N_x_tilde), "PATE.csv")))
+            for N_x_tilde in subsampling_sizes
+        ]
+
+    pate_stds = [
+        np.std(np.genfromtxt(os.path.join(result_dir, str(N_x_tilde), "PATE.csv")))
         for N_x_tilde in subsampling_sizes
     ]
-    score_file = os.path.join(result_dir, "score.csv")
-
-    np.savetxt(score_file, scores)
 
     diagram_path = os.path.join(result_dir, "diagram.pdf")
-    plot_subsampling(subsampling_sizes, scores, filename=diagram_path)
+    plot_subsampling(subsampling_sizes, scores, pate_stds, filename=diagram_path)
