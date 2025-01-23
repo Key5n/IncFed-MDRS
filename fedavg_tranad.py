@@ -57,7 +57,7 @@ def fedavg_tranad(
         X_train_list = get_PSM_train_clients(num_clients)
         # reduce train data size to investigate the effect of data size
         X_train_list = [
-            train_data[: data_proportion * len(train_data)]
+            train_data[: int(data_proportion * len(train_data))]
             for train_data in X_train_list
         ]
 
