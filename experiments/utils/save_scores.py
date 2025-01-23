@@ -34,11 +34,11 @@ def save_scores(evaluation_results: list[Dict], result_dir: str):
         vus_pr_scores.append(vus_pr)
         pate_scores.append(pate)
 
-    pate_save_path = os.path.join(result_dir, "PATE.csv")
-    vus_pr_save_path = os.path.join(result_dir, "VUS-PR.csv")
-    vus_roc_save_path = os.path.join(result_dir, "VUS-ROC.csv")
-    auc_pr_save_path = os.path.join(result_dir, "AUC-ROC.csv")
-    auc_roc_save_path = os.path.join(result_dir, "AUC-PR.csv")
+    pate_save_path = os.path.join(result_dir, "pate.csv")
+    vus_pr_save_path = os.path.join(result_dir, "vus_pr.csv")
+    vus_roc_save_path = os.path.join(result_dir, "vus_roc.csv")
+    auc_pr_save_path = os.path.join(result_dir, "auc_roc.csv")
+    auc_roc_save_path = os.path.join(result_dir, "auc_pr.csv")
 
     np.savetxt(pate_save_path, pate_scores)
     np.savetxt(vus_pr_save_path, vus_pr_scores)

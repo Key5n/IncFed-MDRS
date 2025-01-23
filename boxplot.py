@@ -38,7 +38,7 @@ def boxplot(
 result_dir = os.path.join(os.getcwd(), "result")
 
 datasets = ["SMD", "SMAP"]
-metrics = ["pate"]
+metrics = ["auc_roc", "auc_pr", "vus_pr", "pate"]
 
 
 tick_labels = [

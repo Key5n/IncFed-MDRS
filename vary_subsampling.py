@@ -32,12 +32,12 @@ if __name__ == "__main__":
         ]
     else:
         scores = [
-            np.mean(np.genfromtxt(os.path.join(result_dir, str(N_x_tilde), "PATE.csv")))
+            np.mean(np.genfromtxt(os.path.join(result_dir, str(N_x_tilde), "pate.csv")))
             for N_x_tilde in subsampling_sizes
         ]
 
     pate_stds = [
-        np.std(np.genfromtxt(os.path.join(result_dir, str(N_x_tilde), "PATE.csv")))
+        np.std(np.genfromtxt(os.path.join(result_dir, str(N_x_tilde), "pate.csv")))
         for N_x_tilde in subsampling_sizes
     ]
 
