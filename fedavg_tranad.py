@@ -24,7 +24,7 @@ from experiments.utils.smd import get_SMD_train_clients
 def fedavg_tranad(
     dataset: str,
     result_dir: str,
-    global_epochs=25,
+    global_epochs=24,
     local_epochs=5,
     client_rate=0.25,
     seed=42,
