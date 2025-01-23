@@ -38,6 +38,7 @@ def fedavg_tranad(
     evaluate_every=2,
     # used for PSM only
     num_clients: int = 24,
+    data_proportion: float = 1.0,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -54,6 +55,12 @@ def fedavg_tranad(
         test_clients = get_SMAP_test_clients()
     else:
         X_train_list = get_PSM_train_clients(num_clients)
+        # reduce train data size to investigate the effect of data size
+        X_train_list = [
+            train_data[: data_proportion * len(train_data)]
+            for train_data in X_train_list
+        ]
+
         test_clients = get_PSM_test_clients()
 
     test_dataloader_list = [

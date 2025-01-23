@@ -24,6 +24,7 @@ def fedmdrs_main(
     save: bool = True,
     # used for PSM only
     num_clients: int = 24,
+    data_proportion: float = 1.0,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -38,6 +39,12 @@ def fedmdrs_main(
         test_clients = get_SMAP_test_clients()
     else:
         train_clients = get_PSM_train_clients(num_clients, required_length=trans_len)
+        # reduce train data size to investigate the effect of data size
+        train_clients = [
+            train_data[: data_proportion * len(train_data)]
+            for train_data in train_clients
+        ]
+
         test_clients = get_PSM_test_clients()
 
     if train:

@@ -33,6 +33,7 @@ def tranad_main(
     optimizer=torch.optim.AdamW,
     scheduler: int = torch.optim.lr_scheduler.StepLR,
     lr: float = 0.0001,
+    data_proportion: float = 1.0,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -49,6 +50,9 @@ def tranad_main(
         test_clients = get_SMAP_test_clients()
     else:
         train_data = get_PSM_train()
+        # reduce train data size to investigate the effect of data size
+        train_data = train_data[: data_proportion * len(train_data)]
+
         test_clients = get_PSM_test_clients()
     n_features = train_data.shape[1]
 
