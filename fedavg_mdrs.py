@@ -25,6 +25,7 @@ def fedavg_mdrs(
     input_scale=0.001,
     trans_len=10,
     N_x_tilde: int | None = None,
+    num_clients: int = 24,
 ):
     config = locals()
     logger = getLogger(__name__)
@@ -38,7 +39,6 @@ def fedavg_mdrs(
         train_clients = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()
     else:
-        num_clients = 24
         train_clients = get_PSM_train_clients(num_clients, required_length=trans_len)
         test_clients = get_PSM_test_clients()
 
