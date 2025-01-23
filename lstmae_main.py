@@ -75,9 +75,12 @@ def lstmae_main(
     for epoch in trange(epochs):
         model.fit(train_dataloader)
 
-    result = evaluate(model, test_dataloader_list)
-    score = np.mean(result["pate_score"])
-    save_scores(result, result_dir)
+    evaluation_results = evaluate(model, test_dataloader_list)
+    save_scores(evaluation_results, result_dir)
+
+    score = np.mean(
+        [evaluation_result["PATE"] for evaluation_result in evaluation_results]
+    )
 
     return score
 
@@ -90,7 +93,9 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "lstmae.log"))
     logger = getLogger(__name__)
 
-    best_score = np.max([
-        lstmae_main(dataset=dataset, result_dir=result_dir),
-    ])
+    best_score = np.max(
+        [
+            lstmae_main(dataset=dataset, result_dir=result_dir),
+        ]
+    )
     logger.info(f"best score: {best_score}")

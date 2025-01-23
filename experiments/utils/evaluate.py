@@ -8,10 +8,9 @@ from experiments.algorithms.USAD.utils import getting_labels
 from experiments.evaluation.metrics import get_metrics
 
 
-def evaluate(model, test_dataloader_list: list[DataLoader]) -> Dict:
+def evaluate(model, test_dataloader_list: list[DataLoader]) -> list[Dict]:
     logger = getLogger(__name__)
-    anomaly_scores = []
-    labels_list = []
+    evaluation_results = []
     auc_roc_scores = []
     auc_pr_scores = []
     vus_roc_scores = []
@@ -23,15 +22,13 @@ def evaluate(model, test_dataloader_list: list[DataLoader]) -> Dict:
         labels = getting_labels(test_dataloader)
 
         evaluation_result = get_metrics(scores, labels)
+        evaluation_results.append(evaluation_result)
 
         auc_roc = evaluation_result["AUC-ROC"]
         auc_pr = evaluation_result["AUC-PR"]
         vus_roc = evaluation_result["VUS-ROC"]
         vus_pr = evaluation_result["VUS-PR"]
         pate = evaluation_result["PATE"]
-
-        anomaly_scores.append(scores)
-        labels_list.append(labels)
 
         auc_roc_scores.append(auc_roc)
         auc_pr_scores.append(auc_pr)
@@ -57,14 +54,4 @@ def evaluate(model, test_dataloader_list: list[DataLoader]) -> Dict:
     logger.info(f"VUS-PR: {vus_pr_avg} ± {vus_pr_std}")
     logger.info(f"PATE: {pate_avg} ± {pate_std}")
 
-    result = {
-        "anomaly_scores": anomaly_scores,
-        "labels_list": labels_list,
-        "auc_roc_scores": auc_roc_scores,
-        "auc_pr_scores": auc_pr_scores,
-        "vus_roc_scores": vus_roc_scores,
-        "vus_pr_scores": vus_pr_scores,
-        "pate_scores": pate_scores,
-    }
-
-    return result
+    return evaluation_results

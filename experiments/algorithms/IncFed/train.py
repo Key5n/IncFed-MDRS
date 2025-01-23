@@ -1,12 +1,10 @@
-import os
+from logging import getLogger
 from typing import Dict
 from tqdm import tqdm
-from tqdm.contrib import tenumerate
 from experiments.evaluation.metrics import get_metrics
 import numpy as np
 from numpy.typing import NDArray
 from experiments.algorithms.IncFed.layers import ESN
-from experiments.utils.diagram.plot import plot
 
 
 def train_in_clients_incfed(
@@ -74,10 +72,11 @@ def evaluate_in_clients_incfed(
     rho: float,
     beta: float,
     trans_len: int,
-    result_dir: str,
 ):
+    logger = getLogger(__name__)
     evaluation_results: list[Dict] = []
-    for i, (test_data, test_label) in tenumerate(test_clients):
+
+    for test_data, test_label in tqdm(test_clients):
         evaluation_result = evaluate_in_client_incfed(
             test_data,
             test_label,
@@ -88,10 +87,43 @@ def evaluate_in_clients_incfed(
             beta=beta,
             rho=rho,
             trans_len=trans_len,
-            filename=os.path.join(result_dir, f"{i}.pdf"),
         )
 
         evaluation_results.append(evaluation_result)
+
+    auc_roc_scores = [
+        evaluation_result["AUC-ROC"] for evaluation_result in evaluation_results
+    ]
+    auc_pr_scores = [
+        evaluation_result["AUC-PR"] for evaluation_result in evaluation_results
+    ]
+    vus_roc_scores = [
+        evaluation_result["VUS-ROC"] for evaluation_result in evaluation_results
+    ]
+    vus_pr_scores = [
+        evaluation_result["VUS-PR"] for evaluation_result in evaluation_results
+    ]
+    pate_scores = [
+        evaluation_result["PATE"] for evaluation_result in evaluation_results
+    ]
+
+    auc_roc_avg = np.mean(auc_roc_scores, dtype=float)
+    auc_pr_avg = np.mean(auc_pr_scores, dtype=float)
+    vus_roc_avg = np.mean(vus_roc_scores, dtype=float)
+    vus_pr_avg = np.mean(vus_pr_scores, dtype=float)
+    pate_avg = np.mean(pate_scores, dtype=float)
+
+    auc_roc_std = np.std(auc_roc_scores, dtype=float)
+    auc_pr_std = np.std(auc_pr_scores, dtype=float)
+    vus_roc_std = np.std(vus_roc_scores, dtype=float)
+    vus_pr_std = np.std(vus_pr_scores, dtype=float)
+    pate_std = np.std(pate_scores, dtype=float)
+
+    logger.info(f"AUC-ROC: {auc_roc_avg} ± {auc_roc_std}")
+    logger.info(f"AUC-PR: {auc_pr_avg} ± {auc_pr_std}")
+    logger.info(f"VUS-ROC: {vus_roc_avg} ± {vus_roc_std}")
+    logger.info(f"VUS-PR: {vus_pr_avg} ± {vus_pr_std}")
+    logger.info(f"PATE: {pate_avg} ± {pate_std}")
 
     return evaluation_results
 
@@ -106,7 +138,6 @@ def evaluate_in_client_incfed(
     rho: float,
     beta: float,
     trans_len: int,
-    filename: str,
 ):
     N_u = test_data.shape[1]
     N_y = N_u
@@ -122,7 +153,6 @@ def evaluate_in_client_incfed(
     target_data = test_data
     scores = model.predict(test_data, target_data, W_out, trans_len=trans_len)
 
-    plot(scores, test_label, filename)
     evaluation_result = get_metrics(scores, test_label)
 
     return evaluation_result

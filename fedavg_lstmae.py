@@ -114,12 +114,17 @@ def fedavg_lstmae(
 
             if (global_round + 1) % evaluate_every == 0:
                 model.load_model(global_state_dict)
-                result = evaluate(model, test_dataloader_list)
-                score = np.mean(result["pate_scores"])
+                evaluation_results = evaluate(model, test_dataloader_list)
+                score = np.mean(
+                    [
+                        evaluation_result["PATE"]
+                        for evaluation_result in evaluation_results
+                    ]
+                )
 
                 if score > best_score:
                     best_score = score
-                    save_scores(result, result_dir)
+                    save_scores(evaluation_results, result_dir)
 
     return best_score
 

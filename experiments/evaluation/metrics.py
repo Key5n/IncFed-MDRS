@@ -11,7 +11,6 @@ def get_metrics(
 ):
     with logging_redirect_tqdm():
         logger = getLogger(__name__)
-        metrics = {}
 
         """
         Threshold Independent
@@ -46,10 +45,14 @@ def get_metrics(
         if log:
             logger.info(f"PATE Time: {pate_end - pate_start}")
 
-        metrics["AUC-PR"] = AUC_PR
-        metrics["AUC-ROC"] = AUC_ROC
-        metrics["VUS-PR"] = VUS_PR
-        metrics["VUS-ROC"] = VUS_ROC
-        metrics["PATE"] = pate
+        metrics = {
+            "AUC-PR": AUC_PR,
+            "AUC-ROC": AUC_ROC,
+            "VUS-ROC": VUS_ROC,
+            "VUS-PR": VUS_PR,
+            "PATE": pate,
+            "anomaly_score": score,
+            "label": labels,
+        }
 
         return metrics

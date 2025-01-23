@@ -2,10 +2,10 @@ import os
 from logging import getLogger
 
 from experiments.utils.parser import args_parser
+from experiments.utils.save_scores import save_scores
 import numpy as np
 from FedMDRS.utils.fedavg_mdrs import train_in_clients_fedavg
 from FedMDRS.utils.utils import evaluate_in_clients
-from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.logger import init_logger
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
@@ -65,7 +65,6 @@ def fedavg_mdrs(
         test_clients,
         P_global,
         N_x,
-        result_dir,
         N_x_tilde=N_x_tilde,
         leaking_rate=leaking_rate,
         delta=delta,
@@ -74,7 +73,12 @@ def fedavg_mdrs(
         trans_len=trans_len,
     )
 
-    get_final_scores(evaluation_results, result_dir)
+    save_scores(evaluation_results, result_dir)
+    score = np.mean(
+        [evaluation_result["PATE"] for evaluation_result in evaluation_results]
+    )
+
+    return score
 
 
 if __name__ == "__main__":

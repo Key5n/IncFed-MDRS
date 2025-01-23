@@ -1,11 +1,11 @@
 import os
 from logging import getLogger
+from experiments.utils.save_scores import save_scores
 import numpy as np
 from FedMDRS.utils.utils import evaluate_in_clients, train_in_clients
 from experiments.utils.parser import args_parser
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
-from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.logger import init_logger
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 
@@ -26,6 +26,7 @@ def fedmdrs_main(
     config = locals()
     logger = getLogger(__name__)
     logger.info(config)
+    os.makedirs(result_dir, exist_ok=True)
 
     if dataset == "SMD":
         train_clients = get_SMD_train_clients()
@@ -62,7 +63,6 @@ def fedmdrs_main(
         test_clients,
         P_global,
         N_x,
-        result_dir,
         N_x_tilde=N_x_tilde,
         leaking_rate=leaking_rate,
         delta=delta,
@@ -71,9 +71,12 @@ def fedmdrs_main(
         trans_len=trans_len,
     )
 
-    pate_avg = get_final_scores(evaluation_results, result_dir)
+    save_scores(evaluation_results, result_dir)
+    score = np.mean(
+        [evaluation_result["PATE"] for evaluation_result in evaluation_results]
+    )
 
-    return pate_avg
+    return score
 
 
 if __name__ == "__main__":

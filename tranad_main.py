@@ -64,12 +64,15 @@ def tranad_main(
     for epoch in trange(epochs):
         model.fit(train_dataloader, epoch)
 
-    result = evaluate(model, test_dataloader_list)
-    score = np.mean(result["pate_scores"])
+    evaluation_results = evaluate(model, test_dataloader_list)
+    save_scores(evaluation_results, result_dir)
 
-    save_scores(result, result_dir)
+    score = np.mean(
+        [evaluation_result["PATE"] for evaluation_result in evaluation_results]
+    )
 
     return score
+
 
 if __name__ == "__main__":
     args = args_parser()
@@ -79,7 +82,9 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
 
-    best_score = np.max([
-        tranad_main(dataset=dataset, result_dir=result_dir),
-    ])
+    best_score = np.max(
+        [
+            tranad_main(dataset=dataset, result_dir=result_dir),
+        ]
+    )
     logger.info(f"best score: {best_score}")

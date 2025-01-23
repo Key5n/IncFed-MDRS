@@ -2,6 +2,7 @@ import os
 from logging import getLogger
 
 from experiments.utils.parser import args_parser
+from experiments.utils.save_scores import save_scores
 import numpy as np
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
@@ -9,7 +10,6 @@ from experiments.algorithms.IncFed.train import (
     evaluate_in_clients_incfed,
     train_in_clients_incfed,
 )
-from experiments.utils.get_final_scores import get_final_scores
 from experiments.utils.logger import init_logger
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 
@@ -74,12 +74,14 @@ def incfed_main(
         rho=rho,
         beta=beta,
         trans_len=trans_len,
-        result_dir=result_dir,
     )
 
-    pate_avg = get_final_scores(evaluation_results, result_dir)
+    save_scores(evaluation_results, result_dir)
+    score = np.mean(
+        [evaluation_result["PATE"] for evaluation_result in evaluation_results]
+    )
 
-    return pate_avg
+    return score
 
 
 if __name__ == "__main__":
