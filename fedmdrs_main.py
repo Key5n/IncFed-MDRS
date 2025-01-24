@@ -13,13 +13,13 @@ from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 def fedmdrs_main(
     dataset: str,
     result_dir: str,
-    N_x: int,
+    N_x: int = 500,
     leaking_rate: float = 1.0,
     delta: float = 0.0001,
     rho: float = 0.95,
     input_scale: float = 0.001,
     trans_len: int = 10,
-    N_x_tilde=None,
+    N_x_tilde: int | None = 200,
     train: bool = True,
     save: bool = True,
     # used for PSM only
@@ -92,12 +92,7 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "mdrs.log"))
     logger = getLogger(__name__)
 
-    N_x = 500
-    N_x_tilde = 200
-
     fedmdrs_main(
         dataset,
         result_dir=result_dir,
-        N_x=N_x,
-        N_x_tilde=N_x_tilde,
     )

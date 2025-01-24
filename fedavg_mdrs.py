@@ -18,13 +18,13 @@ save = True
 def fedavg_mdrs(
     dataset: str,
     result_dir: str,
-    N_x=200,
+    N_x: int = 500,
     leaking_rate=1.0,
     delta=0.0001,
     rho=0.95,
     input_scale=0.001,
     trans_len=10,
-    N_x_tilde: int | None = None,
+    N_x_tilde: int | None = 200,
     num_clients: int = 24,
 ):
     config = locals()
@@ -89,7 +89,4 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 
-    N_x = 500
-    N_x_tilde = 200
-
-    fedavg_mdrs(dataset=dataset, result_dir=result_dir, N_x=N_x, N_x_tilde=N_x_tilde)
+    fedavg_mdrs(dataset=dataset, result_dir=result_dir)
