@@ -49,7 +49,7 @@ tick_labels = [
     "FedAvg TranAD",
     "FedAvg LSTM-AE",
     "IncFed ESN-SRE",
-    "FedAvg MDRS",
+    "FedAvg MD-RS",
     "IncFed MD-RS",
 ]
 
