@@ -34,17 +34,17 @@ def save_scores(evaluation_results: list[Dict], result_dir: str):
         vus_pr_scores.append(vus_pr)
         pate_scores.append(pate)
 
-    pate_save_path = os.path.join(result_dir, "pate.csv")
-    vus_pr_save_path = os.path.join(result_dir, "vus_pr.csv")
+    auc_roc_save_path = os.path.join(result_dir, "auc_roc.csv")
+    auc_pr_save_path = os.path.join(result_dir, "auc_pr.csv")
     vus_roc_save_path = os.path.join(result_dir, "vus_roc.csv")
-    auc_pr_save_path = os.path.join(result_dir, "auc_roc.csv")
-    auc_roc_save_path = os.path.join(result_dir, "auc_pr.csv")
+    vus_pr_save_path = os.path.join(result_dir, "vus_pr.csv")
+    pate_save_path = os.path.join(result_dir, "pate.csv")
 
-    np.savetxt(pate_save_path, pate_scores)
-    np.savetxt(vus_pr_save_path, vus_pr_scores)
-    np.savetxt(vus_roc_save_path, vus_roc_scores)
-    np.savetxt(auc_pr_save_path, auc_pr_scores)
     np.savetxt(auc_roc_save_path, auc_roc_scores)
+    np.savetxt(auc_pr_save_path, auc_pr_scores)
+    np.savetxt(vus_roc_save_path, vus_roc_scores)
+    np.savetxt(vus_pr_save_path, vus_pr_scores)
+    np.savetxt(pate_save_path, pate_scores)
 
     for i, (anomaly_score, label) in enumerate(zip(anomaly_scores_list, labels_list)):
         plot(anomaly_score, label, os.path.join(result_dir, f"{i}.pdf"))
