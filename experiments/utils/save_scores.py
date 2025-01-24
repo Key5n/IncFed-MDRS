@@ -49,6 +49,12 @@ def save_scores(evaluation_results: list[Dict], result_dir: str):
     for i, (anomaly_score, label) in enumerate(zip(anomaly_scores_list, labels_list)):
         plot(anomaly_score, label, os.path.join(result_dir, f"{i}.pdf"))
 
+        with open(os.path.join(result_dir, f"anomaly-{i}.npy"), "wb") as f:
+            np.save(f, anomaly_score)
+
+        with open(os.path.join(result_dir, f"label-{i}.npy"), "wb") as f:
+            np.save(f, label)
+
     tick_labels = ["PATE", "VUS-PR", "VUS-ROC", "AUC-PR", "AUC-ROC"]
     colors = ["red", "orange", "yellow", "green", "cyan"]
     X = [pate_scores, vus_pr_scores, vus_roc_scores, auc_pr_scores, auc_roc_scores]
