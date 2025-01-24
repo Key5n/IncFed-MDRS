@@ -49,9 +49,7 @@ def tranad_main(
         train_data = get_SMAP_train()
         test_clients = get_SMAP_test_clients()
     else:
-        train_data = get_PSM_train()
-        # reduce train data size to investigate the effect of data size
-        train_data = train_data[: int(data_proportion * len(train_data))]
+        train_data = get_PSM_train(proportion=data_proportion)
 
         test_clients = get_PSM_test_clients()
     n_features = train_data.shape[1]

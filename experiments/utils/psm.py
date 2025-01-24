@@ -22,9 +22,11 @@ def get_PSM(data_file_path: str, scale=True) -> NDArray:
 def get_PSM_train(
     train_data_file_path: str = os.path.join(
         os.getcwd(), "datasets", "PSM", "train.csv"
-    )
+    ),
+    proportion: float = 1.0,
 ) -> NDArray:
     psm_train = get_PSM(train_data_file_path)
+    psm_train = psm_train[: int(proportion * len(psm_train))]
 
     return psm_train
 
@@ -57,8 +59,10 @@ def get_PSM_list(
     data_file_path: str,
     beta: float | None,
     required_length: int,
+    proportion: float,
 ) -> list[NDArray]:
     data = get_PSM(data_file_path)
+    data = data[: int(proportion * len(data))]
 
     data_list: list[NDArray] = []
     if beta is None:
@@ -82,13 +86,16 @@ def get_PSM_list(
 
 def get_PSM_train_clients(
     num_clients: int,
+    proportion: float,
     train_data_file_path: str = os.path.join(
         os.getcwd(), "datasets", "PSM", "train.csv"
     ),
     beta: float | None = None,
     required_length: int = 10,
 ) -> list[NDArray]:
-    X_train = get_PSM_list(num_clients, train_data_file_path, beta, required_length)
+    X_train = get_PSM_list(
+        num_clients, train_data_file_path, beta, required_length, proportion=proportion
+    )
 
     return X_train
 

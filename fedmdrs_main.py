@@ -38,12 +38,9 @@ def fedmdrs_main(
         train_clients = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()
     else:
-        train_clients = get_PSM_train_clients(num_clients, required_length=trans_len)
-        # reduce train data size to investigate the effect of data size
-        train_clients = [
-            train_data[: int(data_proportion * len(train_data))]
-            for train_data in train_clients
-        ]
+        train_clients = get_PSM_train_clients(
+            num_clients, required_length=trans_len, proportion=data_proportion
+        )
 
         test_clients = get_PSM_test_clients()
 

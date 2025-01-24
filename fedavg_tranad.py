@@ -54,7 +54,7 @@ def fedavg_tranad(
         X_train_list = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()
     else:
-        X_train_list = get_PSM_train_clients(num_clients)
+        X_train_list = get_PSM_train_clients(num_clients, proportion=data_proportion)
         # reduce train data size to investigate the effect of data size
         X_train_list = [
             train_data[: int(data_proportion * len(train_data))]
