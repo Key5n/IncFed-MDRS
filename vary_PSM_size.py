@@ -81,4 +81,10 @@ if __name__ == "__main__":
     Y_list = [tranad_scores, fedavg_tranad_scores, proposed_scores]
     label_list = ["TranAD", "FedAvg TranAD", "IncFed MDRS"]
 
-    plot_line_graph(data_proportions, Y_list, label_list, filepath=figure_path)
+    plot_line_graph(
+        data_proportions,
+        Y_list,
+        label_list,
+        filepath=figure_path,
+        xlabel="Data Proportion",
+    )

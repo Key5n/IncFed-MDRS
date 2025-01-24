@@ -111,4 +111,6 @@ if __name__ == "__main__":
     Y_list = [fedavg_tranad_scores, incfed_scores, fedavg_mdrs_scores, proposed_scores]
     label_list = ["FedAvg TranAD", "IncFed ESN-SRE", "FedAvg MDRS", "IncFed MDRS"]
 
-    plot_line_graph(client_sizes, Y_list, label_list, filepath=figure_path)
+    plot_line_graph(
+        client_sizes, Y_list, label_list, filepath=figure_path, xlabel="Client Size"
+    )
