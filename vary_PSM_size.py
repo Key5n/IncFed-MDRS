@@ -15,7 +15,7 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
 
-    data_proportions = [0.01, 0.1, 0.5, 0.75, 1]
+    data_proportions = [0.01, 0.1, 0.25, 0.5, 0.75, 1]
     run = True
 
     if run:
