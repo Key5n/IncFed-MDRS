@@ -86,7 +86,7 @@ def get_PSM_list(
 
 def get_PSM_train_clients(
     num_clients: int,
-    proportion: float,
+    proportion: float = 1.0,
     train_data_file_path: str = os.path.join(
         os.getcwd(), "datasets", "PSM", "train.csv"
     ),
