@@ -31,6 +31,7 @@ def get_SMD_test_entities_for_TranAD(
     ),
 ) -> list[tuple[NDArray, NDArray]]:
     data_filenames = os.listdir(test_data_dir_path)
+    data_filenames.sort()
 
     entities: list[tuple[NDArray, NDArray]] = []
     for data_filename in data_filenames:

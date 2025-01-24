@@ -7,6 +7,7 @@ from numpy.typing import NDArray
 
 def get_SMD_data(data_dir_path: str) -> list[NDArray]:
     data_filenames = os.listdir(data_dir_path)
+    data_filenames.sort()
 
     data_list = []
     for data_filename in data_filenames:

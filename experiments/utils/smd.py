@@ -6,6 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 def get_SMD_list(data_dir_path: str, scale=True) -> list[NDArray]:
     data_filenames = os.listdir(data_dir_path)
+    data_filenames.sort()
 
     data_list = []
     for data_filename in data_filenames:
