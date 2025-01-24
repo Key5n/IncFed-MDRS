@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 
 
 def boxplot(
-    X, tick_labels: list[str], colors: list[tuple], y_label: str, result_path: str
+    X, tick_labels: list[str], colors: list[tuple], x_label: str, result_path: str
 ):
     _, ax = plt.subplots()
-    ax.set_ylabel(y_label.upper())
+    X = np.flip(X).tolist()
+    tick_labels = np.flip(tick_labels).tolist()
 
     bplot = ax.boxplot(
         X,
@@ -17,6 +18,7 @@ def boxplot(
         patch_artist=True,
         showmeans=True,
         meanline=True,
+        orientation="horizontal",
     )
 
     for median in bplot["medians"]:
@@ -27,7 +29,7 @@ def boxplot(
 
     for patch, color in zip(bplot["boxes"], colors):
         patch.set_facecolor(color)
-    plt.xticks(rotation=30)
+    ax.set_xlabel(x_label.upper())
     plt.tight_layout()
     plt.savefig(result_path)
 
@@ -100,6 +102,6 @@ for dataset in datasets:
             X,
             tick_labels=tick_labels,
             colors=colors,
-            y_label=metric,
+            x_label=metric,
             result_path=result_path,
         )
