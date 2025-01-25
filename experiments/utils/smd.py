@@ -41,7 +41,7 @@ def get_SMD_train(
 
 def get_SMD_train_clients(
     train_data_dir_path: str = os.path.join(
-        os.getcwd(), "datasets", "ServerMachineDataset", "test"
+        os.getcwd(), "datasets", "ServerMachineDataset", "train"
     )
 ) -> list[NDArray]:
     X_train_list = get_SMD_list(train_data_dir_path)
