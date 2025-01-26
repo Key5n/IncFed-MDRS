@@ -1,6 +1,7 @@
 import os
 from logging import getLogger
 
+from experiments.utils.msl import get_MSL_test_clients, get_MSL_train_clients
 from experiments.utils.parser import args_parser
 from experiments.utils.save_scores import save_scores
 import numpy as np
@@ -35,6 +36,9 @@ def fedavg_mdrs(
     if dataset == "SMD":
         train_clients = get_SMD_train_clients()
         test_clients = get_SMD_test_clients()
+    elif dataset == "MSL":
+        train_clients = get_MSL_train_clients()
+        test_clients = get_MSL_test_clients()
     elif dataset == "SMAP":
         train_clients = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()

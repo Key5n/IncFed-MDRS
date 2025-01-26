@@ -6,7 +6,7 @@ from fedmdrs_main import fedmdrs_main
 
 
 if __name__ == "__main__":
-    datasets = ["SMD", "SMAP", "PSM"]
+    datasets = ["SMD", "MSL", "SMAP", "PSM"]
     result_dir = os.path.join("result", "mdrs", "subsampling")
     init_logger(os.path.join(result_dir, "mdrs.log"))
 

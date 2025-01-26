@@ -7,6 +7,7 @@ from experiments.utils.evaluate import evaluate
 from experiments.utils.parser import args_parser
 import torch
 from torch import nn
+from experiments.utils.msl import get_MSL_test_clients, get_MSL_train
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train
 from experiments.utils.logger import init_logger
 from experiments.utils.utils import get_default_device, set_seed
@@ -45,6 +46,9 @@ def lstmae_main(
     if dataset == "SMD":
         train_data = get_SMD_train()
         test_clients = get_SMD_test_clients()
+    elif dataset == "MSL":
+        train_data = get_MSL_train()
+        test_clients = get_MSL_test_clients()
     elif dataset == "SMAP":
         train_data = get_SMAP_train()
         test_clients = get_SMAP_test_clients()

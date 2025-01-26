@@ -1,6 +1,7 @@
 from logging import getLogger
 import os
 from typing import Dict
+from experiments.utils.msl import get_MSL_test_clients, get_MSL_train_clients
 from experiments.utils.save_scores import save_scores
 import numpy as np
 from tqdm import trange
@@ -50,6 +51,9 @@ def fedavg_tranad(
     if dataset == "SMD":
         X_train_list = get_SMD_train_clients()
         test_clients = get_SMD_test_entities_for_TranAD()
+    elif dataset == "MSL":
+        X_train_list = get_MSL_train_clients()
+        test_clients = get_MSL_test_clients()
     elif dataset == "SMAP":
         X_train_list = get_SMAP_train_clients()
         test_clients = get_SMAP_test_clients()

@@ -8,7 +8,7 @@ def args_parser():
         metavar="-d",
         type=str,
         required=True,
-        choices=["SMD", "SMAP", "PSM"],
+        choices=["SMD", "MSL", "SMAP", "PSM"],
     )
     args = parser.parse_args()
 
