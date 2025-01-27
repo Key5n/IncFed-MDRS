@@ -23,7 +23,8 @@ def get_MSL_list(data_dir_path: str, label_file_path) -> list[NDArray]:
             scaler = MinMaxScaler()
             data_transformed = scaler.fit_transform(data)
 
-            data_list.append(data_transformed)
+            data_list.append(data_transformed[:, 0].reshape((-1, 1)))
+            # data_list.append(data_transformed)
 
     return data_list
 
@@ -32,7 +33,8 @@ def get_MSL_concatenated(data_dir_path: str, label_file_path: str) -> NDArray:
     dataset = get_MSL_list(data_dir_path, label_file_path)
     dataset_concatenated = np.concatenate(dataset)
 
-    return dataset_concatenated
+    # return dataset_concatenated[:, 0].reshape((-1, 1))
+    return dataset_concatenated[:, 0].reshape((-1, 1))
 
 
 def get_MSL_train(
