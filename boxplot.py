@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 def boxplot(
     X, tick_labels: list[str], colors: list[tuple], x_label: str, result_path: str
 ):
-    _, ax = plt.subplots()
+    plt.rcParams["font.size"] = 32
+    _, ax = plt.subplots(figsize=(10, 8))
     X = np.flip(X).tolist()
     tick_labels = np.flip(tick_labels).tolist()
 
