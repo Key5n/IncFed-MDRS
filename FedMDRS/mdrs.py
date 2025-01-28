@@ -72,17 +72,19 @@ class MDRS:
                 x = x.reshape((-1, 1))
                 x = subsample(x, self.N_x_tilde, self.seed)
 
-                self.precision_matrix = self.calc_next_precision_matrix(
-                    x, self.precision_matrix
-                )
                 local_updates += np.dot(x, x.T)
 
-                mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
-                self.threshold = (
-                    max(mahalanobis_distance, self.threshold)
-                    if self.threshold is not None
-                    else mahalanobis_distance
-                )
+                # disable comment out below when you perform online learning
+                # self.precision_matrix = self.calc_next_precision_matrix(
+                #     x, self.precision_matrix
+                # )
+                #
+                # mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
+                # self.threshold = (
+                #     max(mahalanobis_distance, self.threshold)
+                #     if self.threshold is not None
+                #     else mahalanobis_distance
+                # )
 
         return local_updates
 
