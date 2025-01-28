@@ -17,8 +17,8 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "tranad.log"))
     logger = getLogger(__name__)
 
-    client_sizes = [1, 2, 8, 16, 24, 32, 48]
     run = True
+    client_sizes = [1, 2, 4, 8, 16, 24, 32, 48]
 
     if run:
         fedavg_tranad_scores = [
