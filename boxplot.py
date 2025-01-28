@@ -31,6 +31,7 @@ def boxplot(
     for patch, color in zip(bplot["boxes"], colors):
         patch.set_facecolor(color)
     ax.set_xlabel(x_label.upper())
+    ax.set_xlim(-0.01, 1.01)
     plt.tight_layout()
     plt.savefig(result_path)
 
