@@ -107,7 +107,7 @@ if __name__ == "__main__":
             for num_clients in client_sizes
         ]
 
-    figure_path = os.path.join(result_dir, "figure.pdf")
+    figure_path = os.path.join(result_dir, "vary_client_size.pdf")
     Y_list = [fedavg_tranad_scores, incfed_scores, fedavg_mdrs_scores, proposed_scores]
     label_list = ["FedAvg TranAD", "IncFed ESN-SRE", "FedAvg MDRS", "IncFed MDRS"]
 

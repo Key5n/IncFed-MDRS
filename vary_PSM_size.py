@@ -77,7 +77,7 @@ if __name__ == "__main__":
             for data_proportion in data_proportions
         ]
 
-    figure_path = os.path.join(result_dir, "figure.pdf")
+    figure_path = os.path.join(result_dir, "vary_PSM_size.pdf")
     Y_list = [tranad_scores, fedavg_tranad_scores, proposed_scores]
     label_list = ["TranAD", "FedAvg TranAD", "IncFed MDRS"]
 
