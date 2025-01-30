@@ -25,11 +25,11 @@ We use the version 3.10 of python3.
 To run IncFed MD-RS, run the following command.
 
 ```sh
-python3 fedmdrs_main.py --dataset [(SMD)|(SMAP)|(PSM)]
+python3 incfedmdrs_main.py --dataset [(SMD)|(SMAP)|(PSM)]
 ```
 
 For example, run the following command for SMD (Server Machine Dataset).
 
 ```sh
-python3 fedmdrs_main.py --dataset SMD
+python3 incfedmdrs_main.py --dataset SMD
 ```
