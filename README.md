@@ -8,13 +8,14 @@
 2. run the following commands at root path
 
 ```sh
-# get all datasets
-sh get_dataset.sh
-
 # create python environment
 python3 -m venv .venv/bin/activate
 . .venv/bin/activate
 pip3 install -r requirements.txt
+
+# get all datasets
+# For SMAP, make sure you have an Kaggle API key setup, then:
+sh get_dataset.sh
 ```
 
 We use the version 3.10 of python3.
