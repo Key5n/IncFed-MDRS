@@ -8,6 +8,7 @@ from fedmdrs_main import fedmdrs_main
 if __name__ == "__main__":
     datasets = ["SMD", "SMAP", "PSM"]
     result_dir = os.path.join("result", "mdrs", "subsampling")
+    os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 
     subsampling_sizes = [10, 25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]
@@ -64,7 +65,6 @@ if __name__ == "__main__":
     plot_subsampling(
         subsampling_sizes,
         scores_list,
-        stds_list,
         labels=datasets,
         filename=diagram_path,
     )

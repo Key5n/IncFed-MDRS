@@ -6,24 +6,20 @@ import matplotlib.pyplot as plt
 def plot_subsampling(
     X: list,
     Y_list: list[NDArray],
-    stds_list: list[list[float]],
     labels: list[str],
     filename: str,
 ):
+    plt.rcParams["font.size"] = 20
+    plt.figure(figsize=(6, 6))
     X = np.array(X)
 
-    for Y, stds, label in zip(Y_list, stds_list, labels):
+    for Y, label in zip(Y_list, labels):
         Y = np.array(Y)
-        stds = np.array(stds)
-
         plt.plot(X, Y, marker="o", label=label)
-        plt.fill_between(X, Y + stds, Y - stds, alpha=0.15)
 
-    plt.xlabel("Subsampling size")
+    plt.xlabel("Subsampling Size")
     plt.ylabel("Performance")
     plt.legend()
-
-    plt.ylim(0, 1)
 
     plt.tight_layout()
     plt.savefig(filename)
