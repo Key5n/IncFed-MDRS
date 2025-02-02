@@ -18,7 +18,7 @@ train = True
 save = True
 
 
-def incfed_main(
+def incfedesn_main(
     dataset: str,
     result_dir: str,
     N_x: int = 200,
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "IncFed.log"))
 
-    incfed_main(
+    incfedesn_main(
         dataset=dataset,
         result_dir=result_dir,
     )

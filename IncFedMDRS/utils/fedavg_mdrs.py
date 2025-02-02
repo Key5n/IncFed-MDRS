@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import numpy as np
 from numpy.typing import NDArray
-from FedMDRS.utils.utils import train_in_client
+from IncFedMDRS.utils.utils import train_in_client
 
 
 def train_in_clients_fedavg(

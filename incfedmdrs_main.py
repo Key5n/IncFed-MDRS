@@ -3,7 +3,7 @@ from logging import getLogger
 from experiments.utils.msl import get_MSL_test_clients, get_MSL_train_clients
 from experiments.utils.save_scores import save_scores
 import numpy as np
-from FedMDRS.utils.utils import evaluate_in_clients, train_in_clients
+from IncFedMDRS.utils.utils import evaluate_in_clients, train_in_clients
 from experiments.utils.parser import args_parser
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients
 from experiments.utils.smap import get_SMAP_test_clients, get_SMAP_train_clients
@@ -11,7 +11,7 @@ from experiments.utils.logger import init_logger
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 
 
-def fedmdrs_main(
+def incfedmdrs_main(
     dataset: str,
     result_dir: str,
     N_x: int = 500,
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     init_logger(os.path.join(result_dir, "mdrs.log"))
     logger = getLogger(__name__)
 
-    fedmdrs_main(
+    incfedmdrs_main(
         dataset,
         result_dir=result_dir,
     )

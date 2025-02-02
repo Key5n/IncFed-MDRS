@@ -2,7 +2,7 @@ import os
 from experiments.utils.diagram.subsampling import plot_subsampling
 import numpy as np
 from experiments.utils.logger import init_logger
-from fedmdrs_main import fedmdrs_main
+from incfedmdrs_main import incfedmdrs_main
 
 
 if __name__ == "__main__":
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         run = False
         if run:
             scores = [
-                fedmdrs_main(
+                incfedmdrs_main(
                     dataset,
                     result_dir=os.path.join(
                         result_dir_for_each_dataset, str(N_x_tilde)

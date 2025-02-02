@@ -1,7 +1,7 @@
-from FedMDRS.utils.subsample import subsample
+from IncFedMDRS.utils.subsample import subsample
 import numpy as np
 from copy import deepcopy
-from FedMDRS.layers import Input, Reservoir
+from IncFedMDRS.layers import Input, Reservoir
 
 
 class MDRS:

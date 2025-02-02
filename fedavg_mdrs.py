@@ -5,8 +5,8 @@ from experiments.utils.msl import get_MSL_test_clients, get_MSL_train_clients
 from experiments.utils.parser import args_parser
 from experiments.utils.save_scores import save_scores
 import numpy as np
-from FedMDRS.utils.fedavg_mdrs import train_in_clients_fedavg
-from FedMDRS.utils.utils import evaluate_in_clients
+from IncFedMDRS.utils.fedavg_mdrs import train_in_clients_fedavg
+from IncFedMDRS.utils.utils import evaluate_in_clients
 from experiments.utils.logger import init_logger
 from experiments.utils.smd import get_SMD_test_clients, get_SMD_train_clients
 from experiments.utils.psm import get_PSM_test_clients, get_PSM_train_clients

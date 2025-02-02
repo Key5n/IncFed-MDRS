@@ -1,6 +1,6 @@
 from logging import getLogger
 from experiments.utils.diagram.plot_line_graph import plot_line_graph
-from fedmdrs_main import fedmdrs_main
+from incfedmdrs_main import incfedmdrs_main
 import numpy as np
 import os
 from experiments.utils.logger import init_logger
@@ -38,7 +38,7 @@ if __name__ == "__main__":
             for data_proportion in data_proportions
         ]
         proposed_scores = [
-            fedmdrs_main(
+            incfedmdrs_main(
                 dataset=dataset,
                 N_x=500,
                 N_x_tilde=200,

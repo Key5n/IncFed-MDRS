@@ -7,7 +7,7 @@ from tqdm.contrib import tenumerate
 from experiments.utils.diagram.plot import plot
 import numpy as np
 from numpy.typing import NDArray
-from FedMDRS.mdrs import MDRS
+from IncFedMDRS.mdrs import MDRS
 from experiments.evaluation.metrics import get_metrics
 
 
