@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     figure_path = os.path.join(result_dir, "vary_client_size.pdf")
     Y_list = [fedavg_tranad_scores, incfed_scores, fedavg_mdrs_scores, proposed_scores]
-    label_list = ["FedAvg TranAD", "IncFed ESN-SRE", "FedAvg MDRS", "IncFed MDRS"]
+    label_list = ["FedAvg TranAD", "IncFed ESN-SRE", "FedAvg MD-RS", "IncFed MD-RS"]
 
     plot_line_graph(
         client_sizes, Y_list, label_list, filepath=figure_path, xlabel="Client Size"
