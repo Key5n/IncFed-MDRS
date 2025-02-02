@@ -18,7 +18,7 @@ def boxplot(
         showfliers=False,
         patch_artist=True,
         showmeans=True,
-        meanline=True,
+        # meanline=True,
         orientation="horizontal",
     )
 
