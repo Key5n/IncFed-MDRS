@@ -25,8 +25,8 @@ def boxplot(
     for median in bplot["medians"]:
         median.set_color("black")
 
-    for median in bplot["means"]:
-        median.set_color("black")
+    for mean in bplot["means"]:
+        mean.set_color("red")
 
     for patch, color in zip(bplot["boxes"], colors):
         patch.set_facecolor(color)
