@@ -1,10 +1,7 @@
 from logging import getLogger
-import os
 from typing import Dict
 
 from tqdm import tqdm
-from tqdm.contrib import tenumerate
-from experiments.utils.diagram.plot import plot
 import numpy as np
 from numpy.typing import NDArray
 from IncFedMDRS.mdrs import MDRS

@@ -57,7 +57,7 @@ class MDRS:
         """
         U: input data
         """
-        local_updates = self.delta * np.identity(self.N_x_tilde)
+        covariance_matrix = self.delta * np.identity(self.N_x_tilde)
         train_length = len(U)
 
         for n in range(train_length):
@@ -72,7 +72,7 @@ class MDRS:
                 x = x.reshape((-1, 1))
                 x = subsample(x, self.N_x_tilde, self.seed)
 
-                local_updates += np.dot(x, x.T)
+                covariance_matrix += np.dot(x, x.T)
 
                 # disable comment out below when you perform online learning
                 # self.precision_matrix = self.calc_next_precision_matrix(
@@ -86,14 +86,13 @@ class MDRS:
                 #     else mahalanobis_distance
                 # )
 
-        return local_updates
+        return covariance_matrix
 
     def adapt(self, U, threshold=None):
         """
         U: input data
         """
         data_length = len(U)
-        label = []
         mahalanobis_distances = []
 
         if threshold is not None:
