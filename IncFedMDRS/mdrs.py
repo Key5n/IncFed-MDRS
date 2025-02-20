@@ -1,7 +1,10 @@
+from IncFedMDRS.utils.calc_P_online import calc_P_online
 from IncFedMDRS.utils.subsample import subsample
 import numpy as np
 from copy import deepcopy
 from IncFedMDRS.layers import Input, Reservoir
+from numpy import linalg as LA
+from sklearn.decomposition import PCA
 
 
 class MDRS:
@@ -75,9 +78,7 @@ class MDRS:
                 covariance_matrix += np.dot(x, x.T)
 
                 # disable comment out below when you perform online learning
-                # self.precision_matrix = self.calc_next_precision_matrix(
-                #     x, self.precision_matrix
-                # )
+                # self.precision_matrix = calc_P_online(self.precision_matrix, x)
                 #
                 # mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
                 # self.threshold = (
@@ -87,6 +88,40 @@ class MDRS:
                 # )
 
         return covariance_matrix
+
+    def train_with_PCA(self, U, n_components=1):
+        covariance_matrix = self.delta * np.identity(self.N_x_tilde)
+        train_length = len(U)
+
+        for n in range(train_length):
+            x_in = self.Input(U[n])
+
+            if self.noise is not None:
+                x_in += self.noise
+
+            x = self.Reservoir(x_in)
+
+            if n > self.trans_len:
+                x = x.reshape((-1, 1))
+                x = subsample(x, self.N_x_tilde, self.seed)
+
+                covariance_matrix += np.dot(x, x.T)
+
+                # disable comment out below when you perform online learning
+                # self.precision_matrix = calc_P_online(self.precision_matrix, x)
+                #
+                # mahalanobis_distance = np.dot(np.dot(x.T, self.precision_matrix), x)
+                # self.threshold = (
+                #     max(mahalanobis_distance, self.threshold)
+                #     if self.threshold is not None
+                #     else mahalanobis_distance
+                # )
+
+        pca = PCA(n_components=n_components)
+        pca.fit(covariance_matrix)
+        covariance_matrix_reduced = pca.transform(covariance_matrix)
+
+        return covariance_matrix_reduced, pca.components_, pca.mean_
 
     def adapt(self, U, threshold=None):
         """
@@ -110,24 +145,6 @@ class MDRS:
             mahalanobis_distances.append(mahalanobis_distance)
 
         return np.array(mahalanobis_distances, dtype=np.float64)
-
-    def calc_next_precision_matrix(self, x, precision_matrix):
-        x = np.reshape(x, (-1, 1))
-        next_precision_matrix = precision_matrix
-        for _ in np.arange(self.update):
-            gain = 1 / self.lam * np.dot(next_precision_matrix, x)
-            gain = gain / (
-                1 + 1 / self.lam * np.dot(np.dot(x.T, next_precision_matrix), x)
-            )
-            next_precision_matrix = (
-                1
-                / self.lam
-                * (
-                    next_precision_matrix
-                    - np.dot(np.dot(gain, x.T), next_precision_matrix)
-                )
-            )
-        return next_precision_matrix
 
     def set_P(self, P):
         self.precision_matrix = P

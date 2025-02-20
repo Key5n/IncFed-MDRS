@@ -5,6 +5,7 @@ from tqdm import tqdm
 import numpy as np
 from numpy.typing import NDArray
 from IncFedMDRS.mdrs import MDRS
+from IncFedMDRS.utils.calc_P_online import calc_P_online_based_on_pca, woodbury
 from experiments.evaluation.metrics import get_metrics
 
 
@@ -42,6 +43,43 @@ def train_in_clients(
     return P_global
 
 
+def train_in_clients_with_PCA(
+    train_data_list: list[NDArray],
+    N_x: int,
+    leaking_rate,
+    rho,
+    delta,
+    input_scale: float,
+    trans_len: int,
+    n_components: int,
+    N_x_tilde: int | None = None,
+) -> NDArray:
+
+    if N_x_tilde is None:
+        N_x_tilde = N_x
+
+    P_global = 1 / delta * np.identity(N_x_tilde)
+    for train_data in tqdm(train_data_list):
+        covariance_matrix_reduced, components, mean = train_in_client_with_PCA(
+            train_data,
+            N_x,
+            N_x_tilde=N_x_tilde,
+            leaking_rate=leaking_rate,
+            rho=rho,
+            delta=delta,
+            input_scale=input_scale,
+            n_components=n_components,
+            trans_len=trans_len,
+        )
+
+        n = covariance_matrix_reduced.shape[0]
+
+        P_global = woodbury(P_global, covariance_matrix_reduced, components)
+        P_global = woodbury(P_global, np.ones((n, 1)), np.reshape(mean, (1, n)))
+
+    return P_global
+
+
 def train_in_client(
     train_data: NDArray,
     N_x: int,
@@ -64,6 +102,33 @@ def train_in_client(
         trans_len=trans_len,
     )
     local_updates = model.train(train_data)
+
+    return local_updates
+
+
+def train_in_client_with_PCA(
+    train_data: NDArray,
+    N_x: int,
+    leaking_rate,
+    rho,
+    delta,
+    input_scale: float,
+    trans_len: int,
+    n_components: int,
+    N_x_tilde: int | None = None,
+) -> NDArray:
+    N_u = train_data.shape[1]
+    model = MDRS(
+        N_u,
+        N_x,
+        N_x_tilde=N_x_tilde,
+        leaking_rate=leaking_rate,
+        delta=delta,
+        rho=rho,
+        input_scale=input_scale,
+        trans_len=trans_len,
+    )
+    local_updates = model.train_with_PCA(train_data, n_components=n_components)
 
     return local_updates
 
