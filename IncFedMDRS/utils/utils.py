@@ -58,10 +58,9 @@ def train_in_clients_with_PCA(
     if N_x_tilde is None:
         N_x_tilde = N_x
 
-    P_global = 1 / delta * np.identity(N_x_tilde)
-    covariance_matrix_true = delta * np.identity(N_x_tilde)
+    P_global1 = 1 / delta * np.identity(N_x_tilde)
     for train_data in tqdm(train_data_list):
-        covariance_matrix_reduced, components, mean, eigenvalues, eigenvectors, covariance_matrix = train_in_client_with_PCA(
+        eigenvalues, eigenvectors = train_in_client_with_PCA(
             train_data,
             N_x,
             N_x_tilde=N_x_tilde,
@@ -72,20 +71,27 @@ def train_in_clients_with_PCA(
             n_components=n_components,
             trans_len=trans_len,
         )
-        covariance_matrix_true += covariance_matrix
 
-        covariance_matrix_reconsructed = covariance_matrix_reduced @ components + mean
-        print(f"{np.sum(covariance_matrix_reconsructed - covariance_matrix) = }")
-        P_global_true = np.linalg.inv(covariance_matrix_true)
 
-        n = covariance_matrix_reduced.shape[0]
-        P_global = woodbury(P_global, covariance_matrix_reduced, components)
-        P_global = woodbury(P_global, np.ones((n, 1)), np.reshape(mean, (1, n)))
+        for eigenvalue, eigenvector in zip(eigenvalues, eigenvectors.T):
+            P_global1 = calc_P_online_based_on_pca(P_global1, eigenvector, eigenvalue)
 
-        print(f"{np.sum(P_global_true - P_global) = }")
+        # covariance_matrix_true += covariance_matrix
+        # P_global_true = np.linalg.inv(covariance_matrix_true)
 
-    P_global_true = np.linalg.inv(covariance_matrix_true)
-    return P_global_true
+        # covariance_matrix_reconsructed = covariance_matrix_reduced @ components + mean
+        # print(f"{np.sum(np.abs(covariance_matrix_true - covariance_matrix)) = }")
+
+        # n = covariance_matrix_reduced.shape[0]
+        # P_global2 = woodbury(P_global2, covariance_matrix_reduced, components)
+        # P_global2 = woodbury(P_global2, np.ones((n, 1)), np.reshape(mean, (1, n)))
+        #
+        # print(f"{np.sum(np.abs(P_global_true - P_global1)) = }")
+        # print(f"{np.sum(np.abs(P_global_true - P_global2)) = }")
+        # print(f"{np.sum(np.abs(P_global1 - P_global2)) = }")
+
+    # P_global_true = np.linalg.inv(covariance_matrix_true)
+    return P_global1
 
 
 def train_in_client(

@@ -117,13 +117,14 @@ class MDRS:
                 #     else mahalanobis_distance
                 # )
 
-        pca = PCA(n_components=n_components)
-        pca.fit(covariance_matrix)
-        covariance_matrix_reduced = pca.transform(covariance_matrix)
+        eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)
 
-        eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
+        # Sort in descending order
+        sorted_indices = np.argsort(eigenvalues)[::-1]
+        eigenvalues = eigenvalues[sorted_indices]
+        eigenvectors = eigenvectors[:, sorted_indices]
 
-        return covariance_matrix_reduced, pca.components_, pca.mean_, eigenvalues, eigenvectors, covariance_matrix
+        return eigenvalues[:n_components], eigenvectors[:, :n_components]
 
     def adapt(self, U, threshold=None):
         """
