@@ -121,7 +121,9 @@ class MDRS:
         pca.fit(covariance_matrix)
         covariance_matrix_reduced = pca.transform(covariance_matrix)
 
-        return covariance_matrix_reduced, pca.components_, pca.mean_
+        eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
+
+        return covariance_matrix_reduced, pca.components_, pca.mean_, eigenvalues, eigenvectors, covariance_matrix
 
     def adapt(self, U, threshold=None):
         """

@@ -59,8 +59,9 @@ def train_in_clients_with_PCA(
         N_x_tilde = N_x
 
     P_global = 1 / delta * np.identity(N_x_tilde)
+    covariance_matrix_true = delta * np.identity(N_x_tilde)
     for train_data in tqdm(train_data_list):
-        covariance_matrix_reduced, components, mean = train_in_client_with_PCA(
+        covariance_matrix_reduced, components, mean, eigenvalues, eigenvectors, covariance_matrix = train_in_client_with_PCA(
             train_data,
             N_x,
             N_x_tilde=N_x_tilde,
@@ -71,13 +72,20 @@ def train_in_clients_with_PCA(
             n_components=n_components,
             trans_len=trans_len,
         )
+        covariance_matrix_true += covariance_matrix
+
+        covariance_matrix_reconsructed = covariance_matrix_reduced @ components + mean
+        print(f"{np.sum(covariance_matrix_reconsructed - covariance_matrix) = }")
+        P_global_true = np.linalg.inv(covariance_matrix_true)
 
         n = covariance_matrix_reduced.shape[0]
-
         P_global = woodbury(P_global, covariance_matrix_reduced, components)
         P_global = woodbury(P_global, np.ones((n, 1)), np.reshape(mean, (1, n)))
 
-    return P_global
+        print(f"{np.sum(P_global_true - P_global) = }")
+
+    P_global_true = np.linalg.inv(covariance_matrix_true)
+    return P_global_true
 
 
 def train_in_client(
