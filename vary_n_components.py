@@ -97,6 +97,7 @@ if __name__ == "__main__":
         datasets,
         filepath=client_time_diagram_path,
         xlabel="the number of components",
+        ylabel="Time (s)"
     )
 
     server_time_diagram_path = os.path.join(result_dir, "server_time.pdf")
@@ -106,4 +107,5 @@ if __name__ == "__main__":
         datasets,
         filepath=server_time_diagram_path,
         xlabel="the number of components",
+        ylabel="Time (s)"
     )
