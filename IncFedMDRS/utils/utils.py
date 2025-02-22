@@ -1,5 +1,6 @@
 from logging import getLogger
 from typing import Dict
+import time
 
 from tqdm import tqdm
 import numpy as np
@@ -59,7 +60,13 @@ def train_in_clients_with_PCA(
         N_x_tilde = N_x
 
     P_global1 = 1 / delta * np.identity(N_x_tilde)
+    # covariance_matrix_true = delta * np.identity(N_x_tilde)
+
+    client_time_list = []
+    server_time_list = []
+
     for train_data in tqdm(train_data_list):
+        client_start = time.time()
         eigenvalues, eigenvectors = train_in_client_with_PCA(
             train_data,
             N_x,
@@ -71,13 +78,20 @@ def train_in_clients_with_PCA(
             n_components=n_components,
             trans_len=trans_len,
         )
+        client_end = time.time()
+        client_time_list.append(client_end - client_start)
 
-
+        server_start = time.time()
         for eigenvalue, eigenvector in zip(eigenvalues, eigenvectors.T):
             P_global1 = calc_P_online_based_on_pca(P_global1, eigenvector, eigenvalue)
+        server_end = time.time()
+        server_time_list.append(server_end - server_start)
 
+        # server_start = time.time()
         # covariance_matrix_true += covariance_matrix
         # P_global_true = np.linalg.inv(covariance_matrix_true)
+        # server_end = time.time()
+        # server_time.append(server_end - server_start)
 
         # covariance_matrix_reconsructed = covariance_matrix_reduced @ components + mean
         # print(f"{np.sum(np.abs(covariance_matrix_true - covariance_matrix)) = }")
@@ -90,8 +104,11 @@ def train_in_clients_with_PCA(
         # print(f"{np.sum(np.abs(P_global_true - P_global2)) = }")
         # print(f"{np.sum(np.abs(P_global1 - P_global2)) = }")
 
+    client_time_avg = np.average(client_time_list)
+    server_time = np.sum(server_time_list)
+
     # P_global_true = np.linalg.inv(covariance_matrix_true)
-    return P_global1
+    return P_global1, client_time_avg, server_time
 
 
 def train_in_client(

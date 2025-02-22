@@ -1,4 +1,5 @@
 import os
+from experiments.utils.diagram.plot_line_graph import plot_line_graph
 from experiments.utils.diagram.subsampling import plot_subsampling
 from incfedmdrswithpca_main import incfedmdrswithpca_main
 import numpy as np
@@ -10,8 +11,20 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 
-    n_components_list = [1, 5, 10, 25, 50, 100, 150, 200]
+    n_components_list = [
+        1,
+        5,
+        10,
+        100,
+        200,
+        400,
+        600,
+        800,
+        1000,
+    ]
     scores_list = []
+    client_time_list = []
+    server_time_list = []
 
     for dataset in datasets:
         result_dir_for_each_dataset = os.path.join(result_dir, dataset)
@@ -19,18 +32,80 @@ if __name__ == "__main__":
 
         run = True
         if run:
-            scores = [
+            values = [
                 incfedmdrswithpca_main(
-                    dataset, result_dir=result_dir, n_components=n_components
+                    dataset,
+                    result_dir=os.path.join(
+                        result_dir_for_each_dataset, str(n_components)
+                    ),
+                    N_x=1000,
+                    N_x_tilde=None,
+                    n_components=n_components,
                 )
                 for n_components in n_components_list
             ]
-            scores_list.append(scores)
+            scores = [value[0] for value in values]
+            client_time = [value[1] for value in values]
+            server_time = [value[2] for value in values]
 
+        else:
+            scores = [
+                np.mean(
+                    np.genfromtxt(
+                        os.path.join(
+                            result_dir_for_each_dataset, str(n_components), "pate.csv"
+                        )
+                    )
+                )
+                for n_components in n_components_list
+            ]
+            client_time = [
+                np.genfromtxt(
+                    os.path.join(
+                        result_dir_for_each_dataset,
+                        str(n_components),
+                        "client_time.csv",
+                    )
+                )
+                for n_components in n_components_list
+            ]
+            server_time = [
+                np.genfromtxt(
+                    os.path.join(
+                        result_dir_for_each_dataset,
+                        str(n_components),
+                        "server_time.csv",
+                    )
+                )
+                for n_components in n_components_list
+            ]
+
+        scores_list.append(scores)
+        client_time_list.append(client_time)
+        server_time_list.append(server_time)
     diagram_path = os.path.join(result_dir, "pca-result.pdf")
-    plot_subsampling(
+    plot_line_graph(
         n_components_list,
         scores_list,
-        labels=datasets,
-        filename=diagram_path,
+        xlabel="the number of components",
+        label_list=datasets,
+        filepath=diagram_path,
+    )
+
+    client_time_diagram_path = os.path.join(result_dir, "client_time.pdf")
+    plot_line_graph(
+        n_components_list,
+        client_time_list,
+        datasets,
+        filepath=client_time_diagram_path,
+        xlabel="the number of components",
+    )
+
+    server_time_diagram_path = os.path.join(result_dir, "server_time.pdf")
+    plot_line_graph(
+        n_components_list,
+        server_time_list,
+        datasets,
+        filepath="server_time.pdf",
+        xlabel=server_time_diagram_path,
     )

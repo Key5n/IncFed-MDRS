@@ -53,7 +53,7 @@ def incfedmdrswithpca_main(
         test_clients = get_PSM_test_clients()
 
     if train:
-        P_global = train_in_clients_with_PCA(
+        P_global, client_time_avg, server_time = train_in_clients_with_PCA(
             train_clients,
             N_x=N_x,
             N_x_tilde=N_x_tilde,
@@ -84,19 +84,23 @@ def incfedmdrswithpca_main(
         input_scale=input_scale,
         trans_len=trans_len,
     )
+    client_time_save_path = os.path.join(result_dir, "client_time.csv")
+    server_time_save_path = os.path.join(result_dir, "server_time.csv")
+    np.savetxt(client_time_save_path, client_time_avg)
+    np.savetxt(server_time_save_path, server_time)
 
     save_scores(evaluation_results, result_dir)
     score = np.mean(
         [evaluation_result["PATE"] for evaluation_result in evaluation_results]
     )
 
-    return score
+    return score, client_time_avg, server_time
 
 
 if __name__ == "__main__":
     args = args_parser()
     dataset = args.dataset
-    result_dir = os.path.join("pca", "mdrs", "proposed", dataset)
+    result_dir = os.path.join("result", "mdrs", "pca", dataset)
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
     logger = getLogger(__name__)

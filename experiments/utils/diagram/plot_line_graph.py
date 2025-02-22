@@ -2,7 +2,12 @@ import matplotlib.pyplot as plt
 
 
 def plot_line_graph(
-    X: list, Y_list: list[list], label_list: list[str], filepath: str, xlabel: str
+    X: list,
+    Y_list: list[list],
+    label_list: list[str],
+    filepath: str,
+    xlabel: str,
+    ylabel: str = "Performance",
 ):
     plt.rcParams["font.size"] = 20
     plt.figure(figsize=(6, 6))
@@ -10,9 +15,8 @@ def plot_line_graph(
         plt.plot(X, Y, label=label, marker="o")
 
     plt.xlabel(xlabel)
-    plt.ylabel("Performance")
-
-    plt.ylim(0, 1)
+    # plt.ylabel("Average Training Time (s)")
+    plt.ylabel(ylabel)
 
     plt.legend()
     plt.tight_layout()
