@@ -84,10 +84,6 @@ def incfedmdrswithpca_main(
         input_scale=input_scale,
         trans_len=trans_len,
     )
-    client_time_save_path = os.path.join(result_dir, "client_time.csv")
-    server_time_save_path = os.path.join(result_dir, "server_time.csv")
-    np.savetxt(client_time_save_path, client_time_avg)
-    np.savetxt(server_time_save_path, server_time)
 
     save_scores(evaluation_results, result_dir)
     score = np.mean(
