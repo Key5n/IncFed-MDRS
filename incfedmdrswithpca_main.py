@@ -53,7 +53,7 @@ def incfedmdrswithpca_main(
         test_clients = get_PSM_test_clients()
 
     if train:
-        P_global, client_time_avg, server_time = train_in_clients_with_PCA(
+        P_global, client_time_avg, server_time, server_time_incfed = train_in_clients_with_PCA(
             train_clients,
             N_x=N_x,
             N_x_tilde=N_x_tilde,
@@ -87,10 +87,10 @@ def incfedmdrswithpca_main(
 
     save_scores(evaluation_results, result_dir)
     score = np.mean(
-        [evaluation_result["PATE"] for evaluation_result in evaluation_results]
+        [evaluation_result["VUS-PR"] for evaluation_result in evaluation_results]
     )
 
-    return score, client_time_avg, server_time
+    return score, client_time_avg, server_time, server_time_incfed
 
 
 if __name__ == "__main__":

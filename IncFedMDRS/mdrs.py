@@ -2,6 +2,7 @@ from IncFedMDRS.utils.calc_P_online import calc_P_online
 from IncFedMDRS.utils.subsample import subsample
 import numpy as np
 from copy import deepcopy
+import time
 from IncFedMDRS.layers import Input, Reservoir
 from numpy import linalg as LA
 from sklearn.decomposition import PCA
@@ -117,14 +118,16 @@ class MDRS:
                 #     else mahalanobis_distance
                 # )
 
+        start = time.time()
         eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)
 
         # Sort in descending order
         sorted_indices = np.argsort(eigenvalues)[::-1]
         eigenvalues = eigenvalues[sorted_indices]
         eigenvectors = eigenvectors[:, sorted_indices]
+        end = time.time()
 
-        return eigenvalues[:n_components], eigenvectors[:, :n_components], covariance_matrix
+        return eigenvalues[:n_components], eigenvectors[:, :n_components], covariance_matrix, end - start
 
     def adapt(self, U, threshold=None):
         """

@@ -64,10 +64,11 @@ def train_in_clients_with_PCA(
 
     client_time_list = []
     server_time_list = []
+    server_time_incfed_list = []
 
     for train_data in tqdm(train_data_list):
         client_start = time.time()
-        eigenvalues, eigenvectors, covariance_matrix = train_in_client_with_PCA(
+        eigenvalues, eigenvectors, covariance_matrix, client_time = train_in_client_with_PCA(
             train_data,
             N_x,
             N_x_tilde=N_x_tilde,
@@ -79,7 +80,7 @@ def train_in_clients_with_PCA(
             trans_len=trans_len,
         )
         client_end = time.time()
-        client_time_list.append(client_end - client_start)
+        client_time_list.append(100 * client_time / (client_end - client_start))
 
         server_start = time.time()
         print(f"{len(eigenvalues) = }")
@@ -90,11 +91,13 @@ def train_in_clients_with_PCA(
         print(server_end - server_start)
         server_time_list.append(server_end - server_start)
 
-        server_start = time.time()
+        server_incfed_start = time.time()
         covariance_matrix_true += covariance_matrix
         _ = np.linalg.inv(covariance_matrix_true)
-        server_end = time.time()
-        print(server_end - server_start)
+        server_incfed_end = time.time()
+        print(server_incfed_end - server_incfed_start)
+
+        server_time_incfed_list.append(server_incfed_end - server_incfed_start)
 
         # covariance_matrix_reconsructed = covariance_matrix_reduced @ components + mean
         # print(f"{np.sum(np.abs(covariance_matrix_true - covariance_matrix)) = }")
@@ -109,9 +112,10 @@ def train_in_clients_with_PCA(
 
     client_time_avg = np.average(client_time_list)
     server_time = np.sum(server_time_list)
+    server_time_incfed = np.sum(server_time_list)
 
     # P_global_true = np.linalg.inv(covariance_matrix_true)
-    return P_global1, client_time_avg, server_time
+    return P_global1, client_time_avg, server_time, server_time_incfed
 
 
 def train_in_client(
