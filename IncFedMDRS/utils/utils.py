@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np
 from numpy.typing import NDArray
 from IncFedMDRS.mdrs import MDRS
-from IncFedMDRS.utils.calc_P_online import calc_P_online_based_on_pca, woodbury
+from IncFedMDRS.utils.calc_P_online import calc_P_online_based_on_pca, woodbury, woodbury2
 from experiments.evaluation.metrics import get_metrics
 
 
@@ -60,14 +60,14 @@ def train_in_clients_with_PCA(
         N_x_tilde = N_x
 
     P_global1 = 1 / delta * np.identity(N_x_tilde)
-    # covariance_matrix_true = delta * np.identity(N_x_tilde)
+    covariance_matrix_true = delta * np.identity(N_x_tilde)
 
     client_time_list = []
     server_time_list = []
 
     for train_data in tqdm(train_data_list):
         client_start = time.time()
-        eigenvalues, eigenvectors = train_in_client_with_PCA(
+        eigenvalues, eigenvectors, covariance_matrix = train_in_client_with_PCA(
             train_data,
             N_x,
             N_x_tilde=N_x_tilde,
@@ -82,16 +82,19 @@ def train_in_clients_with_PCA(
         client_time_list.append(client_end - client_start)
 
         server_start = time.time()
-        for eigenvalue, eigenvector in zip(eigenvalues, eigenvectors.T):
-            P_global1 = calc_P_online_based_on_pca(P_global1, eigenvector, eigenvalue)
+        print(f"{len(eigenvalues) = }")
+        P_global1 = woodbury2(P_global1, eigenvectors, eigenvectors.T, np.diag(1 / eigenvalues))
+        # for eigenvalue, eigenvector in zip(eigenvalues, eigenvectors.T):
+        #     P_global1 = calc_P_online_based_on_pca(P_global1, eigenvector, eigenvalue)
         server_end = time.time()
+        print(server_end - server_start)
         server_time_list.append(server_end - server_start)
 
-        # server_start = time.time()
-        # covariance_matrix_true += covariance_matrix
-        # P_global_true = np.linalg.inv(covariance_matrix_true)
-        # server_end = time.time()
-        # server_time.append(server_end - server_start)
+        server_start = time.time()
+        covariance_matrix_true += covariance_matrix
+        _ = np.linalg.inv(covariance_matrix_true)
+        server_end = time.time()
+        print(server_end - server_start)
 
         # covariance_matrix_reconsructed = covariance_matrix_reduced @ components + mean
         # print(f"{np.sum(np.abs(covariance_matrix_true - covariance_matrix)) = }")

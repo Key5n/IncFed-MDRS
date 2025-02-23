@@ -36,3 +36,13 @@ def woodbury(A_inversed: NDArray, B: NDArray, C: NDArray) -> NDArray:
     res = A_inversed - np.dot(np.dot(tmp1, tmp2), tmp3)
 
     return res
+
+
+def woodbury2(A_inversed: NDArray, B: NDArray, C: NDArray, D_inversed:NDArray) -> NDArray:
+    tmp1 = np.dot(A_inversed, B)
+    tmp2 = np.linalg.inv(D_inversed + np.dot(np.dot(C, A_inversed), B))
+    tmp3 = np.dot(C, A_inversed)
+
+    res = A_inversed - np.dot(np.dot(tmp1, tmp2), tmp3)
+
+    return res

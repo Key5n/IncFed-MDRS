@@ -124,7 +124,7 @@ class MDRS:
         eigenvalues = eigenvalues[sorted_indices]
         eigenvectors = eigenvectors[:, sorted_indices]
 
-        return eigenvalues[:n_components], eigenvectors[:, :n_components]
+        return eigenvalues[:n_components], eigenvectors[:, :n_components], covariance_matrix
 
     def adapt(self, U, threshold=None):
         """
