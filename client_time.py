@@ -10,7 +10,7 @@ if __name__ == "__main__":
     os.makedirs(result_dir, exist_ok=True)
     init_logger(os.path.join(result_dir, "mdrs.log"))
 
-    N_x_list = [50, 120 ]
+    N_x_list = [50]
     scores_list = []
     client_time_list = []
     server_time_list = []
@@ -39,7 +39,9 @@ if __name__ == "__main__":
             client_time_save_path = os.path.join(
                 result_dir_for_each_dataset, "client_time.csv"
             )
-            server_time_save_path = os.path.join(result_dir_for_each_dataset, "server_time.csv")
+            server_time_save_path = os.path.join(
+                result_dir_for_each_dataset, "server_time.csv"
+            )
             server_time_incfed_save_path = os.path.join(
                 result_dir_for_each_dataset, "server_time_incfed.csv"
             )
@@ -69,7 +71,7 @@ if __name__ == "__main__":
 
         client_time_list.append(client_time)
         server_time_list.append(server_time)
-        server_time_incfed.append(server_time_incfed)
+        server_time_incfed_list.append(server_time_incfed)
 
     client_time_diagram_path = os.path.join(result_dir, "client_time.pdf")
     plot_line_graph(
@@ -77,8 +79,8 @@ if __name__ == "__main__":
         client_time_list,
         datasets,
         filepath=client_time_diagram_path,
-        xlabel="リザバーノード数",
-        ylabel="増加時間割合 (%)",
+        xlabel="The number of reservoir nodes",
+        ylabel="Increase Time Ratio (%)",
     )
 
     server_time_diagram_path = os.path.join(result_dir, "server_time.pdf")
@@ -87,6 +89,6 @@ if __name__ == "__main__":
         server_time_list + server_time_incfed_list,
         datasets + ["SMD(IncFed MD-RS)", "SMAP(IncFed MD-RS)", "PSM(IncFed MD-RS)"],
         filepath=server_time_diagram_path,
-        xlabel="リザバーノード数",
-        ylabel="経過時間 (s)"
+        xlabel="The number of reservoir nodes",
+        ylabel="Time (s)",
     )
