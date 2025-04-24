@@ -10,7 +10,7 @@ def plot_line_graph(
         plt.plot(X, Y, label=label, marker="o")
 
     plt.xlabel(xlabel)
-    plt.ylabel("Performance")
+    plt.ylabel("PATE")
 
     plt.ylim(0, 1)
 
